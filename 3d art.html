@@ -237,48 +237,24 @@
 									</header>
 								  <form id="form" onsubmit="handleSubmit(event)">
             <div class="form-row">
-                <div class="form-group">
                     <label for="fullName">Your information</label>
                     <input type="text" id="fullName" name="Full Name" placeholder="Full name" required>
-                </div>
-                <div class="form-group">
-                    <label for="email" class="xmail" style="visibility: hidden;">Email</label>
-                    <input type="email" id="email" name="Email" placeholder="Email" required>
+            </div>
+
+			<div class="form-row">
+				<label for="email" class="xmail" style="visibility: hidden;">Email</label>
+				<input type="email" id="email" name="Email" placeholder="Email" required>
+			</div>
+            <div class="form-row">
+                <div class="form-group full-width">
+                    <input type="text" name="Company Name" value="cejiroh" style="display:none;>
                 </div>
             </div>
 
             <div class="form-row">
                 <div class="form-group full-width">
-                    <input type="text" name="Company Name" placeholder="Company name (optional)">
+                    <textarea name="Message" placeholder="Your Message" required></textarea>
                 </div>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group full-width">
-                    <textarea name="Message" placeholder="What are we creating?" required></textarea>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>What can we do for you?</label>
-                <div class="checkbox-group">
-                    <div class="checkbox-item" onclick="toggleCheckbox(this, 'Service Type', 'Product Design')">Product Design</div>
-                    <div class="checkbox-item" onclick="toggleCheckbox(this, 'Service Type', 'Video Production')">Video Production</div>
-                    <div class="checkbox-item" onclick="toggleCheckbox(this, 'Service Type', 'Website Development')">Website Development</div>
-                    <div class="checkbox-item" onclick="toggleCheckbox(this, 'Service Type', 'Other')">Other</div>
-                </div>
-                <input type="hidden" name="Service Type" id="serviceType">
-            </div>
-
-            <div class="form-group">
-                <label>Do you have a budget range?</label>
-                <div class="checkbox-group">
-                    <div class="checkbox-item" onclick="toggleRadio(this, 'budget', 'Under $500')">Under $500</div>
-                    <div class="checkbox-item" onclick="toggleRadio(this, 'budget', '$500-$1k')">$500-$1k</div>
-                    <div class="checkbox-item" onclick="toggleRadio(this, 'budget', '$1k-$2.5k')">$1k-$2.5k</div>
-                    <div class="checkbox-item" onclick="toggleRadio(this, 'budget', '$2.5k+')">$2.5k+</div>
-                </div>
-                <input type="hidden" name="Budget" id="budget">
             </div>
 
             <div class="actions">
@@ -347,6 +323,7 @@
 
 	</body>
 </html>
+
 
 
 
