@@ -235,13 +235,59 @@
 									<header id="hello" class="navm">
 										<h2>Say Hello!</h2>
 									</header>
-									<form method="post" action="https://script.google.com/macros/s/AKfycbwtbYe-gjbAy9rj4SddKEDxrVy1k5T82wOsonCyk72SzPKm4Vwp_is-PJxEBSVoXeGg/exec" id="form">
-									
-									<input type="text" name="fullName" placeholder="Name"  required />
-									<input type="email" name="email" placeholder="Email" required />
-									<input type="text" name="Message" placeholder="Message" required />
-									<input type="submit" name="submit" class="fit" id="submit" value="Send" />
-									</form>
+								  <form id="form" onsubmit="handleSubmit(event)">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="fullName">Your information</label>
+                    <input type="text" id="fullName" name="Full Name" placeholder="Full name" required>
+                </div>
+                <div class="form-group">
+                    <label for="email" class="xmail" style="visibility: hidden;">Email</label>
+                    <input type="email" id="email" name="Email" placeholder="Email" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group full-width">
+                    <input type="text" name="Company Name" placeholder="Company name (optional)">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group full-width">
+                    <textarea name="Message" placeholder="What are we creating?" required></textarea>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>What can we do for you?</label>
+                <div class="checkbox-group">
+                    <div class="checkbox-item" onclick="toggleCheckbox(this, 'Service Type', 'Product Design')">Product Design</div>
+                    <div class="checkbox-item" onclick="toggleCheckbox(this, 'Service Type', 'Video Production')">Video Production</div>
+                    <div class="checkbox-item" onclick="toggleCheckbox(this, 'Service Type', 'Website Development')">Website Development</div>
+                    <div class="checkbox-item" onclick="toggleCheckbox(this, 'Service Type', 'Other')">Other</div>
+                </div>
+                <input type="hidden" name="Service Type" id="serviceType">
+            </div>
+
+            <div class="form-group">
+                <label>Do you have a budget range?</label>
+                <div class="checkbox-group">
+                    <div class="checkbox-item" onclick="toggleRadio(this, 'budget', 'Under $500')">Under $500</div>
+                    <div class="checkbox-item" onclick="toggleRadio(this, 'budget', '$500-$1k')">$500-$1k</div>
+                    <div class="checkbox-item" onclick="toggleRadio(this, 'budget', '$1k-$2.5k')">$1k-$2.5k</div>
+                    <div class="checkbox-item" onclick="toggleRadio(this, 'budget', '$2.5k+')">$2.5k+</div>
+                </div>
+                <input type="hidden" name="Budget" id="budget">
+            </div>
+
+            <div class="actions">
+				<ul class="actions special">
+					<li><input type="submit" name="submit" class="submit" id="submit" value="Send"></li>
+				</ul>
+                
+            </div>
+        </form>
 									
 									<article id="success" class="centered" style="display:none;">
 									<h3>Your message has been submitted.</h3>
@@ -301,4 +347,5 @@
 
 	</body>
 </html>
+
 
