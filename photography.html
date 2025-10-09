@@ -147,13 +147,34 @@
 									<header id="hello" class="navm">
 										<h2>Say Hello!</h2>
 									</header>
-									<form method="post" action="https://script.google.com/macros/s/AKfycbwtbYe-gjbAy9rj4SddKEDxrVy1k5T82wOsonCyk72SzPKm4Vwp_is-PJxEBSVoXeGg/exec" id="form">
-									
-									<input type="text" name="Name" placeholder="Name"  required />
-									<input type="email" name="Email" placeholder="Email" required />
-									<input type="text" name="Message" placeholder="Message" required />
-									<input type="submit" name="submit" class="fit" id="submit" value="Send" />
-									</form>
+<form id="form" onsubmit="handleSubmit(event)">
+            <div class="form-row">
+                    <input type="text" id="fullName" name="Full Name" placeholder="Full name" required>
+            </div>
+
+			<div class="form-row">
+				<input type="email" id="email" name="Email" placeholder="Email" required>
+			</div>
+            <div class="form-row">
+                <div class="form-group full-width">
+                    <input type="text" name="Company Name" value="cejiroh" style="display:none;>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group full-width">
+                    <textarea name="Message" placeholder="Your Message" required></textarea>
+                </div>
+            </div>
+
+            <div class="actions">
+				<ul class="actions special">
+					
+					<input type="submit" name="submit" class="fit" id="submit" value="Send" />
+				</ul>
+                
+            </div>
+        </form>
 									
 									<article id="success" class="centered" style="display:none;">
 									<h3>Your message has been submitted.</h3>
@@ -181,7 +202,7 @@
 								<script>
 								   const form = document.querySelector("#form")
 								   const submitButton = document.querySelector("#submit")
-								   const scriptURL = 'https://script.google.com/macros/s/AKfycbwtbYe-gjbAy9rj4SddKEDxrVy1k5T82wOsonCyk72SzPKm4Vwp_is-PJxEBSVoXeGg/exec'
+								   const scriptURL = 'https://script.google.com/macros/s/AKfycbzAUdVyJyXGCziUois9FB9lcGOz-6GsoTloTUdPnXvJ-YKqjkTX7aNTQnHTh0WLYqOm/exec'
 
 								   form.addEventListener('submit', e => {
 									 submitButton.disabled = true
@@ -213,3 +234,4 @@
 
 	</body>
 </html>
+
