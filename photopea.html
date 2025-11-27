@@ -19,6 +19,40 @@ iframe {
 	bottom: 0px
 }
 		 </style>
+	
+			<script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f9ff;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        .water-gradient {
+            background: linear-gradient(135deg, #0ea5e9 0%, #3b82f6 100%);
+        }
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #3b82f6;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #3b82f6;
+        }
+        
+        /* Animation for result updates */
+        @keyframes popIn {
+            0% { transform: scale(0.95); opacity: 0.5; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-pop {
+            animation: popIn 0.2s ease-out forwards;
+        }
+    </style>
+	
 	</head>
 	<body class="is-preload">
 
@@ -27,7 +61,178 @@ iframe {
 
 				<!-- Main -->
 					<div id="main" class="stick">
-						<iframe src="https://www.photopea.com/?p={%22environment%22:{%22theme%22:5,%22lang%22:%22en%22}}" width="100%" frameborder="0" scrolling="no" allowfullscreen=""></iframe>
+		
+    <div class="glass-panel w-full max-w-md rounded-3xl shadow-2xl overflow-hidden relative">
+        <!-- Header -->
+        <div class="water-gradient p-6 text-white text-center relative overflow-hidden">
+            <!-- Decorative Bubbles -->
+            <div class="absolute top-2 left-4 w-4 h-4 rounded-full bg-white opacity-20"></div>
+            <div class="absolute bottom-4 right-8 w-8 h-8 rounded-full bg-white opacity-10"></div>
+            
+            <h1 class="text-2xl font-bold mb-1">H₂O Converter</h1>
+            <p class="text-blue-100 text-sm">Gallons & Jugs to Liters</p>
+        </div>
+
+        <div class="p-6 space-y-6">
+            
+            <!-- Type Selector -->
+            <div class="bg-slate-100 p-1 rounded-xl flex relative">
+                <button onclick="setMode('standard')" id="btn-standard" class="flex-1 py-2 px-3 rounded-lg text-sm font-semibold transition-all duration-300 shadow-sm bg-white text-blue-600">
+                    Standard Gallon
+                </button>
+                <button onclick="setMode('jug')" id="btn-jug" class="flex-1 py-2 px-3 rounded-lg text-sm font-semibold text-slate-500 hover:text-slate-700 transition-all duration-300">
+                    Blue Water Jug
+                </button>
+            </div>
+
+            <!-- Input Section -->
+            <div class="relative group">
+                <label id="input-label" class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                    Enter Gallons (US)
+                </label>
+                <div class="flex items-center bg-white border-2 border-slate-200 rounded-xl px-4 py-3 focus-within:border-blue-400 focus-within:ring-4 focus-within:ring-blue-100 transition-all">
+                    <!-- Icon placeholder updates via JS -->
+                    <div id="input-icon" class="text-blue-500 mr-3">
+                        <!-- Standard Drop Icon -->
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                        </svg>
+                    </div>
+                    <input type="number" id="input-val" value="1" min="0" step="any" oninput="calculate()" class="w-full bg-transparent outline-none text-xl font-bold text-slate-700 placeholder-slate-300" placeholder="0">
+                </div>
+            </div>
+
+            <!-- Result Card -->
+            <div class="bg-blue-50 border border-blue-100 rounded-2xl p-6 text-center animate-pop" id="result-card">
+                <p class="text-slate-500 text-sm font-medium mb-1">Equivalent Volume</p>
+                <div class="flex justify-center items-baseline gap-2">
+                    <span id="result-value" class="text-4xl font-extrabold text-blue-600">3.79</span>
+                    <span class="text-lg font-bold text-blue-400">Liters</span>
+                </div>
+            </div>
+
+            <!-- Math Explanation -->
+            <div class="border-t border-slate-100 pt-4">
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Conversion Breakdown</h3>
+                
+                <div class="bg-slate-50 rounded-lg p-4 text-sm text-slate-600 space-y-3">
+                    <div class="flex justify-between border-b border-slate-200 pb-2">
+                        <span>Input Quantity:</span>
+                        <span id="math-input" class="font-mono font-bold">1</span>
+                    </div>
+                    <div class="flex justify-between border-b border-slate-200 pb-2">
+                        <span>Unit Size:</span>
+                        <span id="math-unit" class="font-mono text-blue-500">1 Gallon (3.785 L)</span>
+                    </div>
+                    <div class="flex justify-between items-center pt-1 text-blue-700 font-semibold">
+                        <span>Calculation:</span>
+                        <span class="font-mono" id="math-formula">1 × 3.785</span>
+                    </div>
+                </div>
+                
+                <p id="context-note" class="text-xs text-slate-400 mt-4 italic text-center">
+                    *Based on US Liquid Gallon (approx 3.78541 Liters)
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Constants
+        const US_GALLON_TO_LITER = 3.785411784;
+        const BLUE_JUG_GALLONS = 5;
+        const BLUE_JUG_TO_LITER = US_GALLON_TO_LITER * BLUE_JUG_GALLONS; // approx 18.927
+
+        // State
+        let currentMode = 'standard'; // 'standard' or 'jug'
+
+        // Elements
+        const elInput = document.getElementById('input-val');
+        const elResult = document.getElementById('result-value');
+        const elLabel = document.getElementById('input-label');
+        const elBtnStandard = document.getElementById('btn-standard');
+        const elBtnJug = document.getElementById('btn-jug');
+        const elIcon = document.getElementById('input-icon');
+        
+        // Math Elements
+        const elMathInput = document.getElementById('math-input');
+        const elMathUnit = document.getElementById('math-unit');
+        const elMathFormula = document.getElementById('math-formula');
+        const elContextNote = document.getElementById('context-note');
+
+        // Icons (SVG Strings)
+        const iconDrop = `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>`;
+        
+        const iconJug = `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>`;
+
+        function setMode(mode) {
+            currentMode = mode;
+            
+            // Update Tab Styles
+            if (mode === 'standard') {
+                elBtnStandard.className = "flex-1 py-2 px-3 rounded-lg text-sm font-semibold transition-all duration-300 shadow-sm bg-white text-blue-600";
+                elBtnJug.className = "flex-1 py-2 px-3 rounded-lg text-sm font-semibold text-slate-500 hover:text-slate-700 transition-all duration-300";
+                elLabel.innerText = "Enter Gallons (US)";
+                elIcon.innerHTML = iconDrop;
+                elContextNote.innerText = "*Based on US Liquid Gallon (approx 3.785 L)";
+            } else {
+                elBtnStandard.className = "flex-1 py-2 px-3 rounded-lg text-sm font-semibold text-slate-500 hover:text-slate-700 transition-all duration-300";
+                elBtnJug.className = "flex-1 py-2 px-3 rounded-lg text-sm font-semibold transition-all duration-300 shadow-sm bg-white text-blue-600";
+                elLabel.innerText = "Enter Number of Jugs";
+                elIcon.innerHTML = iconJug;
+                elContextNote.innerText = "*Based on standard 5-Gallon round water container";
+            }
+
+            // Trigger animation on inputs
+            calculate();
+        }
+
+        function calculate() {
+            let inputVal = parseFloat(elInput.value);
+            
+            if (isNaN(inputVal) || inputVal < 0) {
+                inputVal = 0;
+            }
+
+            let resultLiters = 0;
+            let formulaString = "";
+            let unitString = "";
+
+            if (currentMode === 'standard') {
+                // Calculation for Standard Gallons
+                resultLiters = inputVal * US_GALLON_TO_LITER;
+                unitString = `1 Gallon (~${US_GALLON_TO_LITER.toFixed(3)} L)`;
+                formulaString = `${inputVal} × ${US_GALLON_TO_LITER.toFixed(3)}`;
+            } else {
+                // Calculation for Blue Jugs (5 Gallons)
+                resultLiters = inputVal * BLUE_JUG_TO_LITER;
+                unitString = `1 Blue Jug (5 Gal / ~${BLUE_JUG_TO_LITER.toFixed(2)} L)`;
+                formulaString = `${inputVal} Jugs × ${BLUE_JUG_TO_LITER.toFixed(2)}`;
+            }
+
+            // Update UI
+            // Format to max 3 decimal places, remove trailing zeros if integer
+            elResult.innerText = parseFloat(resultLiters.toFixed(3)).toLocaleString('en-US');
+            
+            // Update Breakdown
+            elMathInput.innerText = inputVal;
+            elMathUnit.innerText = unitString;
+            elMathFormula.innerText = formulaString;
+
+            // Simple visual pop effect on result
+            const card = document.getElementById('result-card');
+            card.classList.remove('animate-pop');
+            void card.offsetWidth; // trigger reflow
+            card.classList.add('animate-pop');
+        }
+
+        // Initialize
+        calculate();
+
+    </script>
+
+					
+					
 					</div>
 
 				<!-- Sidebar -->
@@ -167,3 +372,4 @@ iframe {
 
 	</body>
 </html>
+
