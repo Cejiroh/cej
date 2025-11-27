@@ -80,15 +80,14 @@
             </div>
 
             <div class="p-8 grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
-                
                 <div class="space-y-8 h-full flex flex-col justify-center w-full">
                     <div class="relative group w-full">
                          <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 border-none">Enter Quantity</h3>
                         <label id="input-label" class="sr-only">Enter Value</label>
                         
-                        <div class="flex items-center w-full max-w-full bg-white border-2 border-slate-200 rounded-2xl p-2 focus-within:border-blue-400 transition-all shadow-sm hover:shadow-md">
+                        <div class="flex items-center justify-between w-full max-w-full bg-white border-2 border-slate-200 rounded-2xl p-2 gap-2 focus-within:border-blue-400 transition-all shadow-sm hover:shadow-md">
                             
-                            <button onclick="updateValue(-1)" class="flex-shrink-0 w-12 h-12 md:w-16 md:h-16 rounded-xl flex items-center justify-center text-blue-400 hover:text-white hover:bg-blue-500 transition-all cursor-pointer border-none outline-none bg-slate-50 hover:shadow-md">
+                            <button onclick="updateValue(-1)" class="flex-none w-14 h-14 md:w-16 md:h-16 rounded-xl flex items-center justify-center bg-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white active:bg-blue-700 active:text-white transition-colors cursor-pointer border-none outline-none">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 md:h-8 md:w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M20 12H4" />
                                 </svg>
@@ -96,14 +95,14 @@
 
                             <input type="number" id="input-val" value="1" min="0" step="any" oninput="calculate()" class="flex-1 w-full min-w-0 text-center bg-transparent outline-none text-4xl md:text-5xl font-bold text-slate-700 placeholder-slate-300 border-none h-auto p-0 appearance-none mx-2" placeholder="0">
 
-                            <button onclick="updateValue(1)" class="flex-shrink-0 w-12 h-12 md:w-16 md:h-16 rounded-xl flex items-center justify-center text-blue-400 hover:text-white hover:bg-blue-500 transition-all cursor-pointer border-none outline-none bg-slate-50 hover:shadow-md">
+                            <button onclick="updateValue(1)" class="flex-none w-14 h-14 md:w-16 md:h-16 rounded-xl flex items-center justify-center bg-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white active:bg-blue-700 active:text-white transition-colors cursor-pointer border-none outline-none">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 md:h-8 md:w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" />
                                 </svg>
                             </button>
 
                         </div>
-                        <p class="text-xs text-slate-400 mt-3 italic text-center">*Type or click buttons to adjust</p>
+                        <p class="text-xs text-slate-400 mt-3 italic text-center">*Type or tap buttons to adjust</p>
                     </div>
                 </div>
 
@@ -296,6 +295,7 @@
 
 </body>
 </html>
+
 
 
 
