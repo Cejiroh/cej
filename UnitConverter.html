@@ -68,7 +68,8 @@
 
     <div id="wrapper">
 
-        <div id="main" class="stick">    <div id="converter-wrapper" class="w-full min-h-screen flex items-center justify-center p-4 bg-[#f0f9ff]">
+        <div id="main" class="stick">   
+                <div id="converter-wrapper" class="w-full min-h-screen flex items-center justify-center p-4 bg-[#f0f9ff]">
         
         <div class="glass-panel w-full max-w-5xl rounded-3xl shadow-2xl overflow-hidden relative">
             
@@ -86,20 +87,32 @@
                          <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 border-none">Enter Quantity</h3>
                         <label id="input-label" class="sr-only">Enter Value</label>
                         
-                        <div class="flex items-center bg-white border-2 border-slate-200 rounded-2xl px-6 py-8 focus-within:border-blue-400 transition-all shadow-sm hover:shadow-md">
-                            <div class="text-blue-500 mr-4 transform scale-125">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
-                            </div>
-                            <input type="number" id="input-val" value="1" min="0" step="any" oninput="calculate()" class="w-full bg-transparent outline-none text-5xl font-bold text-slate-700 placeholder-slate-300 border-none h-auto p-0" placeholder="0">
+                        <div class="flex items-center bg-white border-2 border-slate-200 rounded-2xl px-2 py-2 focus-within:border-blue-400 transition-all shadow-sm hover:shadow-md">
+                            
+                            <button onclick="updateValue(-1)" class="w-16 h-16 rounded-xl flex items-center justify-center text-blue-400 hover:text-white hover:bg-blue-500 transition-all cursor-pointer border-none outline-none">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M20 12H4" />
+                                </svg>
+                            </button>
+
+                            <input type="number" id="input-val" value="1" min="0" step="any" oninput="calculate()" class="flex-1 text-center bg-transparent outline-none text-5xl font-bold text-slate-700 placeholder-slate-300 border-none h-auto p-0 appearance-none" placeholder="0">
+
+                            <button onclick="updateValue(1)" class="w-16 h-16 rounded-xl flex items-center justify-center text-blue-400 hover:text-white hover:bg-blue-500 transition-all cursor-pointer border-none outline-none">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" />
+                                </svg>
+                            </button>
+
                         </div>
-                        <p class="text-xs text-slate-400 mt-3 italic">*Type a number to see results for both container types.</p>
+                        <p class="text-xs text-slate-400 mt-3 italic text-center">*Type or click buttons to adjust</p>
                     </div>
                 </div>
 
                 <div class="space-y-4">
                     
                     <div class="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm flex items-center justify-between relative overflow-hidden group hover:border-blue-300 transition-all">
-                        <div class="absolute left-0 top-0 bottom-0 w-2 bg-blue-400"></div> <div>
+                        <div class="absolute left-0 top-0 bottom-0 w-2 bg-blue-400"></div> 
+                        <div>
                             <p class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1 m-0 border-none">If Standard Gallons (1x)</p>
                             <div class="flex items-baseline gap-2">
                                 <span id="res-std" class="text-3xl font-black text-slate-700">3.79</span>
@@ -112,7 +125,8 @@
                     </div>
 
                     <div class="bg-blue-50 border border-blue-100 rounded-2xl p-6 shadow-sm flex items-center justify-between relative overflow-hidden">
-                        <div class="absolute left-0 top-0 bottom-0 w-2 bg-blue-600"></div> <div>
+                        <div class="absolute left-0 top-0 bottom-0 w-2 bg-blue-600"></div> 
+                        <div>
                             <p class="text-blue-400 text-xs font-bold uppercase tracking-wider mb-1 m-0 border-none">If Blue Jugs (5x)</p>
                             <div class="flex items-baseline gap-2">
                                 <span id="res-jug" class="text-4xl font-black text-blue-600">18.93</span>
@@ -129,6 +143,15 @@
         </div>
     </div> 
 
+    <style>
+        /* Hide HTML5 Number Spinner Arrows */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+    </style>
+
     <script>
         const US_GALLON_TO_LITER = 3.785411784;
         const BLUE_JUG_GALLONS = 5;
@@ -138,10 +161,20 @@
         const elResStd = document.getElementById('res-std');
         const elResJug = document.getElementById('res-jug');
 
+        function updateValue(change) {
+            let currentVal = parseFloat(elInput.value);
+            if (isNaN(currentVal)) currentVal = 0;
+            
+            let newVal = currentVal + change;
+            if (newVal < 0) newVal = 0; // Prevent negative
+            
+            elInput.value = newVal;
+            calculate();
+        }
+
         function calculate() {
             let inputVal = parseFloat(elInput.value);
             
-            // Handle empty or invalid input
             if (isNaN(inputVal) || inputVal < 0) {
                 inputVal = 0;
             }
@@ -266,6 +299,7 @@
 
 </body>
 </html>
+
 
 
 
