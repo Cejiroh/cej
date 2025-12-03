@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CEJIROH</title>
+    <title>CEJIROH_SYSTEMS</title>
     
     <!-- Model Viewer Script -->
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
@@ -94,10 +94,10 @@
         import React, { useState, useEffect, useRef } from 'react';
         import { createRoot } from 'react-dom/client';
         import { 
-          Menu, X, ArrowRight, Play, Box, Layers, Code, 
-          Monitor, Smartphone, Cpu, Aperture, Globe, Mail, Linkedin, Instagram,
-          Terminal, Activity, Zap, ChevronRight, Hash, Volume2, VolumeX, Radio, Maximize2, Minimize2,
-          Triangle, Hexagon, Circle, Square, Eye, ArrowUpRight, Github, Twitter, Check, Loader2
+          Menu, X, ArrowRight, Box, Layers, 
+          Aperture, Globe, Linkedin, Instagram,
+          Activity, Zap, ChevronRight, Volume2, VolumeX, Minimize2,
+          Triangle, Hexagon, Circle, Square, Eye, Github, Twitter, Check, Loader2
         } from 'lucide-react';
 
         /* --- UTILS --- */
@@ -425,15 +425,16 @@
                   <span className="font-mono text-xs text-zinc-400 hidden sm:block tracking-widest">SYS_ONLINE</span>
                   <div className="h-4 w-[1px] bg-zinc-800 hidden sm:block" />
                   <div className="text-xl font-bold tracking-tighter text-white">
-                    CEJIROH<span className="text-blue-500"></span>
+                    CEJIROH<span className="text-blue-500">_SYSTEMS</span>
                   </div>
                 </div>
 
                 {/* Desktop Menu */}
                 <div className="hidden md:flex items-center gap-8">
                     {['Work', 'Services', 'About'].map((item) => (
-                        <a key={item} href={`#${item.toLowerCase()}`} className="text-xs font-mono text-zinc-400 hover:text-white uppercase tracking-widest transition-colors">
-                            <span className="text-blue-500 mr-1">//</span>{item}
+                        // Added group class and group-hover:text-green-500 to the span
+                        <a key={item} href={`#${item.toLowerCase()}`} className="group text-xs font-mono text-zinc-400 hover:text-white uppercase tracking-widest transition-colors">
+                            <span className="text-blue-500 mr-1 transition-colors group-hover:text-green-500">//</span>{item}
                         </a>
                     ))}
                     <button 
@@ -847,8 +848,8 @@
                     }`}
                 >
                     
-                    <div className={`absolute inset-0 transition-opacity duration-1000 pointer-events-none ${isActive ? 'opacity-100' : 'opacity-0'}`}>
-                        {/* Shimmer effect that is present on ServiceCard hover */}
+                    {/* SHEEN EFFECT - Matches ServiceCard exactly. Relies on group-hover for visual consistency. */}
+                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
                         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-900/10 to-transparent translate-y-[-100%] group-hover:translate-y-[100%] transition-transform duration-1000" />
                     </div>
 
@@ -1029,7 +1030,7 @@
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
                             <div className="space-y-6">
                                 <div className="text-2xl font-bold tracking-tighter text-white">
-                                    CEJIROH<span className="text-blue-500"></span>
+                                    CEJIROH<span className="text-blue-500">_SYSTEMS</span>
                                 </div>
                                 <p className="text-zinc-400 text-sm leading-relaxed max-w-xs">
                                     Engineering high-conversion visual systems for the next generation of technical brands. Simulation meets psychology.
