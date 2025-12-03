@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CEJIROH_SYSTEMS</title>
+    <title>CEJIROH</title>
     
     <!-- Model Viewer Script -->
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
@@ -421,7 +421,7 @@
                   <span className="font-mono text-xs text-zinc-400 hidden sm:block tracking-widest">SYS_ONLINE</span>
                   <div className="h-4 w-[1px] bg-zinc-800 hidden sm:block" />
                   <div className="text-xl font-bold tracking-tighter text-white">
-                    CEJIROH<span className="text-blue-500">_SYSTEMS</span>
+                    CEJIROH
                   </div>
                 </div>
 
@@ -579,7 +579,7 @@
 
                     <Reveal delay={600}>
                         <div className="flex flex-col sm:flex-row gap-4">
-                            <button className="group flex items-center justify-center gap-3 bg-white text-black px-8 py-4 text-sm font-bold uppercase tracking-wider hover:bg-blue-500 hover:text-white transition-all shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:shadow-[0_0_25px_rgba(59,130,246,0.6)]">
+                            <button className="group flex items-center justify-center gap-3 bg-white text-black px-8 py-4 text-sm font-bold uppercase tracking-wider hover:bg-blue-500 hover:text-white transition-all shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:shadow-[0_0_25px_rgba(59,130,246,0.6)]" onClick={() => document.getElementById('work').scrollIntoView({ behavior: 'smooth' })}>
                                 <span>View Protocols</span>
                                 <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                             </button>
@@ -781,33 +781,42 @@
                 }
             }, [id, registerRef]);
 
-            // Derived state: Is this video the one currently designated to be playing audio?
-            const isCurrentlyPlaying = activeAudioId === id; 
-
-            // 1. Mute/Unmute based on global state
-            // This effect runs whenever activeAudioId changes in the parent
+            // Tracks if this specific video should be playing audio (unmuted)
+            const isCurrentlyPlayingAudio = activeAudioId === id; 
+            
+            // 1. Mute/Unmute and Play/Pause based on global state
             useEffect(() => {
                 if (videoRef.current) {
-                    // Set muted to false if this is the active audio ID, true otherwise.
-                    videoRef.current.muted = !isCurrentlyPlaying;
+                    // Mute/Unmute logic: Only unmute if it's the active video *and* the user wants audio (via the toggle)
+                    videoRef.current.muted = !isCurrentlyPlayingAudio;
 
-                    // [NEW LOGIC] Play or Pause video based on audio state (which is scroll/click controlled)
-                    if (isCurrentlyPlaying) {
-                        videoRef.current.play().catch(e => console.error("Video play failed:", e));
+                    // Play/Pause logic: Only play if it's the active video on screen
+                    if (isActive) {
+                        // Attempt to play muted. This is generally allowed after initial user interaction.
+                        // We suppress the NotAllowedError, but we now focus on the pause interruption.
+                        videoRef.current.play().catch(e => {
+                            if (e.name !== "NotAllowedError" && e.name !== "AbortError") {
+                                console.error("Video play failed:", e);
+                            }
+                        });
                     } else {
-                        videoRef.current.pause();
+                        // FIX: Remove the incorrect assignment to the read-only 'paused' property.
+                        if (!videoRef.current.paused) {
+                            videoRef.current.pause();
+                            videoRef.current.currentTime = 0; // Rewind when inactive
+                        }
                     }
                 }
-            }, [isCurrentlyPlaying]);
+            }, [isActive, isCurrentlyPlayingAudio]); // Depend on both scroll state and audio toggle state
 
             // 2. User-initiated toggle (button click)
             const toggleAudio = (e) => {
                 e.stopPropagation();
                 // Call parent handler to either enable this ID or set to null (if already active)
-                onAudioToggle(isCurrentlyPlaying ? null : id); 
+                onAudioToggle(isCurrentlyPlayingAudio ? null : id); 
             };
 
-            const isButtonMuted = !isCurrentlyPlaying;
+            const isButtonMuted = !isCurrentlyPlayingAudio;
 
 
             return (
@@ -843,7 +852,7 @@
                             <p className={`text-zinc-400 leading-relaxed mb-8 border-l-2 pl-4 text-sm transition-all duration-500 ${isActive ? 'border-blue-500 text-zinc-300' : 'border-zinc-800'}`}>
                                 {description}
                             </p>
-                            <button className="flex items-center gap-2 text-white font-mono text-xs hover:text-blue-500 transition-colors group/btn">
+                            <button className="flex items-center gap-2 text-white font-mono text-xs hover:text-blue-500 transition-colors group/btn" onClick={() => {}}>
                                 [ VIEW CASE STUDY ] <ChevronRight size={14} className={`transition-transform duration-300 group-hover/btn:translate-x-1`} />
                             </button>
                         </div>
@@ -854,7 +863,6 @@
                                     <video 
                                         ref={videoRef}
                                         src={videoSrc}
-                                        // Removed autoPlay attribute here
                                         loop
                                         muted={true} // Muting is handled by the useEffect hook
                                         playsInline
@@ -900,11 +908,14 @@
         };
 
         const Work = () => {
-            // NEW STATE: Tracks which video currently has active audio
+            // Tracks which video currently has active audio (manual or scroll-focused)
             const [activeAudioId, setActiveAudioId] = useState(null);
-            // NEW STATE: Tracks which case study is in the center of the viewport
+            // Tracks which case study is in the center of the viewport
             const [activeCaseStudyId, setActiveCaseStudyId] = useState(null);
-            const caseStudyRefs = useRef({}); // To store refs of CaseStudy elements
+            // Tracks if the user manually disabled the audio
+            const [wasManuallyMuted, setWasManuallyMuted] = useState(false);
+            
+            const caseStudyRefs = useRef({});
 
             // Function to register refs from children
             const registerRef = (id, ref) => {
@@ -916,7 +927,10 @@
                 const handleScroll = () => {
                     let bestMatchId = null;
                     let smallestDistance = Infinity;
-                    const viewportCenter = window.innerHeight / 2;
+                    const viewportHeight = window.innerHeight;
+                    const viewportCenter = viewportHeight / 2;
+                    // Tighter tolerance: element center must be within 10% of viewport height from center
+                    const focusTolerance = viewportHeight * 0.10; 
 
                     Object.entries(caseStudyRefs.current).forEach(([id, element]) => {
                         if (element) {
@@ -924,8 +938,8 @@
                             const elementCenter = rect.top + rect.height / 2;
                             const distance = Math.abs(viewportCenter - elementCenter);
 
-                            // Check if the element is roughly in the viewport (visible) and closest to the center
-                            if (rect.bottom > 0 && rect.top < window.innerHeight) {
+                            // Only consider elements whose center is within the tighter focus band
+                            if (distance < focusTolerance) { 
                                 if (distance < smallestDistance) {
                                     smallestDistance = distance;
                                     bestMatchId = id;
@@ -936,10 +950,17 @@
                     
                     setActiveCaseStudyId(bestMatchId);
                     
-                    // [UPDATED LOGIC] Turn on audio when a case study is focused via scroll
-                    // This now handles both scroll-to-focus and user click-to-focus
+                    // Mute Persistence Logic:
                     if (bestMatchId) {
-                        setActiveAudioId(bestMatchId);
+                        // If an item is focused AND the user has NOT manually muted, auto-unmute (set active audio).
+                        if (!wasManuallyMuted) {
+                            setActiveAudioId(bestMatchId);
+                        }
+                        // If wasManuallyMuted is true, we keep activeAudioId null, thus respecting the mute.
+                    } else {
+                        // If no item is in the focus band (scrolled away), turn off audio
+                        setActiveAudioId(null);
+                        // Do NOT change wasManuallyMuted here, preserving the user's intent for the next item.
                     }
                 };
 
@@ -950,12 +971,18 @@
                 return () => {
                     window.removeEventListener('scroll', handleScroll);
                 };
-            }, []);
+            }, [wasManuallyMuted]); // Re-run effect if manual mute state changes
 
             const handleAudioToggle = (id) => {
-                // If the user clicks the currently active ID, turn audio off (set to null).
-                // Otherwise, set the new ID as active.
-                setActiveAudioId(prevId => prevId === id ? null : id);
+                // If the user clicks the currently active ID (to mute)...
+                if (activeAudioId === id) {
+                    setActiveAudioId(null);
+                    setWasManuallyMuted(true); // User explicitly muted it
+                } else {
+                    // If the user clicks a new ID (to unmute/switch), activate it and reset manual mute flag.
+                    setActiveAudioId(id);
+                    setWasManuallyMuted(false);
+                }
             };
             
             return (
@@ -1013,37 +1040,91 @@
         const Footer = ({ onOpenForm }) => {
             return (
                 <footer className="bg-black/80 backdrop-blur-md border-t border-white/10 relative z-10">
-                    <div className="border-b border-white/10">
-                        <div className="max-w-7xl mx-auto px-4 md:px-8 py-20 md:py-32 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-10">
-                            <div>
-                                <div className="flex items-center gap-2 mb-4">
-                                     <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                                     <span className="text-green-500 font-mono text-xs uppercase tracking-widest">Available for Q1 2026</span>
-                                </div>
-                                <h2 className="text-5xl md:text-6xl font-black text-white tracking-tighter mb-4">
-                                    LET'S BUILD <br />
-                                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-white">THE IMPOSSIBLE.</span>
-                                </h2>
+                    {/* 1. Call to Action Section (LET'S BUILD THE IMPOSSIBLE) */}
+                    <div className="max-w-7xl mx-auto px-4 md:px-8 pt-20 md:pt-32 pb-12 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-10">
+                        <div>
+                            <div className="flex items-center gap-2 mb-4">
+                                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                                <span className="text-green-500 font-mono text-xs uppercase tracking-widest">Available for Q1 2026</span>
                             </div>
-                            <div className="w-full lg:w-auto">
-                                <button 
-                                    onClick={onOpenForm}
-                                    className="group relative px-8 py-5 text-sm font-bold uppercase tracking-widest bg-white text-black hover:bg-blue-600 hover:text-white transition-all duration-300 overflow-hidden shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:shadow-[0_0_30px_rgba(59,130,246,0.6)]"
-                                >
-                                    <span className="relative z-10 flex items-center gap-2">
-                                        Start Project <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform"/>
-                                    </span>
-                                    {/* Shimmer Effect */}
-                                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-500/20 to-transparent -translate-x-full group-hover:animate-shimmer" />
-                                </button>
-                                <p className="text-zinc-500 text-[10px] font-mono mt-3 uppercase tracking-wider">
-                                    // Response Time: &lt; 24 Hours
-                                </p>
-                            </div>
+                            <h2 className="text-5xl md:text-6xl font-black text-white tracking-tighter mb-4">
+                                LET'S BUILD <br />
+                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-white">THE IMPOSSIBLE.</span>
+                            </h2>
+                        </div>
+                        <div className="w-full lg:w-auto">
+                            <button 
+                                onClick={onOpenForm}
+                                className="group relative px-8 py-5 text-sm font-bold uppercase tracking-widest bg-white text-black hover:bg-blue-600 hover:text-white transition-all duration-300 overflow-hidden shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:shadow-[0_0_30px_rgba(59,130,246,0.6)]"
+                            >
+                                <span className="relative z-10 flex items-center gap-2">
+                                    Start Project <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform"/>
+                                </span>
+                                {/* Shimmer Effect */}
+                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-500/20 to-transparent -translate-x-full group-hover:animate-shimmer" />
+                            </button>
+                            <p className="text-zinc-500 text-[10px] font-mono mt-3 uppercase tracking-wider">
+                                // Response Time: &lt; 24 Hours
+                            </p>
                         </div>
                     </div>
 
-                    <div className="border-t border-white/10 bg-black">
+                    {/* 2. Sitemap, Network, Status Section (Restored) */}
+                    <div className="max-w-7xl mx-auto px-4 md:px-8 py-12 border-t border-b border-white/10 grid grid-cols-2 md:grid-cols-4 gap-12 text-zinc-400">
+                        {/* Logo/Intro */}
+                        <div className="col-span-2 md:col-span-1">
+                            <div className="text-xl font-bold tracking-tighter text-white mb-4">
+                                CEJIROH
+                            </div>
+                            <p className="text-sm leading-relaxed">
+                                Engineering high-conversion visual systems for the next generation of technical brands. Simulation meets psychology.
+                            </p>
+                        </div>
+
+                        {/* Sitemap */}
+                        <div className="col-span-1">
+                            <h4 className="text-sm font-mono uppercase tracking-widest text-white mb-4">SITEMAP</h4>
+                            <ul className="space-y-2 text-sm">
+                                <li><a href="#" className="hover:text-blue-500 transition-colors">Index</a></li>
+                                <li><a href="#work" className="hover:text-blue-500 transition-colors">Case Studies</a></li>
+                                <li><a href="#services" className="hover:text-blue-500 transition-colors">Protocols</a></li>
+                                <li><a href="#" className="hover:text-blue-500 transition-colors">Intelligence</a></li>
+                            </ul>
+                        </div>
+
+                        {/* Network */}
+                        <div className="col-span-1">
+                            <h4 className="text-sm font-mono uppercase tracking-widest text-white mb-4">NETWORK</h4>
+                            <ul className="space-y-2 text-sm">
+                                <li className="flex items-center gap-2"><Linkedin size={16} className="text-blue-500" /> <a href="#" className="hover:text-blue-500 transition-colors">LinkedIn</a></li>
+                                <li className="flex items-center gap-2"><Twitter size={16} className="text-blue-500" /> <a href="#" className="hover:text-blue-500 transition-colors">Twitter / X</a></li>
+                                <li className="flex items-center gap-2"><Instagram size={16} className="text-blue-500" /> <a href="#" className="hover:text-blue-500 transition-colors">Instagram</a></li>
+                                <li className="flex items-center gap-2"><Github size={16} className="text-blue-500" /> <a href="#" className="hover:text-blue-500 transition-colors">GitHub</a></li>
+                            </ul>
+                        </div>
+
+                        {/* System Status */}
+                        <div className="col-span-1">
+                            <h4 className="text-sm font-mono uppercase tracking-widest text-white mb-4">SYSTEM STATUS</h4>
+                            <ul className="text-xs space-y-3 font-mono">
+                                <li className="flex justify-between items-center border-b border-white/5 pb-1">
+                                    <span>Version</span>
+                                    <span className="text-green-400">2.4.1 (Stable)</span>
+                                </li>
+                                <li className="flex justify-between items-center border-b border-white/5 pb-1">
+                                    <span>Encryption</span>
+                                    <span className="text-green-400">Active</span>
+                                </li>
+                                <li className="flex justify-between items-center">
+                                    <span>Region</span>
+                                    <span className="text-white">US-West</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    {/* 3. Copyright bar */}
+                    <div className="bg-black">
                         <div className="max-w-7xl mx-auto px-4 md:px-8 py-6 flex flex-col md:flex-row justify-between items-center text-[10px] font-mono text-zinc-600 uppercase tracking-wider">
                             <div className="flex gap-6 mb-4 md:mb-0">
                                 <span>© 2025 Cejiroh Systems</span>
