@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CEJIROH_SYSTEMS</title>
+    <title>CEJIROH</title>
     
     <!-- Model Viewer Script -->
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
@@ -192,35 +192,31 @@
                         mode: "no-cors"
                     });
 
-                    // Success handling
+                    // Success handling: Show success state without auto-closing
                     setIsSuccess(true);
+                    setIsSubmitting(false); // Stop spinner
                     
-                    // Delay reset/close to ensure the success state is visible and the modal closes cleanly
-                    setTimeout(() => {
-                        // Reset form fields first
-                        setFormData({ 'Full Name': '', 'Email': '', 'Message': '' });
-                        setSelectedServices([]);
-                        setSelectedBudget(null);
-                        
-                        // Close the modal
-                        onClose(); 
-                        
-                        // Crucial fix: Ensure isSubmitting is set to false *after* the close animation starts/finishes
-                        setTimeout(() => {
-                            setIsSuccess(false);
-                            setIsSubmitting(false); 
-                        }, 700); // 700ms matches the slide duration
-
-                    }, 2000);
+                    // Do NOT call onClose() or reset the state/form fields here.
+                    // The user will close the modal manually, seeing the success message.
 
                 } catch (error) {
                     console.error("Transmission Error:", error);
-                    // Set submitting to false if API fails quickly
                     setIsSubmitting(false);
                 }
             };
             
             // Custom class to control visibility duration: duration-0 ensures instant appearance/disappearance
+            // Resetting isSuccess to false when closing, so the next time it opens, the form is ready.
+            const handleClose = () => {
+                // Reset form state on manual close
+                setFormData({ 'Full Name': '', 'Email': '', 'Message': '' });
+                setSelectedServices([]);
+                setSelectedBudget(null);
+                setIsSuccess(false);
+                setIsSubmitting(false);
+                onClose();
+            };
+
             const visibilityClass = isOpen ? 'duration-0 delay-0 visible' : 'duration-0 delay-700 invisible';
 
 
@@ -229,7 +225,7 @@
                      {/* Backdrop Fade */}
                     <div 
                         className={`absolute inset-0 bg-black/95 backdrop-blur-sm transition-opacity duration-500 ease-in-out ${isOpen ? 'opacity-100' : 'opacity-0'}`} 
-                        onClick={onClose}
+                        onClick={handleClose}
                     />
                     
                     {/* Sliding Content */}
@@ -246,7 +242,7 @@
                                             <p className="text-zinc-400 font-mono text-[10px] uppercase tracking-widest">// Secure Connection Established</p>
                                         </div>
                                     </div>
-                                    <button onClick={onClose} className="group p-2 rounded-full border border-white/10 hover:bg-white hover:text-black transition-all">
+                                    <button onClick={handleClose} className="group p-2 rounded-full border border-white/10 hover:bg-white hover:text-black transition-all">
                                         <X size={20} className="group-hover:rotate-90 transition-transform duration-300" />
                                     </button>
                                 </div>
@@ -932,6 +928,11 @@
                     });
                     
                     setActiveCaseStudyId(bestMatchId);
+                    
+                    // [NEW LOGIC] Turn on audio when a case study is focused via scroll
+                    if (bestMatchId) {
+                        setActiveAudioId(bestMatchId);
+                    }
                 };
 
                 // Attach listener to window scroll and trigger immediately on mount
