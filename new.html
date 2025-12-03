@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CEJIROH</title>
+    <title>CEJIROH_SYSTEMS</title>
     
     <!-- Model Viewer Script -->
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
@@ -356,7 +356,7 @@
                                                 </>
                                             ) : (
                                                 <>
-                                                    Transmit Request <ArrowRight size={14} />
+                                                    Transmit Request <ArrowRight size={16} />
                                                 </>
                                             )}
                                         </button>
@@ -743,8 +743,8 @@
                             number="1"
                             title="E-Commerce Accelerator"
                             subtitle="Amazon Growth Engine"
-                            desc="Stop shipping products to photographers. Get perfect lighting, infinite angles, and conversion-focused A+ content digitally."
                             icon={Box}
+                            desc="Stop shipping products to photographers. Get perfect lighting, infinite angles, and conversion-focused A+ content digitally."
                             items={["3D Rendering", "Product Animation", "Amazon Image Stack"]}
                         />
                     </Reveal>
@@ -753,8 +753,8 @@
                             number="2"
                             title="Technical Viz"
                             subtitle="Instructional Data"
-                            desc="Turn confusing manuals into crystal-clear 3D animations. Reduce customer returns and support tickets through visual clarity."
                             icon={Layers}
+                            desc="Turn confusing manuals into crystal-clear 3D animations. Reduce customer returns and support tickets through visual clarity."
                             items={["Exploded Views", "Assembly Guides", "Physics Simulation"]}
                         />
                     </Reveal>
@@ -763,8 +763,8 @@
                             number="3"
                             title="Web Identity"
                             subtitle="Digital Infrastructure"
-                            desc="High-performance landing pages that load instantly. Built on modern stacks for maximum scalability and sales velocity."
                             icon={Globe}
+                            desc="High-performance landing pages that load instantly. Built on modern stacks for maximum scalability and sales velocity."
                             items={["React / Next.js", "Landing Pages", "Brand Systems"]}
                         />
                     </Reveal>
@@ -774,104 +774,70 @@
           );
         };
 
-        const CaseStudy = ({ id, title, category, description, image, videoSrc, align = 'left', isActive, onInView, onOutView }) => {
+        const CaseStudy = ({ id, title, category, description, image, videoSrc, align = 'left', activeAudioId, onAudioToggle, isActive, registerRef }) => {
             const videoRef = useRef(null);
-            const containerRef = useRef(null);
-            const [isMuted, setIsMuted] = useState(true);
-            const [userForcedMute, setUserForcedMute] = useState(false);
+            const ref = useRef(null); // Add local ref for scroll detection
 
+            // Pass ref up to parent via registerRef prop
             useEffect(() => {
-                const observer = new IntersectionObserver(
-                    ([entry]) => {
-                        if (entry.isIntersecting) {
-                            onInView(id);
-                        } else {
-                            // Check if this specific video is the one currently active before clearing
-                            // We can rely on the parent's state management via the callback
-                            // But here we just report it's out
-                            onOutView(id);
-                        }
-                    },
-                    { 
-                        threshold: 0.6,
-                        rootMargin: "-40% 0px -40% 0px"
-                    }
-                );
-
-                if (containerRef.current) {
-                    observer.observe(containerRef.current);
+                if (ref.current && registerRef) {
+                    registerRef(id, ref.current);
                 }
+            }, [id, registerRef]);
 
-                return () => {
-                    if (containerRef.current) observer.unobserve(containerRef.current);
-                };
-            }, [id, onInView, onOutView]);
+            // Derived state: Is this video the one currently designated to be playing audio?
+            const isCurrentlyPlaying = activeAudioId === id; 
 
-            // Handle Video Playback/Audio based on Parent State
+            // 1. Mute/Unmute based on global state
+            // This effect runs whenever activeAudioId changes in the parent
             useEffect(() => {
                 if (videoRef.current) {
-                    if (isActive) {
-                        // If active, ensure audio is on unless user forced mute
-                        if (!userForcedMute) {
-                            videoRef.current.muted = false;
-                            setIsMuted(false);
-                        }
-                    } else {
-                        // If not active, mute it
-                        videoRef.current.muted = true;
-                        setIsMuted(true);
-                    }
+                    // Set muted to false if this is the active audio ID, true otherwise.
+                    videoRef.current.muted = !isCurrentlyPlaying;
                 }
-            }, [isActive, userForcedMute]);
+            }, [isCurrentlyPlaying]);
 
+            // 2. User-initiated toggle (button click)
             const toggleAudio = (e) => {
                 e.stopPropagation();
-                if (videoRef.current) {
-                    const newState = !videoRef.current.muted;
-                    videoRef.current.muted = newState;
-                    setIsMuted(newState);
-                    // User overrides system auto-unmute
-                    setUserForcedMute(newState);
-                }
+                // Call parent handler to either enable this ID or set to null (if already active)
+                onAudioToggle(isCurrentlyPlaying ? null : id); 
             };
+
+            const isButtonMuted = !isCurrentlyPlaying;
+
 
             return (
                 <div 
-                    ref={containerRef}
-                    // APPLYING CONSISTENT STYLE:
-                    // 1. Always use bg-black/40 (like ServiceCard)
-                    // 2. Consistent hover/active border/shadow styling
-                    className={`group relative border p-6 md:p-12 transition-all duration-700 overflow-hidden bg-black/40 backdrop-blur-md ${
-                        isActive 
-                        ? 'border-blue-500/50 shadow-[0_0_30px_rgba(59,130,246,0.15)]' 
-                        : 'border-white/10 hover:border-blue-500/50 hover:shadow-[0_0_30px_rgba(59,130,246,0.15)]'
-                    }`}
+                    ref={ref} // Attach local ref for scroll detection
+                    className={`group relative border p-6 md:p-12 transition-all duration-700 overflow-hidden bg-black/40 backdrop-blur-md 
+                                ${isActive 
+                                    ? 'border-blue-500/50 shadow-[0_0_30px_rgba(59,130,246,0.15)]' 
+                                    : 'border-white/10 hover:border-blue-500/50 hover:shadow-[0_0_30px_rgba(59,130,246,0.15)]'
+                                }`}
                 >
                     
-                    {/* SHEEN EFFECT - Matches ServiceCard exactly. Relies on group-hover for visual consistency. */}
-                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
-                        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-900/10 to-transparent translate-y-[-100%] group-hover:translate-y-[100%] transition-transform duration-1000" />
+                    {/* SHEEN EFFECT - Now based on isActive (but keeping group-hover for secondary effect) */}
+                    <div className={`absolute inset-0 opacity-0 transition-opacity duration-500 pointer-events-none ${isActive ? 'opacity-100' : 'group-hover:opacity-100'}`}>
+                        <div className={`absolute inset-0 bg-gradient-to-b from-transparent via-blue-900/10 to-transparent translate-y-[-100%] transition-transform duration-1000 ${isActive ? 'translate-y-[100%]' : 'group-hover:translate-y-[100%]'}`} />
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center relative z-10">
                         <div className={`lg:col-span-5 ${align === 'right' ? 'lg:order-2' : ''} px-2 md:px-0`}>
                             <div className="font-mono text-xs text-blue-500 mb-4 flex items-center gap-2">
                                 <span>PROJECT_ID: {id}</span>
-                                <span className={`h-[1px] bg-blue-500/30 transition-all duration-700 ${isActive ? 'w-20' : 'w-10'}`} />
+                                {/* Line size changes based on isActive */}
+                                <span className={`h-[1px] bg-blue-500/30 transition-all duration-700 ${isActive ? 'w-20' : 'w-10'}`} /> 
                             </div>
                             
                             <h3 className={`text-4xl font-black text-white mb-2 uppercase tracking-tight transition-all duration-700`}>
                                 {title}
                             </h3>
-                            <span className={`inline-block px-2 py-1 text-white text-[10px] font-bold uppercase tracking-wider mb-6 transition-colors duration-500 ${
-                                isActive ? 'bg-blue-600' : 'bg-white/10'
-                            }`}>
+                            <span className={`inline-block px-2 py-1 text-white text-[10px] font-bold uppercase tracking-wider mb-6 transition-colors duration-500 ${isActive ? 'bg-blue-600' : 'bg-white/10'}`}>
                                 {category}
                             </span>
                             
-                            <p className={`text-zinc-400 leading-relaxed mb-8 border-l-2 pl-4 text-sm transition-all duration-500 ${
-                                isActive ? 'border-blue-500 text-zinc-300' : 'border-zinc-800'
-                            }`}>
+                            <p className={`text-zinc-400 leading-relaxed mb-8 border-l-2 pl-4 text-sm transition-all duration-500 ${isActive ? 'border-blue-500 text-zinc-300' : 'border-zinc-800'}`}>
                                 {description}
                             </p>
                             <button className="flex items-center gap-2 text-white font-mono text-xs hover:text-blue-500 transition-colors group/btn">
@@ -880,46 +846,40 @@
                         </div>
                         
                         <div className={`lg:col-span-7 ${align === 'right' ? 'lg:order-1' : ''}`}>
-                            <div className={`relative aspect-video bg-zinc-900 border overflow-hidden transition-all duration-700 shadow-2xl ${
-                                isActive ? 'border-blue-500/30 shadow-[0_0_30px_rgba(59,130,246,0.1)]' : 'border-white/10'
-                            }`}>
+                            <div className={`relative aspect-video bg-zinc-900 border overflow-hidden transition-all duration-700 shadow-2xl ${isActive ? 'border-blue-500/30 shadow-[0_0_30px_rgba(59,130,246,0.1)]' : 'border-white/10 group-hover:border-blue-500/30 group-hover:shadow-[0_0_30px_rgba(59,130,246,0.1)]'}`}>
                                 {videoSrc ? (
                                     <video 
                                         ref={videoRef}
                                         src={videoSrc}
                                         autoPlay
                                         loop
-                                        muted
+                                        muted={true} // Muting is managed by the useEffect hook based on isCurrentlyPlaying
                                         playsInline
                                         onContextMenu={(e) => e.preventDefault()}
                                         disablePictureInPicture
                                         controlsList="nodownload nofullscreen noremoteplayback"
-                                        className={`w-full h-full object-cover transition-all duration-700 filter cursor-pointer ${
-                                            isActive ? 'opacity-100 grayscale-0' : 'opacity-60 grayscale'
-                                        }`}
+                                        // Video effect relies on isActive to remove grayscale/opacity
+                                        className={`w-full h-full object-cover transition-all duration-700 filter cursor-pointer ${isActive ? 'opacity-100 grayscale-0' : 'opacity-60 grayscale'}`}
                                     />
                                 ) : (
                                     <img 
                                         src={image} 
                                         alt={title} 
-                                        className={`w-full h-full object-cover transition-all duration-700 filter ${
-                                            isActive ? 'opacity-100 grayscale-0' : 'opacity-60 grayscale'
-                                        }`}
+                                        className={`w-full h-full object-cover transition-all duration-700 filter ${isActive ? 'opacity-100 grayscale-0' : 'opacity-60 grayscale'}`}
                                     />
                                 )}
                                 
-                                <div className={`absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none transition-opacity duration-500 ${
-                                    isActive ? 'opacity-0' : 'opacity-100'
-                                }`} />
+                                {/* Grid/Noise overlay also relies on isActive to disappear */}
+                                <div className={`absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none transition-opacity duration-500 ${isActive ? 'opacity-0' : 'opacity-100'}`} />
                                 
                                 <div className="absolute bottom-4 left-4 flex gap-2">
                                      <button 
                                         onClick={toggleAudio}
                                         className="flex items-center gap-2 bg-black/80 backdrop-blur border border-white/10 px-3 py-1.5 hover:bg-blue-600 hover:border-blue-500 transition-all group/btn z-10"
                                      >
-                                        {isMuted ? <VolumeX size={12} className="text-zinc-400 group-hover/btn:text-white"/> : <Volume2 size={12} className="text-green-400 group-hover/btn:text-white"/>}
-                                        <span className={`font-mono text-[10px] ${isMuted ? 'text-zinc-400' : 'text-green-400'} group-hover/btn:text-white uppercase tracking-wider`}>
-                                            {isMuted ? 'Audio Off' : 'Audio Active'}
+                                        {isButtonMuted ? <VolumeX size={12} className="text-zinc-400 group-hover/btn:text-white"/> : <Volume2 size={12} className="text-green-400 group-hover/btn:text-white"/>}
+                                        <span className={`font-mono text-[10px] ${isButtonMuted ? 'text-zinc-400' : 'text-green-400'} group-hover/btn:text-white uppercase tracking-wider`}>
+                                            {isButtonMuted ? 'Audio Off' : 'Audio Active'}
                                         </span>
                                      </button>
                                 </div>
@@ -927,7 +887,7 @@
                         </div>
                     </div>
                     
-                    {/* Brackets logic linked to isActive */}
+                    {/* Brackets logic also relies on isActive */}
                     <div className={`absolute top-0 left-0 w-2 h-2 border-t border-l transition-colors duration-500 ${isActive ? 'border-blue-500' : 'border-white/20'}`} />
                     <div className={`absolute top-0 right-0 w-2 h-2 border-t border-r transition-colors duration-500 ${isActive ? 'border-blue-500' : 'border-white/20'}`} />
                     <div className={`absolute bottom-0 left-0 w-2 h-2 border-b border-l transition-colors duration-500 ${isActive ? 'border-blue-500' : 'border-white/20'}`} />
@@ -937,12 +897,58 @@
         };
 
         const Work = () => {
+            // NEW STATE: Tracks which video currently has active audio
+            const [activeAudioId, setActiveAudioId] = useState(null);
+            // NEW STATE: Tracks which case study is in the center of the viewport
             const [activeCaseStudyId, setActiveCaseStudyId] = useState(null);
+            const caseStudyRefs = useRef({}); // To store refs of CaseStudy elements
 
-            const handleOutView = (id) => {
-                setActiveCaseStudyId((prevId) => (prevId === id ? null : prevId));
+            // Function to register refs from children
+            const registerRef = (id, ref) => {
+                caseStudyRefs.current[id] = ref;
             };
 
+            // Scroll detection logic using getBoundingClientRect
+            useEffect(() => {
+                const handleScroll = () => {
+                    let bestMatchId = null;
+                    let smallestDistance = Infinity;
+                    const viewportCenter = window.innerHeight / 2;
+
+                    Object.entries(caseStudyRefs.current).forEach(([id, element]) => {
+                        if (element) {
+                            const rect = element.getBoundingClientRect();
+                            const elementCenter = rect.top + rect.height / 2;
+                            const distance = Math.abs(viewportCenter - elementCenter);
+
+                            // Check if the element is roughly in the viewport (visible) and closest to the center
+                            if (rect.bottom > 0 && rect.top < window.innerHeight) {
+                                if (distance < smallestDistance) {
+                                    smallestDistance = distance;
+                                    bestMatchId = id;
+                                }
+                            }
+                        }
+                    });
+                    
+                    setActiveCaseStudyId(bestMatchId);
+                };
+
+                // Attach listener to window scroll and trigger immediately on mount
+                window.addEventListener('scroll', handleScroll);
+                handleScroll(); // Initial check
+
+                return () => {
+                    window.removeEventListener('scroll', handleScroll);
+                };
+            }, []);
+
+            const handleAudioToggle = (id) => {
+                // If the user clicks the currently active ID, turn audio off (set to null).
+                // Otherwise, set the new ID as active.
+                setActiveAudioId(prevId => prevId === id ? null : id);
+            };
+            
             return (
                 <section id="work" className="bg-transparent pt-20 md:pt-32 pb-20 md:pb-32 relative z-10">
                     <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,_var(--tw-gradient-stops))] from-zinc-900/50 via-transparent to-transparent opacity-40 pointer-events-none" />
@@ -968,9 +974,10 @@
                                     description="Replaced physical photography with 4K 3D renders. Built a modular Amazon A+ content system that increased conversion rates by 24% in 30 days."
                                     image="https://images.unsplash.com/photo-1635336423376-78e718b539c8?q=80&w=2670&auto=format&fit=crop"
                                     videoSrc="https://cejiroh.com/videos/D2PROTRIP.mp4"
-                                    isActive={activeCaseStudyId === "01"}
-                                    onInView={setActiveCaseStudyId}
-                                    onOutView={handleOutView}
+                                    activeAudioId={activeAudioId}
+                                    onAudioToggle={handleAudioToggle}
+                                    isActive={activeCaseStudyId === '01'}
+                                    registerRef={registerRef}
                                 />
                             </Reveal>
                             <Reveal delay={200}>
@@ -982,9 +989,10 @@
                                     image="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=2670&auto=format&fit=crop"
                                     videoSrc="https://cejiroh.com/videos/Evald%202025%20NFSB.mp4"
                                     align="right"
-                                    isActive={activeCaseStudyId === "02"}
-                                    onInView={setActiveCaseStudyId}
-                                    onOutView={handleOutView}
+                                    activeAudioId={activeAudioId}
+                                    onAudioToggle={handleAudioToggle}
+                                    isActive={activeCaseStudyId === '02'}
+                                    registerRef={registerRef}
                                 />
                             </Reveal>
                         </div>
@@ -1022,57 +1030,6 @@
                                 <p className="text-zinc-500 text-[10px] font-mono mt-3 uppercase tracking-wider">
                                     // Response Time: &lt; 24 Hours
                                 </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="max-w-7xl mx-auto px-4 md:px-8 py-16">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
-                            <div className="space-y-6">
-                                <div className="text-2xl font-bold tracking-tighter text-white">
-                                    CEJIROH<span className="text-blue-500">_SYSTEMS</span>
-                                </div>
-                                <p className="text-zinc-400 text-sm leading-relaxed max-w-xs">
-                                    Engineering high-conversion visual systems for the next generation of technical brands. Simulation meets psychology.
-                                </p>
-                            </div>
-
-                            <div>
-                                <h4 className="font-mono text-xs text-zinc-500 mb-6 uppercase tracking-widest">Sitemap</h4>
-                                <ul className="space-y-3 text-sm font-medium text-zinc-300">
-                                    <li><a href="#" className="hover:text-white hover:translate-x-1 transition-all inline-block">Index</a></li>
-                                    <li><a href="#work" className="hover:text-white hover:translate-x-1 transition-all inline-block">Case Studies</a></li>
-                                    <li><a href="#services" className="hover:text-white hover:translate-x-1 transition-all inline-block">Protocols</a></li>
-                                    <li><a href="#" className="hover:text-white hover:translate-x-1 transition-all inline-block">Intelligence</a></li>
-                                </ul>
-                            </div>
-
-                            <div>
-                                <h4 className="font-mono text-xs text-zinc-500 mb-6 uppercase tracking-widest">Network</h4>
-                                <ul className="space-y-3 text-sm font-medium text-zinc-300">
-                                    <li><a href="#" className="flex items-center gap-2 hover:text-blue-400 transition-colors"><Linkedin size={16} /> LinkedIn</a></li>
-                                    <li><a href="#" className="flex items-center gap-2 hover:text-blue-400 transition-colors"><Twitter size={16} /> Twitter / X</a></li>
-                                    <li><a href="#" className="flex items-center gap-2 hover:text-blue-400 transition-colors"><Instagram size={16} /> Instagram</a></li>
-                                    <li><a href="#" className="flex items-center gap-2 hover:text-blue-400 transition-colors"><Github size={16} /> GitHub</a></li>
-                                </ul>
-                            </div>
-
-                            <div>
-                                <h4 className="font-mono text-xs text-zinc-500 mb-6 uppercase tracking-widest">System Status</h4>
-                                <div className="space-y-4">
-                                    <div className="flex items-center justify-between text-xs border-b border-white/5 pb-2">
-                                        <span className="text-zinc-400">Version</span>
-                                        <span className="font-mono text-white">2.4.1 (Stable)</span>
-                                    </div>
-                                    <div className="flex items-center justify-between text-xs border-b border-white/5 pb-2">
-                                        <span className="text-zinc-400">Encryption</span>
-                                        <span className="font-mono text-green-400">Active</span>
-                                    </div>
-                                    <div className="flex items-center justify-between text-xs border-b border-white/5 pb-2">
-                                        <span className="text-zinc-400">Region</span>
-                                        <span className="font-mono text-white">US-West</span>
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -1116,4 +1073,3 @@
     </script>
 </body>
 </html>
-
