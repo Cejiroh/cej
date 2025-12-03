@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CEJIROH</title>
+    <title>CEJIROH_SYSTEMS</title>
     
     <!-- Model Viewer Script -->
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
@@ -548,8 +548,8 @@
                   <source src="https://cejiroh.com/videos/Portfolio%20Video.mp4" type="video/mp4" />
                 </video>
                 
-                {/* Gradient overlays */}
-                <div className={`absolute inset-0 bg-black/40 transition-opacity duration-1000 ${isSystemActive ? 'opacity-0' : 'opacity-100'}`} />
+                {/* Gradient overlays: Increased opacity here to bg-black/70 */}
+                <div className={`absolute inset-0 bg-black/70 transition-opacity duration-1000 ${isSystemActive ? 'opacity-0' : 'opacity-100'}`} />
                 <div className={`absolute inset-0 bg-gradient-to-t from-black via-transparent to-black transition-opacity duration-1000 ${isSystemActive ? 'opacity-0' : 'opacity-100'}`} />
                 <div className={`absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-black/50 transition-opacity duration-1000 ${isSystemActive ? 'opacity-0' : 'opacity-100'}`} />
               </div>
@@ -790,6 +790,13 @@
                 if (videoRef.current) {
                     // Set muted to false if this is the active audio ID, true otherwise.
                     videoRef.current.muted = !isCurrentlyPlaying;
+
+                    // [NEW LOGIC] Play or Pause video based on audio state (which is scroll/click controlled)
+                    if (isCurrentlyPlaying) {
+                        videoRef.current.play().catch(e => console.error("Video play failed:", e));
+                    } else {
+                        videoRef.current.pause();
+                    }
                 }
             }, [isCurrentlyPlaying]);
 
@@ -847,9 +854,9 @@
                                     <video 
                                         ref={videoRef}
                                         src={videoSrc}
-                                        autoPlay
+                                        // Removed autoPlay attribute here
                                         loop
-                                        muted={true} // Muting is managed by the useEffect hook based on isCurrentlyPlaying
+                                        muted={true} // Muting is handled by the useEffect hook
                                         playsInline
                                         onContextMenu={(e) => e.preventDefault()}
                                         disablePictureInPicture
@@ -929,7 +936,8 @@
                     
                     setActiveCaseStudyId(bestMatchId);
                     
-                    // [NEW LOGIC] Turn on audio when a case study is focused via scroll
+                    // [UPDATED LOGIC] Turn on audio when a case study is focused via scroll
+                    // This now handles both scroll-to-focus and user click-to-focus
                     if (bestMatchId) {
                         setActiveAudioId(bestMatchId);
                     }
