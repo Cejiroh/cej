@@ -44,7 +44,7 @@
         }
 
         .card.selected {
-            transform: translateY(-8px) !important;
+            transform: translateY(-12px) !important;
             box-shadow: 0 0 20px rgba(59, 130, 246, 0.8);
             border: 3px solid #ffffff;
             z-index: 10;
@@ -168,8 +168,8 @@
                     </button>
                 </div>
                 <div class="flex flex-col items-center sm:items-start mt-0.5">
-                    <p id="rank-display" class="text-[9px] sm:text-xs uppercase font-black text-orange-400 tracking-widest leading-none">Rank: The Fish</p>
-                    <p id="boss-display" class="text-[8px] sm:text-[10px] uppercase font-bold text-red-500 tracking-widest hidden leading-none mt-0.5">BOSS: THE WALL</p>
+                    <p id="next-boss-display" class="text-[9px] sm:text-xs uppercase font-black text-orange-400 tracking-widest leading-none">Next Boss: Loading...</p>
+                    <p id="boss-display" class="text-[8px] sm:text-[10px] uppercase font-bold text-red-500 tracking-widest hidden leading-none mt-0.5 italic">BOSS: THE WALL</p>
                 </div>
             </div>
             
@@ -208,34 +208,34 @@
                 <div id="powerups-bank" class="flex flex-row gap-1 sm:gap-2 pointer-events-auto items-center sm:items-end"></div>
             </div>
 
-            <!-- Top Feedback & Controls Section -->
-            <div class="flex flex-col items-center">
-                <!-- Feedback -->
-                <div id="hand-feedback" class="text-center min-h-[50px] sm:min-h-[80px] flex flex-col items-center justify-center mt-2">
-                    <p id="status-message" class="text-lg sm:text-2xl font-bungee text-white hidden mb-1 drop-shadow-lg"></p>
-                    <div class="flex flex-col items-center">
-                        <p id="current-hand-type" class="text-xl sm:text-3xl font-bungee text-orange-400 hidden drop-shadow-[0_0_10px_rgba(251,146,60,0.5)] text-center"></p>
-                        <p id="hand-level-display" class="text-[8px] sm:text-[10px] font-black text-blue-400 hidden uppercase tracking-widest mt-0.5">Level 1</p>
+            <!-- Central Content Section -->
+            <div class="flex-grow flex flex-col items-center justify-center overflow-hidden">
+                <!-- Feedback & Controls -->
+                <div class="flex flex-col items-center mb-2 sm:mb-4">
+                    <div id="hand-feedback" class="text-center min-h-[40px] sm:min-h-[70px] flex flex-col items-center justify-center">
+                        <p id="status-message" class="text-lg sm:text-2xl font-bungee text-white hidden mb-1 drop-shadow-lg"></p>
+                        <div class="flex flex-col items-center">
+                            <p id="current-hand-type" class="text-xl sm:text-3xl font-bungee text-orange-400 hidden drop-shadow-[0_0_10px_rgba(251,146,60,0.5)] text-center leading-tight"></p>
+                            <p id="hand-level-display" class="text-[8px] sm:text-[10px] font-black text-blue-400 hidden uppercase tracking-widest mt-0.5">Level 1</p>
+                        </div>
+                        <p id="current-hand-score" class="text-sm sm:text-xl font-bold text-white hidden"></p>
                     </div>
-                    <p id="current-hand-score" class="text-sm sm:text-xl font-bold text-white hidden"></p>
+
+                    <!-- Sort/View Controls -->
+                    <div class="flex justify-center gap-1 sm:gap-2 mt-2">
+                        <button id="sort-rank-btn" class="bg-zinc-800 hover:bg-zinc-700 text-[7px] sm:text-[10px] font-black uppercase tracking-widest px-2 sm:px-4 py-1 rounded border border-zinc-600 transition">Sort Rank</button>
+                        <button id="sort-suit-btn" class="bg-zinc-800 hover:bg-zinc-700 text-[7px] sm:text-[10px] font-black uppercase tracking-widest px-2 sm:px-4 py-1 rounded border border-zinc-600 transition">Sort Suit</button>
+                        <button id="view-deck-btn" class="bg-zinc-800 hover:bg-zinc-700 text-[7px] sm:text-[10px] font-black uppercase tracking-widest px-2 sm:px-4 py-1 rounded border border-zinc-600 transition text-orange-400">View Deck</button>
+                    </div>
                 </div>
 
-                <!-- Sort/View Controls -->
-                <div class="flex justify-center gap-1 sm:gap-2 mt-1 sm:mt-2">
-                    <button id="sort-rank-btn" class="bg-zinc-800 hover:bg-zinc-700 text-[7px] sm:text-[10px] font-black uppercase tracking-widest px-2 sm:px-4 py-1 rounded border border-zinc-600 transition">Sort Rank</button>
-                    <button id="sort-suit-btn" class="bg-zinc-800 hover:bg-zinc-700 text-[7px] sm:text-[10px] font-black uppercase tracking-widest px-2 sm:px-4 py-1 rounded border border-zinc-600 transition">Sort Suit</button>
-                    <button id="view-deck-btn" class="bg-zinc-800 hover:bg-zinc-700 text-[7px] sm:text-[10px] font-black uppercase tracking-widest px-2 sm:px-4 py-1 rounded border border-zinc-600 transition text-orange-400">View Deck</button>
-                </div>
+                <!-- Hand Container -->
+                <div id="hand-container" class="flex justify-center items-end gap-1 sm:gap-3 flex-wrap px-1 w-full min-h-[160px] sm:min-h-[200px]"></div>
             </div>
 
-            <!-- Central Hand Container (Vertically Centered) -->
-            <div class="flex-grow flex items-center justify-center overflow-hidden">
-                <div id="hand-container" class="flex justify-center items-end gap-1 sm:gap-3 flex-wrap px-1 w-full"></div>
-            </div>
-
-            <!-- Bottom Actions Section -->
-            <div class="flex flex-col items-center mt-auto pb-1 sm:pb-2">
-                <div id="selection-hint" class="text-zinc-500 text-[8px] sm:text-xs font-bold uppercase tracking-widest h-3 mb-1 sm:mb-2">Select up to 5 cards</div>
+            <!-- Bottom Actions Section - Increased padding/margin for mobile safety -->
+            <div class="flex flex-col items-center mt-auto pb-8 sm:pb-8 pt-10 sm:pt-6">
+                <div id="selection-hint" class="text-zinc-500 text-[8px] sm:text-xs font-black uppercase tracking-widest h-3 mb-4 sm:mb-4">Select up to 5 cards</div>
                 <div class="flex justify-center gap-4 sm:gap-6">
                     <button id="play-btn" class="balatro-btn-blue hover:brightness-110 disabled:grayscale disabled:opacity-40 text-white font-bungee px-8 sm:px-14 py-3 sm:py-4 rounded-lg shadow-xl transform transition active:translate-y-1 text-xs sm:text-base">
                         PLAY HAND
@@ -416,7 +416,7 @@
         };
         const JOKER_ICON = `<span class="text-5xl sm:text-7xl leading-none select-none drop-shadow-lg">♛</span>`;
         const SHIELD_SVG = `<svg viewBox="0 0 24 24" class="w-6 h-6 sm:w-10 sm:h-10" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>`;
-        const HAND_SVG = `<svg viewBox="0 0 24 24" class="w-6 h-6 sm:w-10 sm:h-10" fill="currentColor"><path d="M18 11V7a2 2 0 00-2-2v-1a2 2 0 00-2-2 2 2 0 00-2 2v1h-1V3a2 2 0 00-2-2 2 2 0 00-2 2v2H8a2 2 0 00-2 2v4a2 2 0 00-2 2v3a2 2 0 002 2h1v1a2 2 0 002 2h6a2 2 0 002-2v-1h1a2 2 0 002-2v-3a2 2 0 00-2-2zM8 7h2v4H8V7zm4-2h2v6h-2V5zM6 13h12v3H6v-3zm2 7v-1h8v1H8z"/></svg>`;
+        const PLUS_SVG = `<svg viewBox="0 0 24 24" class="w-6 h-6 sm:w-10 sm:h-10" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>`;
 
         const SHOP_ITEMS = [
             { id: 'extra_discard', name: 'Extra Discard', cost: 25, desc: 'Adds +1 Discard immediately' },
@@ -429,13 +429,13 @@
         ];
 
         const BOSSES = [
-            { id: 'the_wall', name: 'THE WALL', desc: 'Titan of Granite: Target score is doubled for this round.', effect: (state) => { state.target *= 2; } },
-            { id: 'the_needle', name: 'THE NEEDLE', desc: 'Precision Strike: You only have 1 single hand to play.', effect: (state) => { state.plays = 1; } },
-            { id: 'the_flint', name: 'THE FLINT', desc: 'Scorched Hearts: Any hand containing a Heart card scores 0.', effect: (state) => { state.debuffSuits = ['♥']; } },
-            { id: 'the_club', name: 'THE CLUB', desc: 'Blunted Clubs: Any hand containing a Club card scores 0.', effect: (state) => { state.debuffSuits = ['♣']; } },
-            { id: 'the_spade', name: 'THE SPADE', desc: 'Pitched Spades: Any hand containing a Spade card scores 0.', effect: (state) => { state.debuffSuits = ['♠']; } },
-            { id: 'the_diamond', name: 'THE DIAMOND', desc: 'Rigged Diamonds: Any hand containing a Diamond card scores 0.', effect: (state) => { state.debuffSuits = ['♦']; } },
-            { id: 'the_hook', name: 'THE HOOK', desc: 'Anchored: Discards are disabled for the entire round.', effect: (state) => { state.discards = 0; } }
+            { id: 'the_wall', name: 'THE WALL', desc: 'Titan of Granite: Target score is doubled.', effect: (state) => { state.target *= 2; } },
+            { id: 'the_needle', name: 'THE NEEDLE', desc: 'Precision Strike: You only have 1 single hand.', effect: (state) => { state.plays = 1; } },
+            { id: 'the_flint', name: 'THE FLINT', desc: 'Scorched Hearts: Hearts score 0.', effect: (state) => { state.debuffSuits = ['♥']; } },
+            { id: 'the_club', name: 'THE CLUB', desc: 'Blunted Clubs: Clubs score 0.', effect: (state) => { state.debuffSuits = ['♣']; } },
+            { id: 'the_spade', name: 'THE SPADE', desc: 'Pitched Spades: Spades score 0.', effect: (state) => { state.debuffSuits = ['♠']; } },
+            { id: 'the_diamond', name: 'THE DIAMOND', desc: 'Rigged Diamonds: Diamonds score 0.', effect: (state) => { state.debuffSuits = ['♦']; } },
+            { id: 'the_hook', name: 'THE HOOK', desc: 'Anchored: Discards are disabled.', effect: (state) => { state.discards = 0; } }
         ];
 
         let state = {
@@ -447,6 +447,7 @@
             permanentPowerupsBought: [],
             handLevels: Object.fromEntries(Object.keys(HAND_SCORES).map(k => [k, 1])),
             currentBoss: null,
+            nextBoss: null,
             debuffSuits: [],
             bossesDefeated: 0,
             isSwipeSelecting: false,
@@ -457,12 +458,6 @@
             cumulativeScore: 0,
             doubleScorePurchaseCount: 0
         };
-
-        const RANK_TIERS = ["The Fish", "The Rounder", "High Roller", "The Shark", "The Legend", "The Myth", "Card Counter", "Vegas King"];
-
-        function getRank(bossesDefeated) {
-            return RANK_TIERS[Math.min(bossesDefeated, RANK_TIERS.length - 1)];
-        }
 
         function initDeck() {
             let deck = [];
@@ -492,18 +487,24 @@
             state.selectedIndices = [];
             state.drawBatchId++;
 
+            if (!state.nextBoss) {
+                state.nextBoss = BOSSES[Math.floor(Math.random() * BOSSES.length)];
+            }
+
             const header = document.getElementById('header-container');
             const bossDisplay = document.getElementById('boss-display');
             header.className = "flex flex-col sm:flex-row justify-between items-center bg-zinc-900/90 p-2 sm:p-4 rounded-xl shadow-2xl mb-2 sm:mb-4 border-b-4 border-zinc-800 backdrop-blur-md transition-all gap-2";
             bossDisplay.classList.add('hidden');
 
             if (state.round % 4 === 0) {
-                state.currentBoss = BOSSES[Math.floor(Math.random() * BOSSES.length)];
+                state.currentBoss = state.nextBoss;
                 state.currentBoss.effect(state);
-                bossDisplay.textContent = `BOSS: ${state.currentBoss.name} - ${state.currentBoss.desc}`;
+                bossDisplay.textContent = `ACTIVE BOSS: ${state.currentBoss.name} - ${state.currentBoss.desc}`;
                 bossDisplay.classList.remove('hidden');
                 header.classList.add('border-red-600', 'bg-red-950/20', 'boss-glow');
                 showMessage("BOSS ROUND!", "text-red-500 font-black scale-125");
+                
+                state.nextBoss = BOSSES[Math.floor(Math.random() * BOSSES.length)];
             }
 
             drawToFull();
@@ -651,7 +652,7 @@
                 inventory: [], shieldActive: false, currentSortMethod: 'none', 
                 drawBatchId: 0, permanentPowerupsBought: [],
                 handLevels: Object.fromEntries(Object.keys(HAND_SCORES).map(k => [k, 1])),
-                debuffSuits: [], currentBoss: null, bossesDefeated: 0,
+                debuffSuits: [], currentBoss: null, nextBoss: null, bossesDefeated: 0,
                 maxSingleRoundScore: 0, cumulativeScore: 0, doubleScorePurchaseCount: 0
             });
             document.getElementById('game-over-overlay').classList.add('hidden');
@@ -849,7 +850,10 @@
             document.getElementById('round-score').textContent = state.score;
             document.getElementById('plays-left').textContent = state.plays;
             document.getElementById('discards-left').textContent = state.discards;
-            document.getElementById('rank-display').textContent = `Rank: ${getRank(state.bossesDefeated)}`;
+            
+            if (state.nextBoss) {
+                document.getElementById('next-boss-display').textContent = `Next Boss: ${state.nextBoss.name}`;
+            }
 
             let sel = state.selectedIndices.map(idx => state.hand[idx]);
             let prospective = evaluateHand(sel, state.jokerSelected);
@@ -865,7 +869,7 @@
                 let score = isDebuffed ? 0 : Math.round(baseVal * (1 + (level - 1) * 0.5));
                 if (state.doubleNextPlay) score *= 2;
                 fh.textContent = (prospective === 'Royal Flush' && state.jokerSelected) ? 'WILD ROYAL FLUSH' : prospective.toUpperCase();
-                fh.className = `text-lg sm:text-3xl font-bungee ${isLegendary ? 'text-orange-400 drop-shadow-[0_0_15px_rgba(251,146,60,0.8)]' : 'text-white'} drop-shadow-lg text-center`;
+                fh.className = `text-lg sm:text-3xl font-bungee ${isLegendary ? 'text-orange-400 drop-shadow-[0_0_15px_rgba(251,146,60,0.8)]' : 'text-white'} drop-shadow-lg text-center leading-tight`;
                 fh.classList.remove('hidden'); 
                 fl.textContent = `Level ${level}`; fl.classList.remove('hidden');
                 fs.textContent = isDebuffed ? "0 Points (Invalid Suit)" : `+${score} Points`; 
@@ -908,7 +912,7 @@
             }
             if (state.basePlays > 3) {
                 const h = document.createElement('div'); h.className = `w-14 h-20 sm:w-20 sm:h-28 bg-blue-900/30 border-2 sm:border-4 border-blue-500 rounded-xl flex flex-col items-center justify-center text-blue-400 shadow-xl backdrop-blur-sm`;
-                h.innerHTML = `${HAND_SVG} <span class="text-[7px] sm:text-[10px] font-bold uppercase mt-1">+${state.basePlays-3} PLAYS</span>`; pb.appendChild(h);
+                h.innerHTML = `${PLUS_SVG} <span class="text-[7px] sm:text-[10px] font-bold uppercase mt-1">+${state.basePlays-3} PLAYS</span>`; pb.appendChild(h);
             }
             const tl = document.getElementById('token-list'); tl.innerHTML = '';
             state.inventory.forEach((it, idx) => {
