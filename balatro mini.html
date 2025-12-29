@@ -265,7 +265,7 @@
         <!-- Expanded max-width and internal spacing -->
         <div class="modal-animate bg-zinc-900 w-full max-w-5xl rounded-2xl overflow-hidden flex flex-col max-h-[90vh] border-4 border-orange-600 shadow-2xl">
             <div class="p-4 bg-orange-600 flex justify-between items-center">
-                <h2 class="font-bungee text-xl text-white">DECK PROBABILITIES</h2>
+                <h2 class="font-bungee text-xl text-white">REMAINING CARDS</h2>
                 <div class="flex gap-4 items-center">
                     <span class="text-[10px] text-white font-bold italic uppercase opacity-80 hidden sm:inline">Dimmed cards are played/discarded</span>
                     <button id="close-deck" class="text-white hover:text-black font-bold text-2xl px-2">&times;</button>
@@ -630,7 +630,8 @@
         }
 
         function endRound() { 
-            const handsBonus = state.plays * 10;
+            // Balanced Points: Multiplier increased to 20
+            const handsBonus = state.plays * 20;
             state.excessPoints = Math.max(0, state.score - state.target) + handsBonus; 
             
             state.isShopOpen = true; 
@@ -663,21 +664,30 @@
             if (initPool) {
                 state.currentShopOffers = [];
                 
-                // Filter SHOP_ITEMS to only those not currently acquired
-                const availableItems = SHOP_ITEMS.filter(item => {
+                // Filter SHOP_ITEMS to only those affordable AND not currently acquired
+                const affordableItems = SHOP_ITEMS.filter(item => {
                     const isPermanent = item.id === 'extra_hand' || item.id === 'extra_discard_perm' || item.id === 'extra_card_perm';
                     const alreadyBoughtPermanent = isPermanent && state.permanentPowerupsBought.includes(item.id);
                     const ownedInInventory = !isPermanent && item.id !== 'shield' && state.inventory.some(i => i.id === item.id);
                     const shieldActive = item.id === 'shield' && state.shieldActive;
-                    return !alreadyBoughtPermanent && !ownedInInventory && !shieldActive;
+                    
+                    // User requirement: Only show what player can purchase
+                    const canAfford = state.excessPoints >= item.cost;
+                    
+                    return !alreadyBoughtPermanent && !ownedInInventory && !shieldActive && canAfford;
                 });
 
-                const shuffledStandard = availableItems.sort(() => Math.random() - 0.5);
+                const shuffledStandard = affordableItems.sort(() => Math.random() - 0.5);
                 shuffledStandard.slice(0, 4).forEach(item => state.currentShopOffers.push({ type: 'token', data: item, purchased: false }));
                 
-                // Hand types can always be upgraded
-                const availableHands = Object.keys(HAND_SCORES).sort(() => Math.random() - 0.5).slice(0, 2);
-                availableHands.forEach(hand => state.currentShopOffers.push({ type: 'celestial', data: hand, purchased: false }));
+                // Celestial System Upgrades (Filtered by affordability)
+                const affordableHands = Object.keys(HAND_SCORES).filter(handType => {
+                    const level = state.handLevels[handType];
+                    const cost = 10 + (level * 5);
+                    return state.excessPoints >= cost;
+                }).sort(() => Math.random() - 0.5).slice(0, 2);
+                
+                affordableHands.forEach(hand => state.currentShopOffers.push({ type: 'celestial', data: hand, purchased: false }));
             }
             renderShop();
         }
@@ -799,8 +809,16 @@
                 displayValues.forEach(val => {
                     const inDeck = state.deck.some(c => c.suit === suit && c.val === val);
                     const inHand = state.hand.some(c => c.suit === suit && c.val === val);
-                    const isAvailable = inDeck || inHand;
+                    
+                    // User requirement: Only cards still in deck are "available" (bright). 
+                    // Hand/Played/Discarded are now greyed out.
+                    const isAvailable = inDeck; 
 
+                    if (isAvailable || inHand) {
+                        // Count reflects cards you haven't played/discarded yet (optional interpretation)
+                        // But for "Probabilities", showing just the deck count is often better.
+                        // We'll stick to deck count for the total indicator.
+                    }
                     if (isAvailable) suitCount++;
 
                     const isRed = suit === '♥' || suit === '♦';
