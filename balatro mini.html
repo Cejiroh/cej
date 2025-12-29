@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+     <link rel="shortcut icon" type="image/x-icon" href="images/favicon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BALATRO MINI</title>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -75,7 +76,6 @@
             position: relative;
         }
 
-        /* Only allow hover scaling on available cards */
         .deck-card-mini:not(.deck-card-spent):hover {
             transform: scale(1.8);
             z-index: 50;
@@ -262,7 +262,6 @@
 
     <!-- Deck Overlay -->
     <div id="deck-overlay" class="fixed inset-0 bg-black/95 flex items-center justify-center hidden z-[150] p-4">
-        <!-- Expanded max-width and internal spacing -->
         <div class="modal-animate bg-zinc-900 w-full max-w-5xl rounded-2xl overflow-hidden flex flex-col max-h-[90vh] border-4 border-orange-600 shadow-2xl">
             <div class="p-4 bg-orange-600 flex justify-between items-center">
                 <h2 class="font-bungee text-xl text-white uppercase italic">Remaining Cards</h2>
@@ -271,10 +270,7 @@
                     <button id="close-deck" class="text-white hover:text-black font-bold text-2xl px-2">&times;</button>
                 </div>
             </div>
-            <!-- Standardized internal padding -->
-            <div id="deck-view-content" class="deck-content p-8 overflow-y-auto space-y-8 flex flex-col justify-start">
-                <!-- Rows will be injected here -->
-            </div>
+            <div id="deck-view-content" class="deck-content p-8 overflow-y-auto space-y-8 flex flex-col justify-start"></div>
         </div>
     </div>
 
@@ -296,13 +292,34 @@
                 <h2 class="font-bungee text-2xl text-white">How to play BALATRO MINI</h2>
                 <button id="close-rules" class="text-white hover:text-red-200 font-bold text-2xl">&times;</button>
             </div>
-            <div class="rules-content p-8 overflow-y-auto space-y-6">
+            <div class="rules-content p-8 overflow-y-auto space-y-8">
                 <section>
-                    <h3 class="font-bungee text-orange-400 text-xl mb-2 italic">Celestial Mechanics</h3>
-                    <p class="text-zinc-300 text-sm leading-relaxed">Upgrade your hand types in the Shoppe using Planet Cards to increase their base score forever. Every 4th level is a Boss Round with dangerous modifiers.</p>
+                    <h3 class="font-bungee text-orange-400 text-xl mb-3 italic underline decoration-blue-500 underline-offset-4">Quick Start Guide</h3>
+                    <ul class="text-zinc-300 text-sm space-y-3 list-none">
+                        <li class="flex gap-3">
+                            <span class="text-blue-500 font-bold">1.</span>
+                            <span>Select up to 5 cards by <strong class="text-white">clicking or swiping</strong> across the screen.</span>
+                        </li>
+                        <li class="flex gap-3">
+                            <span class="text-blue-500 font-bold">2.</span>
+                            <span><strong class="text-white">Play Hand</strong> to score points based on poker ranks. Reach the target score to earn cash!</span>
+                        </li>
+                        <li class="flex gap-3">
+                            <span class="text-blue-500 font-bold">3.</span>
+                            <span>Use <strong class="text-white">Discard</strong> to swap unwanted cards for new ones from your deck.</span>
+                        </li>
+                        <li class="flex gap-3">
+                            <span class="text-blue-500 font-bold">4.</span>
+                            <span>Manage your resources: if you run out of <strong class="text-blue-400">Plays</strong> before hitting the goal, it's Game Over.</span>
+                        </li>
+                        <li class="flex gap-3">
+                            <span class="text-blue-500 font-bold">5.</span>
+                            <span>Every 4th round is a <strong class="text-red-500">Boss Round</strong>. Bosses apply brutal modifiers that can <strong class="text-white">invalidate your score</strong> if you play specific suits!</span>
+                        </li>
+                    </ul>
                 </section>
                 <section>
-                    <h3 class="font-bungee text-orange-400 text-xl mb-2 italic">Scoring Table</h3>
+                    <h3 class="font-bungee text-orange-400 text-xl mb-3 italic underline decoration-blue-500 underline-offset-4">Scoring Table</h3>
                     <div id="rules-scoring-list" class="grid grid-cols-2 gap-2 text-sm"></div>
                 </section>
             </div>
@@ -324,11 +341,23 @@
     </div>
 
     <div id="game-over-overlay" class="fixed inset-0 bg-black/95 flex items-center justify-center hidden z-[200] p-4 text-center backdrop-blur-xl">
-        <div class="max-w-md">
+        <div class="max-w-md w-full">
             <h2 class="font-bungee text-7xl text-red-600 mb-2 drop-shadow-[0_0_30px_rgba(220,38,38,0.5)]">GAME OVER</h2>
-            <div class="bg-zinc-900 p-8 rounded-2xl mb-8 border border-zinc-800">
-                <p class="text-zinc-400 uppercase font-bold text-sm tracking-widest mb-2 italic">Rounds Survived</p>
-                <p id="final-rounds" class="text-6xl font-bungee text-white">0</p>
+            <div class="bg-zinc-900 p-8 rounded-2xl mb-8 border border-zinc-800 space-y-6">
+                <div>
+                    <p class="text-zinc-400 uppercase font-bold text-xs tracking-widest mb-1 italic">Rounds Survived</p>
+                    <p id="final-rounds" class="text-5xl font-bungee text-white">0</p>
+                </div>
+                <div class="flex justify-around border-t border-zinc-800 pt-4">
+                    <div class="px-2">
+                        <p class="text-zinc-400 uppercase font-bold text-[10px] tracking-widest mb-1">Best Round</p>
+                        <p id="final-max-score" class="text-2xl font-bungee text-orange-400">0</p>
+                    </div>
+                    <div class="px-2">
+                        <p class="text-zinc-400 uppercase font-bold text-[10px] tracking-widest mb-1">Total Score</p>
+                        <p id="final-total-score" class="text-2xl font-bungee text-emerald-400">0</p>
+                    </div>
+                </div>
             </div>
             <button id="restart-game-btn" class="bg-white text-black font-bungee px-10 py-5 rounded-full text-2xl hover:bg-orange-500 transition transform hover:scale-105 active:scale-95 shadow-2xl">RESTART</button>
         </div>
@@ -422,13 +451,13 @@
         ];
 
         const BOSSES = [
-            { id: 'the_wall', name: 'THE WALL', desc: 'Target score is doubled.', effect: (state) => { state.target *= 2; } },
-            { id: 'the_needle', name: 'THE NEEDLE', desc: 'Only 1 hand play allowed.', effect: (state) => { state.plays = 1; } },
-            { id: 'the_flint', name: 'THE FLINT', desc: 'Hearts score 0.', effect: (state) => { state.debuffSuits = ['♥']; } },
-            { id: 'the_club', name: 'THE CLUB', desc: 'Clubs score 0.', effect: (state) => { state.debuffSuits = ['♣']; } },
-            { id: 'the_spade', name: 'THE SPADE', desc: 'Spades score 0.', effect: (state) => { state.debuffSuits = ['♠']; } },
-            { id: 'the_diamond', name: 'THE DIAMOND', desc: 'Diamonds score 0.', effect: (state) => { state.debuffSuits = ['♦']; } },
-            { id: 'the_hook', name: 'THE HOOK', desc: 'No discards allowed.', effect: (state) => { state.discards = 0; } }
+            { id: 'the_wall', name: 'THE WALL', desc: 'Titan of Granite: Target score is doubled for this round.', effect: (state) => { state.target *= 2; } },
+            { id: 'the_needle', name: 'THE NEEDLE', desc: 'Precision Strike: You only have 1 single hand to play.', effect: (state) => { state.plays = 1; } },
+            { id: 'the_flint', name: 'THE FLINT', desc: 'Scorched Hearts: Any hand containing a Heart card scores 0.', effect: (state) => { state.debuffSuits = ['♥']; } },
+            { id: 'the_club', name: 'THE CLUB', desc: 'Blunted Clubs: Any hand containing a Club card scores 0.', effect: (state) => { state.debuffSuits = ['♣']; } },
+            { id: 'the_spade', name: 'THE SPADE', desc: 'Pitched Spades: Any hand containing a Spade card scores 0.', effect: (state) => { state.debuffSuits = ['♠']; } },
+            { id: 'the_diamond', name: 'THE DIAMOND', desc: 'Rigged Diamonds: Any hand containing a Diamond card scores 0.', effect: (state) => { state.debuffSuits = ['♦']; } },
+            { id: 'the_hook', name: 'THE HOOK', desc: 'Anchored: Discards are disabled for the entire round.', effect: (state) => { state.discards = 0; } }
         ];
 
         let state = {
@@ -438,18 +467,17 @@
             inventory: [], isShopOpen: false, currentSortMethod: 'none',
             drawBatchId: 0, doubleNextPlay: false, shieldActive: false,
             permanentPowerupsBought: [],
-            // Celestial System
             handLevels: Object.fromEntries(Object.keys(HAND_SCORES).map(k => [k, 1])),
-            // Boss System
             currentBoss: null,
             debuffSuits: [],
             bossesDefeated: 0,
-            // Interaction
             isSwipeSelecting: false,
             swipeMode: null,
             swipeTouchedIndices: new Set(),
-            // Shop state persistence
-            currentShopOffers: []
+            currentShopOffers: [],
+            maxSingleRoundScore: 0,
+            cumulativeScore: 0,
+            doubleScorePurchaseCount: 0
         };
 
         const RANK_TIERS = ["The Fish", "The Rounder", "High Roller", "The Shark", "The Legend", "The Myth", "Card Counter", "Vegas King"];
@@ -546,7 +574,6 @@
             const isFlush = new Set(suits).size === 1 && totalCards === 5;
             const valIndices = values.map(v => VALUES.indexOf(v)).sort((a,b) => a-b);
             let isStraight = false;
-            
             const wheelIndices = [0, 1, 2, 3, 12]; 
             if (totalCards === 5) {
                 let uv = new Set(valIndices);
@@ -562,7 +589,6 @@
                     }
                 }
             }
-            
             if (isFlush && isStraight) {
                 if ((values.includes('A') && (values.includes('K') || useWild)) || (isStraight && values.includes('A') && values.includes('5'))) {
                     if (values.includes('K') || (useWild && values.includes('Q'))) return 'Royal Flush';
@@ -583,25 +609,17 @@
             const totalSelected = state.selectedIndices.length + (state.jokerSelected ? 1 : 0);
             if (totalSelected === 0) return;
             if (state.plays <= 0) return;
-            
             playSound('play'); 
             let selected = state.selectedIndices.map(i => state.hand[i]);
             let handType = evaluateHand(selected, state.jokerSelected);
-            
             let isDebuffed = selected.some(c => state.debuffSuits.includes(c.suit));
-            
             let baseVal = (handType === 'Royal Flush' && state.jokerSelected) ? 250 : (HAND_SCORES[handType] || 5);
             let level = state.handLevels[handType] || 1;
-            
             let handBaseScore = isDebuffed ? 0 : Math.round(baseVal * (1 + (level - 1) * 0.5));
-            
             if (state.doubleNextPlay) { handBaseScore *= 2; state.doubleNextPlay = false; }
-            
             state.score += handBaseScore; 
             state.plays--;
-            
             if (isDebuffed) showMessage("DEBUFFED!", "text-red-400 font-bold");
-            
             if (state.jokerSelected) { state.bankedJokers = 0; state.jokerSelected = false; }
             state.hand = state.hand.filter((_, i) => !state.selectedIndices.includes(i));
             state.selectedIndices = []; 
@@ -630,19 +648,21 @@
         }
 
         function endRound() { 
+            state.cumulativeScore += state.score;
+            if (state.score > state.maxSingleRoundScore) { state.maxSingleRoundScore = state.score; }
             const handsBonus = state.plays * 20;
             state.excessPoints = Math.max(0, state.score - state.target) + handsBonus; 
-            
             state.isShopOpen = true; 
             document.getElementById('shop-overlay').classList.remove('hidden');
             document.getElementById('excess-points-display').textContent = "$" + state.excessPoints; 
             document.getElementById('hands-bonus-label').textContent = `Efficiency Bonus: +$${handsBonus} (${state.plays} Hands Remaining)`;
-            
             openShop(true); 
         }
 
         function gameOver() {
             document.getElementById('final-rounds').textContent = state.round - 1;
+            document.getElementById('final-max-score').textContent = state.maxSingleRoundScore;
+            document.getElementById('final-total-score').textContent = state.cumulativeScore;
             document.getElementById('game-over-overlay').classList.remove('hidden');
         }
 
@@ -653,7 +673,8 @@
                 inventory: [], shieldActive: false, currentSortMethod: 'none', 
                 drawBatchId: 0, permanentPowerupsBought: [],
                 handLevels: Object.fromEntries(Object.keys(HAND_SCORES).map(k => [k, 1])),
-                debuffSuits: [], currentBoss: null, bossesDefeated: 0
+                debuffSuits: [], currentBoss: null, bossesDefeated: 0,
+                maxSingleRoundScore: 0, cumulativeScore: 0, doubleScorePurchaseCount: 0
             });
             document.getElementById('game-over-overlay').classList.add('hidden');
             startRound();
@@ -662,117 +683,89 @@
         function openShop(initPool = false) {
             if (initPool) {
                 state.currentShopOffers = [];
-                
-                // 1. Identify unpurchased Standard Items
                 const availableStandard = SHOP_ITEMS.filter(item => {
                     const isPermanent = item.id === 'extra_hand' || item.id === 'extra_discard_perm' || item.id === 'extra_card_perm';
                     const alreadyBoughtPermanent = isPermanent && state.permanentPowerupsBought.includes(item.id);
-                    const ownedInInventory = !isPermanent && item.id !== 'shield' && state.inventory.some(i => i.id === item.id);
+                    const ownedInInventory = !isPermanent && item.id !== 'shield' && item.id !== 'double_score' && state.inventory.some(i => i.id === item.id);
                     const shieldActive = item.id === 'shield' && state.shieldActive;
                     return !alreadyBoughtPermanent && !ownedInInventory && !shieldActive;
                 });
-
-                // 2. Identify unpurchased Planet Cards
                 const allHandTypes = shuffle([...Object.keys(HAND_SCORES)]);
                 
-                // 3. Separate pools into Affordable and Expensive
-                const affordableStandard = availableStandard.filter(i => state.excessPoints >= i.cost);
-                const expensiveStandard = availableStandard.filter(i => state.excessPoints < i.cost);
-                
+                const getDynamicCost = (item) => {
+                    if (item.id === 'double_score') return 100 * Math.pow(2, state.doubleScorePurchaseCount);
+                    return item.cost;
+                };
+
+                const affordableStandard = availableStandard.filter(i => state.excessPoints >= getDynamicCost(i));
+                const expensiveStandard = availableStandard.filter(i => state.excessPoints < getDynamicCost(i));
                 const affordablePlanets = allHandTypes.filter(h => state.excessPoints >= (10 + (state.handLevels[h] * 5)));
                 const expensivePlanets = allHandTypes.filter(h => state.excessPoints < (10 + (state.handLevels[h] * 5)));
 
                 let finalOffers = [];
-
-                // MANDATORY: Try to get 2 planets first (affordable preferred)
                 let planetsForSeed = affordablePlanets.slice(0, 2);
-                if (planetsForSeed.length < 2) {
-                    planetsForSeed = planetsForSeed.concat(expensivePlanets.slice(0, 2 - planetsForSeed.length));
-                }
+                if (planetsForSeed.length < 2) { planetsForSeed = planetsForSeed.concat(expensivePlanets.slice(0, 2 - planetsForSeed.length)); }
                 planetsForSeed.forEach(p => finalOffers.push({ type: 'celestial', data: p }));
-
-                // FILL: Add more affordable planets (up to 4 total planets)
                 let moreAffPlanets = affordablePlanets.filter(p => !planetsForSeed.includes(p)).slice(0, 2);
                 moreAffPlanets.forEach(p => { if(finalOffers.length < 6) finalOffers.push({ type: 'celestial', data: p }); });
-
-                // FILL: Add affordable standards
                 let affStandardsToAdd = shuffle(affordableStandard).slice(0, 6 - finalOffers.length);
                 affStandardsToAdd.forEach(s => finalOffers.push({ type: 'token', data: s }));
-
-                // FALLBACK: If still under 6, add expensive standards
                 if (finalOffers.length < 6) {
                     let expStandardsToAdd = shuffle(expensiveStandard).slice(0, 6 - finalOffers.length);
                     expStandardsToAdd.forEach(s => finalOffers.push({ type: 'token', data: s }));
                 }
-
-                // FALLBACK: If still under 6, add remaining expensive planets
                 if (finalOffers.length < 6) {
                     let usedPlanets = finalOffers.filter(o => o.type === 'celestial').map(o => o.data);
                     let expPlanetsToAdd = expensivePlanets.filter(p => !usedPlanets.includes(p)).slice(0, 6 - finalOffers.length);
                     expPlanetsToAdd.forEach(p => finalOffers.push({ type: 'celestial', data: p }));
                 }
-
                 state.currentShopOffers = shuffle(finalOffers).slice(0, 6);
             }
             renderShop();
         }
 
         function renderShop() {
-            const grid = document.getElementById('shop-grid');
-            grid.innerHTML = '';
-            
+            const grid = document.getElementById('shop-grid'); grid.innerHTML = '';
             state.currentShopOffers.forEach((offer, idx) => {
                 const btn = document.createElement('div');
                 const owned = offer.purchased;
-
                 if (offer.type === 'token') {
                     const item = offer.data;
-                    const canAfford = state.excessPoints >= item.cost;
-
+                    const cost = (item.id === 'double_score') ? 100 * Math.pow(2, state.doubleScorePurchaseCount) : item.cost;
+                    const canAfford = state.excessPoints >= cost;
                     btn.className = `p-4 rounded-2xl border-2 transition flex flex-col justify-between h-32 ${owned ? 'bg-zinc-800 border-zinc-700 opacity-50 cursor-not-allowed' : (canAfford ? 'bg-black border-zinc-700 hover:border-orange-500 cursor-pointer' : 'bg-black border-red-900/50 opacity-60 cursor-default grayscale')}`;
-                    btn.innerHTML = `<div class="flex justify-between items-start"><span class="font-bungee text-sm text-white uppercase italic leading-tight">${item.name}</span><span class="font-bungee text-sm ${canAfford ? 'text-emerald-400' : 'text-red-500'}">$${item.cost}</span></div><p class="text-[10px] text-zinc-400 font-medium mt-1">${item.desc}</p>${owned ? '<p class="text-[8px] text-orange-500 font-black uppercase mt-1">Acquired</p>' : (canAfford ? '' : '<p class="text-[8px] text-red-500 font-black uppercase mt-1 italic opacity-80">Saving up...</p>')}`;
+                    btn.innerHTML = `<div class="flex justify-between items-start"><span class="font-bungee text-sm text-white uppercase italic leading-tight">${item.name}</span><span class="font-bungee text-sm ${canAfford ? 'text-emerald-400' : 'text-red-500'}">$${cost}</span></div><p class="text-[10px] text-zinc-400 font-medium mt-1">${item.desc}</p>${owned ? '<p class="text-[8px] text-orange-500 font-black uppercase mt-1">Acquired</p>' : (canAfford ? '' : '<p class="text-[8px] text-red-500 font-black uppercase mt-1 italic opacity-80">Saving up...</p>')}`;
                     if (!owned && canAfford) btn.onclick = () => buyItem(item, idx);
                 } else {
                     const handType = offer.data;
                     const level = state.handLevels[handType];
                     const cost = 10 + (level * 5);
                     const canAfford = state.excessPoints >= cost && !owned;
-
                     btn.className = `p-4 rounded-2xl border-2 transition flex flex-col justify-between h-32 ${owned ? 'bg-zinc-800 border-zinc-700 opacity-50 cursor-not-allowed' : (canAfford ? 'bg-black border-blue-900/50 hover:border-blue-400 cursor-pointer' : 'bg-black border-red-900/20 opacity-60 cursor-default grayscale')}`;
                     btn.innerHTML = `<div class="flex justify-between items-start"><span class="font-bungee text-sm text-blue-300 uppercase italic leading-tight">${handType}</span><span class="font-bungee text-sm ${canAfford ? 'text-emerald-400' : 'text-red-500'}">$${cost}</span></div><p class="text-[10px] text-zinc-400 mt-1">Lv. ${level} ➔ ${level+1}. Increases score.</p>${owned ? '<p class="text-[8px] text-blue-400 font-black uppercase mt-1">Upgraded</p>' : (canAfford ? '' : '<p class="text-[8px] text-red-500 font-black uppercase mt-1 italic opacity-80">Saving up...</p>')}`;
                     if (!owned && canAfford) btn.onclick = () => upgradeHand(handType, cost, idx);
                 }
-
                 grid.appendChild(btn);
             });
         }
 
         function upgradeHand(handType, cost, offerIdx) {
             if (state.excessPoints >= cost) {
-                playSound('buy');
-                state.excessPoints -= cost;
-                state.handLevels[handType]++;
-                state.currentShopOffers[offerIdx].purchased = true;
-                document.getElementById('excess-points-display').textContent = "$" + state.excessPoints;
-                renderShop();
+                playSound('buy'); state.excessPoints -= cost; state.handLevels[handType]++; state.currentShopOffers[offerIdx].purchased = true;
+                document.getElementById('excess-points-display').textContent = "$" + state.excessPoints; renderShop();
             }
         }
 
         function buyItem(item, offerIdx) {
-            if (state.excessPoints >= item.cost) {
-                playSound('buy'); state.excessPoints -= item.cost;
-                state.currentShopOffers[offerIdx].purchased = true;
-                if (item.id === 'extra_hand') {
-                    state.basePlays++; state.plays++; state.permanentPowerupsBought.push(item.id);
-                } else if (item.id === 'extra_discard_perm') {
-                    state.baseDiscards++; state.discards++; state.permanentPowerupsBought.push(item.id);
-                } else if (item.id === 'extra_card_perm') {
-                    state.baseHandLimit++; state.handLimit++; state.permanentPowerupsBought.push(item.id);
-                } else if (item.id === 'shield') {
-                    state.shieldActive = true;
-                } else {
-                    state.inventory.push({...item});
-                }
+            const cost = (item.id === 'double_score') ? 100 * Math.pow(2, state.doubleScorePurchaseCount) : item.cost;
+            if (state.excessPoints >= cost) {
+                playSound('buy'); state.excessPoints -= cost; state.currentShopOffers[offerIdx].purchased = true;
+                if (item.id === 'double_score') state.doubleScorePurchaseCount++;
+                if (item.id === 'extra_hand') { state.basePlays++; state.plays++; state.permanentPowerupsBought.push(item.id); }
+                else if (item.id === 'extra_discard_perm') { state.baseDiscards++; state.discards++; state.permanentPowerupsBought.push(item.id); }
+                else if (item.id === 'extra_card_perm') { state.baseHandLimit++; state.handLimit++; state.permanentPowerupsBought.push(item.id); }
+                else if (item.id === 'shield') { state.shieldActive = true; }
+                else { state.inventory.push({...item}); }
                 document.getElementById('excess-points-display').textContent = "$" + state.excessPoints;
                 renderShop(); render();
             }
@@ -789,8 +782,7 @@
         }
 
         function showTokenModal(index) {
-            playSound('select'); state.currentTokenToUse = index;
-            const item = state.inventory[index];
+            playSound('select'); state.currentTokenToUse = index; const item = state.inventory[index];
             document.getElementById('token-modal-title').textContent = `USE ${item.name.toUpperCase()}?`;
             document.getElementById('token-modal-desc').textContent = item.desc;
             document.getElementById('token-modal-overlay').classList.remove('hidden');
@@ -808,114 +800,63 @@
             setTimeout(() => el.classList.add('hidden'), 3000);
         }
 
-        // --- DECK VIEWER LOGIC ---
         function showDeck() {
-            playSound('select');
-            const content = document.getElementById('deck-view-content');
-            content.innerHTML = '';
-            
+            playSound('select'); const content = document.getElementById('deck-view-content'); content.innerHTML = '';
             const displayValues = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
-
             SUITS.forEach(suit => {
-                const suitRow = document.createElement('div');
-                suitRow.className = "flex gap-8 items-center w-full justify-center";
-                
-                // LEFT INDICATOR (Suit Icon)
+                const suitRow = document.createElement('div'); suitRow.className = "flex gap-8 items-center w-full justify-center";
                 const leftIndicator = document.createElement('div');
                 leftIndicator.className = `w-14 h-16 flex items-center justify-center font-bungee text-3xl bg-zinc-800 rounded-lg shrink-0 ${suit === '♥' || suit === '♦' ? 'text-red-500' : 'text-zinc-400'}`;
-                leftIndicator.textContent = suit;
-                suitRow.appendChild(leftIndicator);
-
-                const cardContainer = document.createElement('div');
-                cardContainer.className = "flex gap-3 justify-center";
-
+                leftIndicator.textContent = suit; suitRow.appendChild(leftIndicator);
+                const cardContainer = document.createElement('div'); cardContainer.className = "flex gap-3 justify-center";
                 let suitCount = 0;
-
                 displayValues.forEach(val => {
                     const inDeck = state.deck.some(c => c.suit === suit && c.val === val);
-                    const isAvailable = inDeck; 
-                    if (isAvailable) suitCount++;
-
+                    if (inDeck) suitCount++;
                     const isRed = suit === '♥' || suit === '♦';
                     const el = document.createElement('div');
-                    el.className = `deck-card-mini w-12 h-16 bg-white rounded-lg border-2 flex flex-col items-center justify-center shadow-md transition-all ${isRed ? 'text-red-600' : 'text-zinc-900'} ${isAvailable ? 'border-zinc-300' : 'deck-card-spent border-transparent'}`;
-                    
-                    el.innerHTML = `
-                        <span class="text-sm font-black leading-none">${val}</span>
-                        <span class="text-lg leading-none mt-1">${suit}</span>
-                    `;
+                    el.className = `deck-card-mini w-12 h-16 bg-white rounded-lg border-2 flex flex-col items-center justify-center shadow-md transition-all ${isRed ? 'text-red-600' : 'text-zinc-900'} ${inDeck ? 'border-zinc-300' : 'deck-card-spent border-transparent'}`;
+                    el.innerHTML = `<span class="text-sm font-black leading-none">${val}</span><span class="text-lg leading-none mt-1">${suit}</span>`;
                     cardContainer.appendChild(el);
                 });
-
                 suitRow.appendChild(cardContainer);
-
-                // RIGHT INDICATOR (Count)
                 const rightIndicator = document.createElement('div');
                 rightIndicator.className = `w-14 h-16 flex items-center justify-center font-bungee text-2xl bg-zinc-800 rounded-lg shrink-0 ${suit === '♥' || suit === '♦' ? 'text-red-500' : 'text-zinc-400'}`;
-                rightIndicator.textContent = suitCount;
-                suitRow.appendChild(rightIndicator);
-
+                rightIndicator.textContent = suitCount; suitRow.appendChild(rightIndicator);
                 content.appendChild(suitRow);
             });
-
             document.getElementById('deck-overlay').classList.remove('hidden');
         }
 
-        // --- INTERACTION LOGIC ---
         function handleInteractionStart(e, index = null) {
-            if (e.cancelable) e.preventDefault();
-            state.isSwipeSelecting = true;
-            state.swipeTouchedIndices.clear();
+            if (e.cancelable) e.preventDefault(); state.isSwipeSelecting = true; state.swipeTouchedIndices.clear();
             if (index !== null) {
                 const isAlreadySelected = state.selectedIndices.includes(index);
-                state.swipeMode = isAlreadySelected ? 'deselect' : 'select';
-                toggleCardSelection(index, state.swipeMode);
-                state.swipeTouchedIndices.add(index);
+                state.swipeMode = isAlreadySelected ? 'deselect' : 'select'; toggleCardSelection(index, state.swipeMode); state.swipeTouchedIndices.add(index);
             } else { state.swipeMode = 'select'; }
         }
-
         function handleInteractionMove(e) {
             if (!state.isSwipeSelecting) return;
             let clientX, clientY;
-            if (e.type === 'touchmove') {
-                clientX = e.touches[0].clientX; clientY = e.touches[0].clientY;
-            } else { clientX = e.clientX; clientY = e.clientY; }
+            if (e.type === 'touchmove') { clientX = e.touches[0].clientX; clientY = e.touches[0].clientY; }
+            else { clientX = e.clientX; clientY = e.clientY; }
             const target = document.elementFromPoint(clientX, clientY);
             const cardEl = target?.closest('[data-card-index]');
             if (cardEl) {
                 const index = parseInt(cardEl.getAttribute('data-card-index'));
-                if (!state.swipeTouchedIndices.has(index)) {
-                    toggleCardSelection(index, state.swipeMode);
-                    state.swipeTouchedIndices.add(index);
-                }
+                if (!state.swipeTouchedIndices.has(index)) { toggleCardSelection(index, state.swipeMode); state.swipeTouchedIndices.add(index); }
             }
         }
-
-        function stopInteraction() {
-            state.isSwipeSelecting = false;
-            state.swipeTouchedIndices.clear();
-        }
-
+        function stopInteraction() { state.isSwipeSelecting = false; state.swipeTouchedIndices.clear(); }
         function toggleCardSelection(index, mode) {
-            const pos = state.selectedIndices.indexOf(index);
-            const totalSelected = state.selectedIndices.length + (state.jokerSelected ? 1 : 0);
-            
-            if (mode === 'select') {
-                if (pos === -1 && totalSelected < 5) {
-                    playSound('select'); state.selectedIndices.push(index);
-                }
-            } else if (mode === 'deselect') {
-                if (pos > -1) {
-                    playSound('select'); state.selectedIndices.splice(pos, 1);
-                }
-            }
+            const pos = state.selectedIndices.indexOf(index); const totalSelected = state.selectedIndices.length + (state.jokerSelected ? 1 : 0);
+            if (mode === 'select') { if (pos === -1 && totalSelected < 5) { playSound('select'); state.selectedIndices.push(index); } }
+            else if (mode === 'deselect') { if (pos > -1) { playSound('select'); state.selectedIndices.splice(pos, 1); } }
             render();
         }
 
-        window.addEventListener('mouseup', stopInteraction);
-        window.addEventListener('touchend', stopInteraction);
-        window.addEventListener('mousemove', handleInteractionMove);
-        window.addEventListener('touchmove', handleInteractionMove, { passive: false });
+        window.addEventListener('mouseup', stopInteraction); window.addEventListener('touchend', stopInteraction);
+        window.addEventListener('mousemove', handleInteractionMove); window.addEventListener('touchmove', handleInteractionMove, { passive: false });
         window.addEventListener('selectstart', (e) => e.preventDefault());
 
         function render() {
@@ -936,44 +877,33 @@
                 const isLegendary = (prospective === 'Royal Flush' && state.jokerSelected) || prospective === '5 of a Kind';
                 const baseVal = (prospective === 'Royal Flush' && state.jokerSelected) ? 250 : (HAND_SCORES[prospective] || 5);
                 const level = state.handLevels[prospective] || 1;
-                let score = Math.round(baseVal * (1 + (level - 1) * 0.5));
+                let isDebuffed = sel.some(c => state.debuffSuits.includes(c.suit));
+                let score = isDebuffed ? 0 : Math.round(baseVal * (1 + (level - 1) * 0.5));
                 if (state.doubleNextPlay) score *= 2;
-                
                 fh.textContent = (prospective === 'Royal Flush' && state.jokerSelected) ? 'WILD ROYAL FLUSH' : prospective.toUpperCase();
                 fh.className = `text-3xl font-bungee ${isLegendary ? 'text-orange-400 drop-shadow-[0_0_15px_rgba(251,146,60,0.8)]' : 'text-white'} drop-shadow-lg`;
                 fh.classList.remove('hidden'); 
-                
-                fl.textContent = `Level ${level}`;
-                fl.classList.remove('hidden');
-
-                fs.textContent = `+${score} Points`; 
+                fl.textContent = `Level ${level}`; fl.classList.remove('hidden');
+                fs.textContent = isDebuffed ? "0 Points (Invalid Suit)" : `+${score} Points`; 
+                fs.className = `text-xl font-bold ${isDebuffed ? 'text-red-500' : 'text-white'}`;
                 fs.classList.remove('hidden');
-            } else { 
-                fh.classList.add('hidden'); 
-                fs.classList.add('hidden'); 
-                fl.classList.add('hidden');
-            }
+            } else { fh.classList.add('hidden'); fs.classList.add('hidden'); fl.classList.add('hidden'); }
 
             const hc = document.getElementById('hand-container'); hc.innerHTML = ''; let dc = 0;
             state.hand.forEach((card, i) => {
                 const s = state.selectedIndices.includes(i); const isRed = card.suit === '♥' || card.suit === '♦';
                 const n = card.batchId === state.drawBatchId; 
                 const isDebuffed = state.debuffSuits.includes(card.suit);
-                
                 const el = document.createElement('div'); 
                 el.className = `card w-20 sm:w-28 bg-white rounded-xl flex flex-col items-center justify-center shadow-2xl border-4 ${s ? 'selected' : 'border-zinc-300'} ${isRed ? 'text-red-600' : 'text-zinc-900'} ${n ? 'card-draw' : ''} ${isDebuffed ? 'card-debuffed' : ''}`;
                 el.setAttribute('data-card-index', i);
                 if (n) el.style.animationDelay = `${dc++ * 0.1}s`;
                 el.innerHTML = `<div class="absolute top-2 left-2 flex flex-col items-center pointer-events-none"><span class="text-base sm:text-lg font-black leading-none">${card.val}</span><span class="text-xs sm:text-sm font-bold leading-none">${card.suit}</span></div><div class="text-4xl sm:text-5xl font-black pointer-events-none">${card.suit}</div>`;
-                
                 el.addEventListener('mousedown', (e) => { e.stopPropagation(); handleInteractionStart(e, i); });
                 el.addEventListener('touchstart', (e) => { e.stopPropagation(); handleInteractionStart(e, i); });
                 hc.appendChild(el);
             });
-
-            hc.onmousedown = (e) => handleInteractionStart(e);
-            hc.ontouchstart = (e) => handleInteractionStart(e);
-
+            hc.onmousedown = (e) => handleInteractionStart(e); hc.ontouchstart = (e) => handleInteractionStart(e);
             state.hand.forEach(c => c.batchId = -1);
 
             const jb = document.getElementById('joker-bank'); jb.innerHTML = '';
@@ -981,16 +911,11 @@
                 const j = document.createElement('div'); j.className = `joker-slot w-20 h-28 rounded-xl flex flex-col items-center justify-center border-4 ${state.jokerSelected ? 'joker-selected' : 'bg-white border-zinc-300'} text-zinc-900 shadow-xl cursor-pointer`;
                 j.innerHTML = `<div class="flex items-center justify-center w-full h-14 overflow-hidden pointer-events-none">${JOKER_ICON}</div><span class="text-[10px] font-bold uppercase pointer-events-none">${state.jokerSelected ? 'SELECTED' : 'WILD'}</span>`;
                 j.onclick = (e) => { 
-                    e.stopPropagation(); 
-                    const totalSelected = state.selectedIndices.length + (state.jokerSelected ? 1 : 0);
+                    e.stopPropagation(); const totalSelected = state.selectedIndices.length + (state.jokerSelected ? 1 : 0);
                     if (!state.jokerSelected && totalSelected >= 5) return; 
-                    playSound('select'); 
-                    state.jokerSelected = !state.jokerSelected; 
-                    render(); 
-                }; 
-                jb.appendChild(j);
+                    playSound('select'); state.jokerSelected = !state.jokerSelected; render(); 
+                }; jb.appendChild(j);
             }
-
             const pb = document.getElementById('powerups-bank'); pb.innerHTML = '';
             if (state.shieldActive) {
                 const s = document.createElement('div'); s.className = `w-20 h-28 bg-cyan-900/30 border-4 border-cyan-500 rounded-xl flex flex-col items-center justify-center text-cyan-400 shadow-xl backdrop-blur-sm`;
@@ -1000,30 +925,23 @@
                 const h = document.createElement('div'); h.className = `w-20 h-28 bg-blue-900/30 border-4 border-blue-500 rounded-xl flex flex-col items-center justify-center text-blue-400 shadow-xl backdrop-blur-sm`;
                 h.innerHTML = `${HAND_SVG} <span class="text-[10px] font-bold uppercase mt-1">+${state.basePlays-3} HANDS</span>`; pb.appendChild(h);
             }
-
             const tl = document.getElementById('token-list'); tl.innerHTML = '';
             state.inventory.forEach((it, idx) => {
                 const t = document.createElement('div'); t.className = 'token-item px-3 py-1 bg-zinc-800 text-[10px] rounded border-2 border-orange-600 text-orange-500 font-black uppercase tracking-widest italic';
                 t.textContent = it.name; t.onclick = (e) => { e.stopPropagation(); showTokenModal(idx); }; tl.appendChild(t);
             });
-
             const rl = document.getElementById('rules-scoring-list');
             if (rl.children.length === 0) {
                 Object.entries(HAND_SCORES).sort((a,b) => b[1]-a[1]).forEach(([name, val]) => {
-                    const row = document.createElement('div');
-                    row.className = 'bg-black/40 p-2 flex justify-between border border-zinc-800';
-                    row.innerHTML = `<span class="capitalize text-zinc-400">${name}</span><span id="score-lv-${name.replace(/\s/g, '-')}" class="font-bold text-white">${val}</span>`;
-                    rl.appendChild(row);
+                    const row = document.createElement('div'); row.className = 'bg-black/40 p-2 flex justify-between border border-zinc-800';
+                    row.innerHTML = `<span class="capitalize text-zinc-400">${name}</span><span id="score-lv-${name.replace(/\s/g, '-')}" class="font-bold text-white">${val}</span>`; rl.appendChild(row);
                 });
             } else {
                 Object.entries(HAND_SCORES).forEach(([name, val]) => {
-                    const level = state.handLevels[name];
-                    const scaled = Math.round(val * (1 + (level - 1) * 0.5));
-                    const el = document.getElementById(`score-lv-${name.replace(/\s/g, '-')}`);
-                    if (el) el.innerHTML = `${scaled} <small class="text-blue-500 text-[8px]">LV${level}</small>`;
+                    const level = state.handLevels[name]; const scaled = Math.round(val * (1 + (level - 1) * 0.5));
+                    const el = document.getElementById(`score-lv-${name.replace(/\s/g, '-')}`); if (el) el.innerHTML = `${scaled} <small class="text-blue-500 text-[8px]">LV${level}</small>`;
                 });
             }
-
             const currentTotalSelected = state.selectedIndices.length + (state.jokerSelected ? 1 : 0);
             document.getElementById('discard-btn').disabled = state.discards <= 0 || state.selectedIndices.length === 0;
             document.getElementById('play-btn').disabled = state.plays <= 0 || currentTotalSelected === 0;
