@@ -465,6 +465,10 @@
         const HIGH_SCORE_KEY = 'solatro_high_score';
 
         function saveGame() {
+            // Guard against saving a lost state that would result in a broken load
+            const isTechnicallyGameOver = state.plays <= 0 && state.score < state.target && !state.shieldActive;
+            if (isTechnicallyGameOver) return;
+            
             localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
         }
 
@@ -475,7 +479,7 @@
                     const loadedState = JSON.parse(saved);
                     Object.assign(state, loadedState);
                     
-                    // RE-INITIALIZE NON-SERIALIZABLE OBJECTS (Fix for selection bug)
+                    // RE-INITIALIZE NON-SERIALIZABLE OBJECTS
                     state.swipeTouchedIndices = new Set();
                     state.isSwipeSelecting = false;
                     state.selectedIndices = state.selectedIndices || [];
@@ -673,7 +677,10 @@
             else if (state.plays <= 0) {
                 if (state.shieldActive) {
                     state.shieldActive = false; showMessage("SHIELD USED!", "text-blue-400"); playSound('buy'); endRound();
-                } else { playSound('lose'); gameOver(); }
+                } else { 
+                    playSound('lose'); 
+                    gameOver(); 
+                }
             }
         }
 
@@ -868,7 +875,6 @@
 
         function handleInteractionStart(e, index = null) {
             if (e.cancelable) e.preventDefault(); state.isSwipeSelecting = true; 
-            // Safety check for Set initialization
             if (!(state.swipeTouchedIndices instanceof Set)) state.swipeTouchedIndices = new Set();
             state.swipeTouchedIndices.clear();
             if (index !== null) {
@@ -1007,10 +1013,16 @@
         document.getElementById('next-round-btn').onclick = () => { playSound('select'); state.isShopOpen = false; document.getElementById('shop-overlay').classList.add('hidden'); state.round++; startRound(); };
         
         window.onload = () => {
-            if (!loadGame()) {
-                startRound();
+            if (loadGame()) {
+                // If a dead state was somehow saved, force Game Over screen immediately
+                const isActuallyGameOver = state.plays <= 0 && state.score < state.target && !state.shieldActive;
+                if (isActuallyGameOver) {
+                    gameOver();
+                } else {
+                    render();
+                }
             } else {
-                render();
+                startRound();
             }
         };
     </script>
