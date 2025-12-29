@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BALATRO MINI</title>
+    <title>Balatro Mini</title>
     <link rel="shortcut icon" type="image/x-icon" href="images/favicon.ico">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -233,7 +233,7 @@
                 <div id="hand-container" class="flex justify-center items-end gap-1 sm:gap-3 flex-wrap px-1 w-full min-h-[160px] sm:min-h-[200px]"></div>
             </div>
 
-            <!-- Bottom Actions Section - Increased padding/margin for mobile safety -->
+            <!-- Bottom Actions Section -->
             <div class="flex flex-col items-center mt-auto pb-8 sm:pb-8 pt-10 sm:pt-6">
                 <div id="selection-hint" class="text-zinc-500 text-[8px] sm:text-xs font-black uppercase tracking-widest h-3 mb-4 sm:mb-4">Select up to 5 cards</div>
                 <div class="flex justify-center gap-4 sm:gap-6">
@@ -304,17 +304,18 @@
         </div>
     </div>
 
+    <!-- SHOP OVERLAY -->
     <div id="shop-overlay" class="fixed inset-0 bg-black/80 flex items-center justify-center hidden z-50 p-2 sm:p-4 backdrop-blur-md">
-        <div class="modal-animate bg-zinc-900 w-full max-w-2xl rounded-2xl p-4 sm:p-8 border-4 border-orange-500 shadow-2xl">
-            <div class="flex flex-col sm:flex-row justify-between items-start mb-4 gap-2">
+        <div class="modal-animate bg-zinc-900 w-full max-w-4xl rounded-2xl p-4 sm:p-6 border-4 border-orange-500 shadow-2xl max-h-[95vh] flex flex-col">
+            <div class="flex flex-col sm:flex-row justify-between items-start mb-4 gap-2 shrink-0">
                 <div>
-                    <h2 class="font-bungee text-2xl sm:text-4xl text-white italic leading-none">THE <span class="text-orange-500">SHOPPE</span></h2>
-                    <p class="text-zinc-400 text-xs sm:text-base mt-1">Cash: <span id="excess-points-display" class="text-emerald-400 font-bold text-sm sm:text-xl">$0</span></p>
-                    <p id="hands-bonus-label" class="text-[8px] sm:text-[10px] text-zinc-500 italic"></p>
+                    <h2 class="font-bungee text-xl sm:text-3xl text-white italic leading-none">THE <span class="text-orange-500">SHOPPE</span></h2>
+                    <p class="text-zinc-400 text-[10px] sm:text-sm mt-1">Cash: <span id="excess-points-display" class="text-emerald-400 font-bold text-xs sm:text-lg">$0</span></p>
+                    <p id="hands-bonus-label" class="text-[7px] sm:text-[9px] text-zinc-500 italic"></p>
                 </div>
-                <button id="next-round-btn" class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-500 text-white font-bungee px-4 sm:px-8 py-2 sm:py-3 rounded-lg border-b-4 border-emerald-800 text-sm">NEXT ROUND</button>
+                <button id="next-round-btn" class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-500 text-white font-bungee px-4 sm:px-6 py-2 rounded-lg border-b-4 border-emerald-800 text-xs sm:text-sm">NEXT ROUND</button>
             </div>
-            <div id="shop-grid" class="grid grid-cols-2 gap-2 sm:gap-4 max-h-[50vh] overflow-y-auto pr-1"></div>
+            <div id="shop-grid" class="grid grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 overflow-y-visible"></div>
         </div>
     </div>
 
@@ -328,12 +329,12 @@
                 </div>
                 <div class="flex justify-around border-t border-zinc-800 pt-4">
                     <div class="px-1">
-                        <p class="text-zinc-400 uppercase font-bold text-[7px] sm:text-[10px] tracking-widest mb-1">Best Round</p>
-                        <p id="final-max-score" class="text-base sm:text-2xl font-bungee text-orange-400">0</p>
+                        <p class="text-zinc-400 uppercase font-bold text-[7px] sm:text-[10px] tracking-widest mb-1">Total Score</p>
+                        <p id="final-total-score-run" class="text-base sm:text-2xl font-bungee text-orange-400">0</p>
                     </div>
                     <div class="px-1">
-                        <p class="text-zinc-400 uppercase font-bold text-[7px] sm:text-[10px] tracking-widest mb-1">Total Score</p>
-                        <p id="final-total-score" class="text-base sm:text-2xl font-bungee text-emerald-400">0</p>
+                        <p class="text-zinc-400 uppercase font-bold text-[7px] sm:text-[10px] tracking-widest mb-1">Highest Score</p>
+                        <p id="final-high-score-alltime" class="text-base sm:text-2xl font-bungee text-emerald-400">0</p>
                     </div>
                 </div>
             </div>
@@ -438,11 +439,12 @@
             { id: 'the_hook', name: 'THE HOOK', desc: 'Anchored: Discards are disabled.', effect: (state) => { state.discards = 0; } }
         ];
 
+        // DEFAULT SORT SET TO 'RANK'
         let state = {
             round: 1, target: 25, score: 0, excessPoints: 0,
             plays: 3, discards: 3, handLimit: 8, basePlays: 3, baseDiscards: 3, baseHandLimit: 8,
             deck: [], hand: [], selectedIndices: [], bankedJokers: 0, jokerSelected: false,
-            inventory: [], isShopOpen: false, currentSortMethod: 'none',
+            inventory: [], isShopOpen: false, currentSortMethod: 'rank',
             drawBatchId: 0, doubleNextPlay: false, shieldActive: false,
             permanentPowerupsBought: [],
             handLevels: Object.fromEntries(Object.keys(HAND_SCORES).map(k => [k, 1])),
@@ -458,6 +460,44 @@
             cumulativeScore: 0,
             doubleScorePurchaseCount: 0
         };
+
+        const STORAGE_KEY = 'solatro_save_data';
+        const HIGH_SCORE_KEY = 'solatro_high_score';
+
+        function saveGame() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        }
+
+        function loadGame() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                try {
+                    const loadedState = JSON.parse(saved);
+                    Object.assign(state, loadedState);
+                    if (state.currentBoss) {
+                        const bossDisplay = document.getElementById('boss-display');
+                        bossDisplay.textContent = `ACTIVE BOSS: ${state.currentBoss.name} - ${state.currentBoss.desc}`;
+                        bossDisplay.classList.remove('hidden');
+                        document.getElementById('header-container').classList.add('border-red-600', 'bg-red-950/20', 'boss-glow');
+                    }
+                    return true;
+                } catch (e) {
+                    console.error("Failed to load game", e);
+                }
+            }
+            return false;
+        }
+
+        function getHighScore() {
+            return parseInt(localStorage.getItem(HIGH_SCORE_KEY)) || 0;
+        }
+
+        function setHighScore(val) {
+            const current = getHighScore();
+            if (val > current) {
+                localStorage.setItem(HIGH_SCORE_KEY, val);
+            }
+        }
 
         function initDeck() {
             let deck = [];
@@ -508,6 +548,7 @@
             }
 
             drawToFull();
+            saveGame();
         }
 
         function applyCurrentSort() {
@@ -537,10 +578,12 @@
             if (cardsDrawn > 0) playSound('draw');
             if (state.currentSortMethod !== 'none') applyCurrentSort();
             render();
+            saveGame();
         }
 
         function sortHand(type) {
             playSound('select'); state.currentSortMethod = type; applyCurrentSort(); state.selectedIndices = []; render();
+            saveGame();
         }
 
         function evaluateHand(selectedCards, useWild) {
@@ -605,12 +648,14 @@
             state.drawBatchId++; 
             drawToFull(); 
             checkRoundStatus();
+            saveGame();
         }
 
         function discardCards() {
             if (state.selectedIndices.length === 0 || state.discards <= 0) return;
             playSound('discard'); state.hand = state.hand.filter((_, i) => !state.selectedIndices.includes(i));
             state.selectedIndices = []; state.discards--; state.drawBatchId++; drawToFull();
+            saveGame();
         }
 
         function checkRoundStatus() {
@@ -636,24 +681,28 @@
             document.getElementById('excess-points-display').textContent = "$" + state.excessPoints; 
             document.getElementById('hands-bonus-label').textContent = `Efficiency Bonus: +$${handsBonus} (${state.plays} Hands Remaining)`;
             openShop(true); 
+            saveGame();
         }
 
         function gameOver() {
+            setHighScore(state.cumulativeScore);
             document.getElementById('final-rounds').textContent = state.round - 1;
-            document.getElementById('final-max-score').textContent = state.maxSingleRoundScore;
-            document.getElementById('final-total-score').textContent = state.cumulativeScore;
+            document.getElementById('final-total-score-run').textContent = state.cumulativeScore;
+            document.getElementById('final-high-score-alltime').textContent = getHighScore();
             document.getElementById('game-over-overlay').classList.remove('hidden');
+            localStorage.removeItem(STORAGE_KEY);
         }
 
         function resetGame() {
             playSound('select');
             Object.assign(state, { 
                 round: 1, score: 0, excessPoints: 0, basePlays: 3, baseDiscards: 3, baseHandLimit: 8, bankedJokers: 0, 
-                inventory: [], shieldActive: false, currentSortMethod: 'none', 
+                inventory: [], shieldActive: false, currentSortMethod: 'rank', 
                 drawBatchId: 0, permanentPowerupsBought: [],
                 handLevels: Object.fromEntries(Object.keys(HAND_SCORES).map(k => [k, 1])),
                 debuffSuits: [], currentBoss: null, nextBoss: null, bossesDefeated: 0,
-                maxSingleRoundScore: 0, cumulativeScore: 0, doubleScorePurchaseCount: 0
+                maxSingleRoundScore: 0, cumulativeScore: 0, doubleScorePurchaseCount: 0,
+                deck: [], hand: []
             });
             document.getElementById('game-over-overlay').classList.add('hidden');
             startRound();
@@ -712,16 +761,16 @@
                     const item = offer.data;
                     const cost = (item.id === 'double_score') ? 100 * Math.pow(2, state.doubleScorePurchaseCount) : item.cost;
                     const canAfford = state.excessPoints >= cost;
-                    btn.className = `p-2 sm:p-4 rounded-xl border-2 transition flex flex-col justify-between h-24 sm:h-32 ${owned ? 'bg-zinc-800 border-zinc-700 opacity-50 cursor-not-allowed' : (canAfford ? 'bg-black border-zinc-700 hover:border-orange-500 cursor-pointer' : 'bg-black border-red-900/50 opacity-60 cursor-default grayscale')}`;
-                    btn.innerHTML = `<div class="flex justify-between items-start"><span class="font-bungee text-[10px] sm:text-sm text-white uppercase italic leading-tight">${item.name}</span><span class="font-bungee text-[10px] sm:text-sm ${canAfford ? 'text-emerald-400' : 'text-red-500'}">$${cost}</span></div><p class="text-[7px] sm:text-[10px] text-zinc-400 font-medium mt-0.5">${item.desc}</p>${owned ? '<p class="text-[7px] text-orange-500 font-black uppercase mt-0.5">Acquired</p>' : (canAfford ? '' : '<p class="text-[7px] text-red-500 font-black uppercase mt-0.5 italic opacity-80">Saving up...</p>')}`;
+                    btn.className = `p-1.5 sm:p-3 rounded-lg border transition flex flex-col justify-between h-20 sm:h-28 ${owned ? 'bg-zinc-800 border-zinc-700 opacity-50 cursor-not-allowed' : (canAfford ? 'bg-black border-zinc-700 hover:border-orange-500 cursor-pointer' : 'bg-black border-red-900/50 opacity-60 cursor-default grayscale')}`;
+                    btn.innerHTML = `<div class="flex justify-between items-start"><span class="font-bungee text-[9px] sm:text-[11px] text-white uppercase italic leading-tight">${item.name}</span><span class="font-bungee text-[9px] sm:text-[11px] ${canAfford ? 'text-emerald-400' : 'text-red-500'}">$${cost}</span></div><p class="text-[6.5px] sm:text-[9px] text-zinc-400 font-medium mt-0.5">${item.desc}</p>${owned ? '<p class="text-[6.5px] text-orange-500 font-black uppercase">Acquired</p>' : ''}`;
                     if (!owned && canAfford) btn.onclick = () => buyItem(item, idx);
                 } else {
                     const handType = offer.data;
                     const level = state.handLevels[handType];
                     const cost = 10 + (level * 5);
                     const canAfford = state.excessPoints >= cost && !owned;
-                    btn.className = `p-2 sm:p-4 rounded-xl border-2 transition flex flex-col justify-between h-24 sm:h-32 ${owned ? 'bg-zinc-800 border-zinc-700 opacity-50 cursor-not-allowed' : (canAfford ? 'bg-black border-blue-900/50 hover:border-blue-400 cursor-pointer' : 'bg-black border-red-900/20 opacity-60 cursor-default grayscale')}`;
-                    btn.innerHTML = `<div class="flex justify-between items-start"><span class="font-bungee text-[10px] sm:text-sm text-blue-300 uppercase italic leading-tight">${handType}</span><span class="font-bungee text-[10px] sm:text-sm ${canAfford ? 'text-emerald-400' : 'text-red-500'}">$${cost}</span></div><p class="text-[7px] sm:text-[10px] text-zinc-400 mt-0.5">Lv. ${level} ➔ ${level+1}. Increases score.</p>${owned ? '<p class="text-[7px] text-blue-400 font-black uppercase mt-0.5">Upgraded</p>' : (canAfford ? '' : '<p class="text-[7px] text-red-500 font-black uppercase mt-0.5 italic opacity-80">Saving up...</p>')}`;
+                    btn.className = `p-1.5 sm:p-3 rounded-lg border transition flex flex-col justify-between h-20 sm:h-28 ${owned ? 'bg-zinc-800 border-zinc-700 opacity-50 cursor-not-allowed' : (canAfford ? 'bg-black border-blue-900/50 hover:border-blue-400 cursor-pointer' : 'bg-black border-red-900/20 opacity-60 cursor-default grayscale')}`;
+                    btn.innerHTML = `<div class="flex justify-between items-start"><span class="font-bungee text-[9px] sm:text-[11px] text-blue-300 uppercase italic leading-tight">${handType}</span><span class="font-bungee text-[9px] sm:text-[11px] ${canAfford ? 'text-emerald-400' : 'text-red-500'}">$${cost}</span></div><p class="text-[6.5px] sm:text-[9px] text-zinc-400 mt-0.5">Lv. ${level} ➔ ${level+1}.</p>${owned ? '<p class="text-[6.5px] text-blue-400 font-black uppercase">Upgraded</p>' : ''}`;
                     if (!owned && canAfford) btn.onclick = () => upgradeHand(handType, cost, idx);
                 }
                 grid.appendChild(btn);
@@ -732,6 +781,7 @@
             if (state.excessPoints >= cost) {
                 playSound('buy'); state.excessPoints -= cost; state.handLevels[handType]++; state.currentShopOffers[offerIdx].purchased = true;
                 document.getElementById('excess-points-display').textContent = "$" + state.excessPoints; renderShop();
+                saveGame();
             }
         }
 
@@ -747,6 +797,7 @@
                 else { state.inventory.push({...item}); }
                 document.getElementById('excess-points-display').textContent = "$" + state.excessPoints;
                 renderShop(); render();
+                saveGame();
             }
         }
 
@@ -758,6 +809,7 @@
                 case 'double_score': state.doubleNextPlay = true; break;
             }
             render();
+            saveGame();
         }
 
         function showTokenModal(index) {
@@ -784,14 +836,11 @@
             const displayValues = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
             SUITS.forEach(suit => {
                 const suitRow = document.createElement('div'); suitRow.className = "flex gap-2 sm:gap-8 items-center w-full justify-center";
-                
                 const leftIndicator = document.createElement('div');
                 leftIndicator.className = `w-8 h-10 sm:w-14 sm:h-16 flex items-center justify-center font-bungee text-lg sm:text-3xl bg-zinc-800 rounded-lg shrink-0 ${suit === '♥' || suit === '♦' ? 'text-red-500' : 'text-zinc-400'}`;
                 leftIndicator.textContent = suit; suitRow.appendChild(leftIndicator);
-                
                 const cardContainer = document.createElement('div'); 
                 cardContainer.className = "grid grid-cols-7 sm:flex gap-1 sm:gap-3 justify-center pb-1";
-                
                 let suitCount = 0;
                 displayValues.forEach(val => {
                     const inDeck = state.deck.some(c => c.suit === suit && c.val === val);
@@ -803,11 +852,9 @@
                     cardContainer.appendChild(el);
                 });
                 suitRow.appendChild(cardContainer);
-                
                 const rightIndicator = document.createElement('div');
                 rightIndicator.className = `w-8 h-10 sm:w-14 sm:h-16 flex items-center justify-center font-bungee text-base sm:text-2xl bg-zinc-800 rounded-lg shrink-0 ${suit === '♥' || suit === '♦' ? 'text-red-500' : 'text-zinc-400'}`;
                 rightIndicator.textContent = suitCount; suitRow.appendChild(rightIndicator);
-                
                 content.appendChild(suitRow);
             });
             document.getElementById('deck-overlay').classList.remove('hidden');
@@ -823,13 +870,19 @@
         function handleInteractionMove(e) {
             if (!state.isSwipeSelecting) return;
             let clientX, clientY;
-            if (e.type === 'touchmove') { clientX = e.touches[0].clientX; clientY = e.touches[0].clientY; }
-            else { clientX = e.clientX; clientY = e.clientY; }
+            if (e.type === 'touchmove') { 
+                clientX = e.touches[0].clientX; clientY = e.touches[0].clientY; 
+            } else { 
+                clientX = e.clientX; clientY = e.clientY; 
+            }
             const target = document.elementFromPoint(clientX, clientY);
             const cardEl = target?.closest('[data-card-index]');
             if (cardEl) {
                 const index = parseInt(cardEl.getAttribute('data-card-index'));
-                if (!state.swipeTouchedIndices.has(index)) { toggleCardSelection(index, state.swipeMode); state.swipeTouchedIndices.add(index); }
+                if (!state.swipeTouchedIndices.has(index)) { 
+                    toggleCardSelection(index, state.swipeMode); 
+                    state.swipeTouchedIndices.add(index); 
+                }
             }
         }
         function stopInteraction() { state.isSwipeSelecting = false; state.swipeTouchedIndices.clear(); }
@@ -850,17 +903,14 @@
             document.getElementById('round-score').textContent = state.score;
             document.getElementById('plays-left').textContent = state.plays;
             document.getElementById('discards-left').textContent = state.discards;
-            
             if (state.nextBoss) {
                 document.getElementById('next-boss-display').textContent = `Next Boss: ${state.nextBoss.name}`;
             }
-
             let sel = state.selectedIndices.map(idx => state.hand[idx]);
             let prospective = evaluateHand(sel, state.jokerSelected);
             const fh = document.getElementById('current-hand-type'); 
             const fs = document.getElementById('current-hand-score');
             const fl = document.getElementById('hand-level-display');
-            
             if (prospective) {
                 const isLegendary = (prospective === 'Royal Flush' && state.jokerSelected) || prospective === '5 of a Kind';
                 const baseVal = (prospective === 'Royal Flush' && state.jokerSelected) ? 250 : (HAND_SCORES[prospective] || 5);
@@ -876,7 +926,6 @@
                 fs.className = `text-sm sm:text-xl font-bold ${isDebuffed ? 'text-red-500' : 'text-white'}`;
                 fs.classList.remove('hidden');
             } else { fh.classList.add('hidden'); fs.classList.add('hidden'); fl.classList.add('hidden'); }
-
             const hc = document.getElementById('hand-container'); hc.innerHTML = ''; let dc = 0;
             state.hand.forEach((card, i) => {
                 const s = state.selectedIndices.includes(i); const isRed = card.suit === '♥' || card.suit === '♦';
@@ -894,7 +943,6 @@
             });
             hc.onmousedown = (e) => handleInteractionStart(e); hc.ontouchstart = (e) => handleInteractionStart(e);
             state.hand.forEach(c => c.batchId = -1);
-
             const jb = document.getElementById('joker-bank'); jb.innerHTML = '';
             if (state.bankedJokers > 0) {
                 const j = document.createElement('div'); j.className = `joker-slot w-14 h-20 sm:w-20 sm:h-28 rounded-xl flex flex-col items-center justify-center border-2 sm:border-4 ${state.jokerSelected ? 'joker-selected' : 'bg-white border-zinc-300'} text-zinc-900 shadow-xl cursor-pointer`;
@@ -903,6 +951,7 @@
                     e.stopPropagation(); const totalSelected = state.selectedIndices.length + (state.jokerSelected ? 1 : 0);
                     if (!state.jokerSelected && totalSelected >= 5) return; 
                     playSound('select'); state.jokerSelected = !state.jokerSelected; render(); 
+                    saveGame();
                 }; jb.appendChild(j);
             }
             const pb = document.getElementById('powerups-bank'); pb.innerHTML = '';
@@ -947,7 +996,14 @@
         document.getElementById('close-rules').onclick = () => { playSound('select'); document.getElementById('rules-overlay').classList.add('hidden'); };
         document.getElementById('restart-game-btn').onclick = resetGame;
         document.getElementById('next-round-btn').onclick = () => { playSound('select'); state.isShopOpen = false; document.getElementById('shop-overlay').classList.add('hidden'); state.round++; startRound(); };
-        window.onload = startRound;
+        
+        window.onload = () => {
+            if (!loadGame()) {
+                startRound();
+            } else {
+                render();
+            }
+        };
     </script>
 </body>
 </html>
