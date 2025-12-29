@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    
-     <link rel="shortcut icon" type="image/x-icon" href="images/favicon.ico">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>BALATRO MINI</title>
+    <link rel="shortcut icon" type="image/x-icon" href="images/favicon.ico">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Bungee&family=Inter:wght@400;700;900&display=swap');
@@ -16,7 +15,7 @@
             color: #f8fafc;
             font-family: 'Inter', sans-serif;
             overflow: hidden; 
-            height: 100dvh; /* Dynamic viewport height for mobile browsers */
+            height: 100dvh; 
             width: 100vw;
             touch-action: none;
             user-select: none;
@@ -71,13 +70,10 @@
             z-index: 20;
         }
 
-        /* Deck Viewer Specific Styling */
         .deck-card-mini {
             transition: transform 0.2s, z-index 0.2s;
             position: relative;
         }
-
-        /* Hover animation removed per request to prevent layout instability on mobile */
 
         .deck-card-spent {
             opacity: 0.2;
@@ -205,38 +201,41 @@
         </div>
 
         <!-- Main Play Area -->
-        <div class="flex-grow flex flex-col justify-between relative overflow-hidden py-1 sm:py-2">
+        <div class="flex-grow flex flex-col relative overflow-hidden py-1 sm:py-2">
             
             <div class="absolute inset-x-0 top-0 flex justify-between items-start pointer-events-none z-20 px-1">
-                <div id="joker-bank" class="flex flex-col gap-1 sm:gap-2 pointer-events-auto"></div>
-                <div id="powerups-bank" class="flex flex-row gap-1 sm:gap-2 pointer-events-auto"></div>
+                <div id="joker-bank" class="flex flex-col gap-1 sm:gap-2 pointer-events-auto items-center sm:items-start"></div>
+                <div id="powerups-bank" class="flex flex-row gap-1 sm:gap-2 pointer-events-auto items-center sm:items-end"></div>
             </div>
 
-            <!-- Feedback -->
-            <div id="hand-feedback" class="text-center min-h-[50px] sm:min-h-[80px] flex flex-col items-center justify-center mt-2">
-                <p id="status-message" class="text-lg sm:text-2xl font-bungee text-white hidden mb-1 drop-shadow-lg"></p>
-                <div class="flex flex-col items-center">
-                    <p id="current-hand-type" class="text-xl sm:text-3xl font-bungee text-orange-400 hidden drop-shadow-[0_0_10px_rgba(251,146,60,0.5)]"></p>
-                    <p id="hand-level-display" class="text-[8px] sm:text-[10px] font-black text-blue-400 hidden uppercase tracking-widest mt-0.5">Level 1</p>
+            <!-- Top Feedback & Controls Section -->
+            <div class="flex flex-col items-center">
+                <!-- Feedback -->
+                <div id="hand-feedback" class="text-center min-h-[50px] sm:min-h-[80px] flex flex-col items-center justify-center mt-2">
+                    <p id="status-message" class="text-lg sm:text-2xl font-bungee text-white hidden mb-1 drop-shadow-lg"></p>
+                    <div class="flex flex-col items-center">
+                        <p id="current-hand-type" class="text-xl sm:text-3xl font-bungee text-orange-400 hidden drop-shadow-[0_0_10px_rgba(251,146,60,0.5)] text-center"></p>
+                        <p id="hand-level-display" class="text-[8px] sm:text-[10px] font-black text-blue-400 hidden uppercase tracking-widest mt-0.5">Level 1</p>
+                    </div>
+                    <p id="current-hand-score" class="text-sm sm:text-xl font-bold text-white hidden"></p>
                 </div>
-                <p id="current-hand-score" class="text-sm sm:text-xl font-bold text-white hidden"></p>
-            </div>
 
-            <!-- Sort/View Controls -->
-            <div class="flex flex-col items-center gap-1 sm:gap-2 mt-auto">
-                <div class="flex justify-center gap-1 sm:gap-2">
+                <!-- Sort/View Controls -->
+                <div class="flex justify-center gap-1 sm:gap-2 mt-1 sm:mt-2">
                     <button id="sort-rank-btn" class="bg-zinc-800 hover:bg-zinc-700 text-[7px] sm:text-[10px] font-black uppercase tracking-widest px-2 sm:px-4 py-1 rounded border border-zinc-600 transition">Sort Rank</button>
                     <button id="sort-suit-btn" class="bg-zinc-800 hover:bg-zinc-700 text-[7px] sm:text-[10px] font-black uppercase tracking-widest px-2 sm:px-4 py-1 rounded border border-zinc-600 transition">Sort Suit</button>
                     <button id="view-deck-btn" class="bg-zinc-800 hover:bg-zinc-700 text-[7px] sm:text-[10px] font-black uppercase tracking-widest px-2 sm:px-4 py-1 rounded border border-zinc-600 transition text-orange-400">View Deck</button>
                 </div>
             </div>
 
-            <!-- Hand -->
-            <div id="hand-container" class="flex justify-center items-end gap-1 sm:gap-3 flex-wrap px-1 min-h-[120px] sm:min-h-[180px] py-2 sm:py-4"></div>
+            <!-- Central Hand Container (Vertically Centered) -->
+            <div class="flex-grow flex items-center justify-center overflow-hidden">
+                <div id="hand-container" class="flex justify-center items-end gap-1 sm:gap-3 flex-wrap px-1 w-full"></div>
+            </div>
 
-            <!-- Actions -->
-            <div class="flex flex-col items-center gap-2 sm:gap-4 mt-1">
-                <div id="selection-hint" class="text-zinc-500 text-[8px] sm:text-xs font-bold uppercase tracking-widest h-3">Select up to 5 cards</div>
+            <!-- Bottom Actions Section -->
+            <div class="flex flex-col items-center mt-auto pb-1 sm:pb-2">
+                <div id="selection-hint" class="text-zinc-500 text-[8px] sm:text-xs font-bold uppercase tracking-widest h-3 mb-1 sm:mb-2">Select up to 5 cards</div>
                 <div class="flex justify-center gap-4 sm:gap-6">
                     <button id="play-btn" class="balatro-btn-blue hover:brightness-110 disabled:grayscale disabled:opacity-40 text-white font-bungee px-8 sm:px-14 py-3 sm:py-4 rounded-lg shadow-xl transform transition active:translate-y-1 text-xs sm:text-base">
                         PLAY HAND
@@ -250,7 +249,7 @@
 
         <!-- Inventory -->
         <div class="mt-2 p-2 bg-zinc-900/80 rounded-xl flex items-center gap-2 border border-zinc-700 shadow-inner overflow-x-auto whitespace-nowrap">
-            <p class="text-[9px] font-bold text-zinc-500 uppercase italic">Inventory:</p>
+            <p class="text-[9px] font-bold text-zinc-500 uppercase italic">INVENTORY:</p>
             <div id="token-list" class="flex gap-1"></div>
         </div>
     </div>
@@ -264,7 +263,7 @@
                     <button id="close-deck" class="text-white hover:text-black font-bold text-xl sm:text-2xl px-2">&times;</button>
                 </div>
             </div>
-            <div id="deck-view-content" class="deck-content p-4 sm:p-8 overflow-y-auto space-y-4 sm:space-y-8 flex flex-col justify-start"></div>
+            <div id="deck-view-content" class="deck-content p-4 sm:p-8 overflow-y-auto space-y-6 flex flex-col justify-start"></div>
         </div>
     </div>
 
@@ -785,14 +784,12 @@
             SUITS.forEach(suit => {
                 const suitRow = document.createElement('div'); suitRow.className = "flex gap-2 sm:gap-8 items-center w-full justify-center";
                 
-                // LEFT INDICATOR
                 const leftIndicator = document.createElement('div');
                 leftIndicator.className = `w-8 h-10 sm:w-14 sm:h-16 flex items-center justify-center font-bungee text-lg sm:text-3xl bg-zinc-800 rounded-lg shrink-0 ${suit === '♥' || suit === '♦' ? 'text-red-500' : 'text-zinc-400'}`;
                 leftIndicator.textContent = suit; suitRow.appendChild(leftIndicator);
                 
-                // CARD GRID (4 Columns on mobile)
                 const cardContainer = document.createElement('div'); 
-                cardContainer.className = "grid grid-cols-4 sm:flex gap-1 sm:gap-3 justify-center overflow-x-auto pb-1";
+                cardContainer.className = "grid grid-cols-7 sm:flex gap-1 sm:gap-3 justify-center pb-1";
                 
                 let suitCount = 0;
                 displayValues.forEach(val => {
@@ -806,7 +803,6 @@
                 });
                 suitRow.appendChild(cardContainer);
                 
-                // RIGHT INDICATOR
                 const rightIndicator = document.createElement('div');
                 rightIndicator.className = `w-8 h-10 sm:w-14 sm:h-16 flex items-center justify-center font-bungee text-base sm:text-2xl bg-zinc-800 rounded-lg shrink-0 ${suit === '♥' || suit === '♦' ? 'text-red-500' : 'text-zinc-400'}`;
                 rightIndicator.textContent = suitCount; suitRow.appendChild(rightIndicator);
@@ -869,7 +865,7 @@
                 let score = isDebuffed ? 0 : Math.round(baseVal * (1 + (level - 1) * 0.5));
                 if (state.doubleNextPlay) score *= 2;
                 fh.textContent = (prospective === 'Royal Flush' && state.jokerSelected) ? 'WILD ROYAL FLUSH' : prospective.toUpperCase();
-                fh.className = `text-lg sm:text-3xl font-bungee ${isLegendary ? 'text-orange-400 drop-shadow-[0_0_15px_rgba(251,146,60,0.8)]' : 'text-white'} drop-shadow-lg`;
+                fh.className = `text-lg sm:text-3xl font-bungee ${isLegendary ? 'text-orange-400 drop-shadow-[0_0_15px_rgba(251,146,60,0.8)]' : 'text-white'} drop-shadow-lg text-center`;
                 fh.classList.remove('hidden'); 
                 fl.textContent = `Level ${level}`; fl.classList.remove('hidden');
                 fs.textContent = isDebuffed ? "0 Points (Invalid Suit)" : `+${score} Points`; 
@@ -951,4 +947,3 @@
     </script>
 </body>
 </html>
-
