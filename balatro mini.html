@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Balatro Mini</title>
+    <title>BALATRO MINI</title>
     <link rel="shortcut icon" type="image/x-icon" href="images/favicon.ico">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -474,6 +474,12 @@
                 try {
                     const loadedState = JSON.parse(saved);
                     Object.assign(state, loadedState);
+                    
+                    // RE-INITIALIZE NON-SERIALIZABLE OBJECTS (Fix for selection bug)
+                    state.swipeTouchedIndices = new Set();
+                    state.isSwipeSelecting = false;
+                    state.selectedIndices = state.selectedIndices || [];
+                    
                     if (state.currentBoss) {
                         const bossDisplay = document.getElementById('boss-display');
                         bossDisplay.textContent = `ACTIVE BOSS: ${state.currentBoss.name} - ${state.currentBoss.desc}`;
@@ -861,7 +867,10 @@
         }
 
         function handleInteractionStart(e, index = null) {
-            if (e.cancelable) e.preventDefault(); state.isSwipeSelecting = true; state.swipeTouchedIndices.clear();
+            if (e.cancelable) e.preventDefault(); state.isSwipeSelecting = true; 
+            // Safety check for Set initialization
+            if (!(state.swipeTouchedIndices instanceof Set)) state.swipeTouchedIndices = new Set();
+            state.swipeTouchedIndices.clear();
             if (index !== null) {
                 const isAlreadySelected = state.selectedIndices.includes(index);
                 state.swipeMode = isAlreadySelected ? 'deselect' : 'select'; toggleCardSelection(index, state.swipeMode); state.swipeTouchedIndices.add(index);
@@ -879,13 +888,13 @@
             const cardEl = target?.closest('[data-card-index]');
             if (cardEl) {
                 const index = parseInt(cardEl.getAttribute('data-card-index'));
-                if (!state.swipeTouchedIndices.has(index)) { 
+                if (state.swipeTouchedIndices instanceof Set && !state.swipeTouchedIndices.has(index)) { 
                     toggleCardSelection(index, state.swipeMode); 
                     state.swipeTouchedIndices.add(index); 
                 }
             }
         }
-        function stopInteraction() { state.isSwipeSelecting = false; state.swipeTouchedIndices.clear(); }
+        function stopInteraction() { state.isSwipeSelecting = false; if (state.swipeTouchedIndices instanceof Set) state.swipeTouchedIndices.clear(); }
         function toggleCardSelection(index, mode) {
             const pos = state.selectedIndices.indexOf(index); const totalSelected = state.selectedIndices.length + (state.jokerSelected ? 1 : 0);
             if (mode === 'select') { if (pos === -1 && totalSelected < 5) { playSound('select'); state.selectedIndices.push(index); } }
