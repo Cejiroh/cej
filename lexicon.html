@@ -448,6 +448,7 @@
         (function() {
             var kbLayout = [ "qwertyuiop".split(""), "asdfghjkl".split(""), ["DEL", ..."zxcvbnm".split(""), "⏎"] ];
             let timerInterval = null;
+            let delRepeatInterval = null;
 
             const AudioEngine = {
                 ctx: null,
@@ -482,7 +483,7 @@
 
             const CURATED_TARGETS = {
                 4: ["book", "page", "font", "word", "ink", "read", "sign", "tale", "lore", "myth", "bard", "text", "poem", "verb", "writ", "city", "cold", "dark", "data", "fire", "fish", "gold", "hand", "hard", "home", "hope", "kind", "king", "land", "life", "love", "moon", "name", "near", "open", "path", "play", "rain", "real", "road", "rock", "save", "star", "time", "tree", "true", "walk", "wind", "work", "year", "milk", "silk", "cake", "lake", "meal", "boat", "coat", "lamp", "camp", "heal", "meat", "neat", "beat", "feel", "dead", "pest", "test", "west", "east"],
-                5: ["write", "story", "verse", "rhyme", "quill", "paper", "novel", "shelf", "study", "clue", "logic", "craft", "atlas", "folio", "prose", "about", "above", "agent", "alarm", "album", "alert", "alive", "alone", "along", "apple", "audio", "beach", "begin", "black", "blood", "board", "brain", "brand", "bread", "break", "breed", "brief", "bring", "broad", "broke", "brown", "build", "built", "buyer", "cable", "carry", "catch", "cause", "chain", "chair", "chart", "chase", "cheap", "check", "chest", "chief", "child", "china", "chose", "civil", "claim", "class", "clean", "clear", "climb", "clock", "close", "coach", "coast", "could", "count", "court", "cover", "crash", "cream", "crime", "cross", "crowd", "crown", "curve", "cycle", "daily", "dance", "dated", "dealt", "death", "debut", "delay", "depth", "doing", "doubt", "dozen", "draft", "drama", "drawn", "dream", "dress", "drill", "drink", "drive", "early", "earth", "eight", "empty", "entry", "equal", "error", "event", "every", "exact", "exist", "extra", "faith", "false", "fault", "fiber", "field", "fifth", "fifty", "fight", "final", "first", "fixed", "flash", "fleet", "floor", "fluid", "focus", "force", "forth", "forty", "forum", "found", "frame", "frank", "fraud", "fresh", "front", "fruit", "fully", "funny", "giant", "given", "glass", "globe", "going", "grace", "grade", "grand", "grant", "graph", "great", "green", "group", "grown", "guard", "guess", "guest", "guide", "habit", "happy", "heart", "heavy", "hence", "horse", "hotel", "house", "human", "ideal", "image", "index", "inner", "input", "issue", "joint", "judge", "known", "label", "layer", "learn", "lease", "least", "leave", "legal", "level", "light", "limit", "links", "lives", "local", "loose", "lower", "lucky", "lunch", "lying", "magic", "major", "maker", "march", "match", "maybe", "mayor", "meant", "media", "metal", "might", "minor", "money", "month", "moral", "motor", "mount", "mouse", "mouth", "movie", "music", "never", "night", "noise", "north", "novel", "nurse", "occur", "ocean", "offer", "order", "other", "ought", "paint", "paper", "party", "peace", "phone", "photo", "piece", "pilot", "pitch", "place", "plain", "plane", "plant", "plate", "point", "pound", "power", "press", "price", "pride", "prime", "print", "prior", "prize", "proof", "proud", "prove", "queen", "quick", "quiet", "quite", "radio", "raise", "range", "rapid", "ratio", "reach", "ready", "refer", "right", "rival", "river", "rough", "round", "route", "royal", "rural", "scale", "scene", "scope", "score", "sense", "serve", "seven", "shape", "share", "sharp", "sheet", "shelf", "shell", "shift", "shirt", "shock", "shock", "shoot", "short", "sight", "since", "sixth", "skill", "skill", "sleep", "slide", "small", "smart", "smile", "smith", "smoke", "solid", "solve", "sorry", "sound", "south", "space", "spare", "speak", "speed", "spend", "spent", "split", "spoke", "sport", "staff", "stage", "stake", "stand", "start", "state", "steam", "steel", "stick", "still", "stock", "stone", "store", "storm", "strip", "stuck", "sugar", "suite", "super", "sweet", "table", "taken", "taste", "texas", "thank", "theft", "their", "theme", "there", "these", "thick", "thing", "think", "third", "those", "three", "throw", "tight", "times", "tired", "title", "today", "topic", "total", "touch", "tough", "tower", "track", "trade", "train", "treat", "trend", "trial", "tried", "truck", "truly", "trust", "truth", "twice", "under", "union", "until", "upper", "urban", "usage", "usual", "valid", "value", "video", "virus", "visit", "vital", "voice", "waste", "watch", "water", "wheel", "where", "which", "while", "white", "whole", "whose", "woman", "world", "worry", "worse", "worst", "worth", "would", "wound", "wrong", "wrote", "yield", "young", "youth"]
+                5: ["write", "story", "verse", "rhyme", "quill", "paper", "novel", "shelf", "study", "clue", "logic", "craft", "atlas", "folio", "prose", "about", "above", "agent", "alarm", "album", "alert", "alive", "alone", "along", "apple", "audio", "beach", "begin", "black", "blood", "board", "brain", "brand", "bread", "break", "breed", "brief", "bring", "broad", "broke", "brown", "build", "built", "buyer", "cable", "carry", "catch", "cause", "chain", "chair", "chart", "chase", "cheap", "check", "chest", "chief", "child", "china", "chose", "civil", "claim", "class", "clean", "clear", "climb", "clock", "close", "coach", "coast", "could", "count", "court", "cover", "crash", "cream", "crime", "cross", "crowd", "crown", "curve", "cycle", "daily", "dance", "dated", "dealt", "death", "debut", "delay", "depth", "doing", "doubt", "dozen", "draft", "drama", "drawn", "dream", "dress", "drill", "drink", "drive", "early", "earth", "eight", "empty", "entry", "equal", "error", "event", "every", "exact", "exist", "extra", "faith", "false", "fault", "fiber", "field", "fifth", "fifty", "fight", "final", "first", "fixed", "flash", "fleet", "floor", "fluid", "focus", "force", "forth", "forty", "forum", "found", "frame", "frank", "fraud", "fresh", "front", "fruit", "fully", "funny", "giant", "given", "glass", "globe", "going", "grace", "grade", "grand", "grant", "graph", "great", "green", "group", "grown", "guard", "guess", "guest", "guide", "habit", "happy", "heart", "heavy", "hence", "horse", "hotel", "house", "human", "ideal", "image", "index", "inner", "input", "issue", "joint", "judge", "known", "label", "layer", "learn", "lease", "least", "leave", "legal", "level", "light", "limit", "links", "lives", "local", "loose", "lower", "lucky", "lunch", "lying", "magic", "major", "maker", "march", "match", "maybe", "mayor", "meant", "media", "metal", "might", "minor", "money", "month", "moral", "motor", "mount", "mouse", "mouth", "movie", "music", "never", "night", "noise", "north", "novel", "nurse", "occur", "ocean", "offer", "order", "other", "ought", "paint", "paper", "party", "peace", "phone", "photo", "piece", "pilot", "pitch", "place", "plain", "plane", "plant", "plate", "point", "pound", "power", "press", "price", "pride", "prime", "print", "prior", "prize", "proof", "proud", "prove", "queen", "quick", "quiet", "quite", "radio", "raise", "range", "rapid", "ratio", "reach", "ready", "refer", "right", "rival", "river", "rough", "round", "route", "royal", "rural", "scale", "scene", "scope", "score", "sense", "serve", "seven", "shape", "share", "sharp", "sheet", "shelf", "shell", "shift", "shirt", "shirt", "shock", "shoot", "short", "sight", "since", "sixth", "skill", "skill", "sleep", "slide", "small", "smart", "smile", "smith", "smoke", "solid", "solve", "sorry", "sound", "south", "space", "spare", "speak", "speed", "spend", "spent", "split", "spoke", "sport", "staff", "stage", "stake", "stand", "start", "state", "steam", "steel", "stick", "still", "stock", "stone", "store", "storm", "strip", "stuck", "sugar", "suite", "super", "sweet", "table", "taken", "taste", "texas", "thank", "theft", "their", "theme", "there", "these", "thick", "thing", "think", "third", "those", "three", "throw", "tight", "times", "tired", "title", "today", "topic", "total", "touch", "tough", "tower", "track", "trade", "train", "treat", "trend", "trial", "tried", "truck", "truly", "trust", "truth", "twice", "under", "union", "until", "upper", "urban", "usage", "usual", "valid", "value", "video", "virus", "visit", "vital", "voice", "waste", "watch", "water", "wheel", "where", "which", "while", "white", "whole", "whose", "woman", "world", "worry", "worse", "worst", "worth", "would", "wound", "wrong", "wrote", "yield", "young", "youth"]
             };
 
             const BOSS_DATA = {
@@ -502,10 +503,11 @@
 
             const ITEMS = {
                 'potion': { emoji: '🧪', name: 'Health Potion', desc: 'Heal 15 Vit.', cost: 5, type: 'cons', canUseInShop: true, run: () => heal(15) },
-                'dust': { emoji: '👁️', name: 'Scryer Dust', desc: 'Visual reveal of 1 letter.', cost: 25, type: 'cons', canUseInShop: false, run: () => revealOne() },
+                'dust': { emoji: '👁️', name: 'Scryer Dust', desc: 'Reveal non-green letter.', cost: 25, type: 'cons', canUseInShop: false, run: () => revealOne() },
                 'purge': { emoji: '📜', name: 'Purge Scroll', desc: 'Remove 5 wrong keys.', cost: 30, type: 'cons', canUseInShop: false, run: () => purgeKeys() },
-                'coupon': { emoji: '🎟️', name: 'Haggler Charm', desc: '50% off next buy.', cost: 65, type: 'cons', canUseInShop: true, run: () => { window.G.discountActive = true; toast("Price Halved"); } },
+                'coupon': { emoji: '🎟️', name: 'Haggler Charm', desc: '50% off next buy.', cost: 65, type: 'cons', canUseInShop: true, run: () => { window.G.discountActive = true; toast("Price Halved"); if(typeof renderShop === 'function') renderShop(); } },
                 'feather': { emoji: '🪶', name: 'Phoenix Feather', desc: 'Revive at 50% Vit.', cost: 230, type: 'perm', run: () => { window.G.upgrades.push('feather'); window.G.hasPhoenix = true; } },
+                'midas': { emoji: '🪙', name: 'Midas Touch', desc: '+15 Coins/win.', cost: 110, type: 'perm', run: () => { window.G.upgrades.push('midas'); } },
                 'midas': { emoji: '🪙', name: 'Midas Touch', desc: '+15 Coins/win.', cost: 110, type: 'perm', run: () => { window.G.upgrades.push('midas'); } },
                 'dict': { emoji: '📖', name: 'Encyclopedia', desc: '+1 Guess.', cost: 160, type: 'perm', run: () => { window.G.maxGuesses++; window.G.upgrades.push('dict'); } },
                 'vamp': { emoji: '🖋️', name: 'Vampiric Ink', desc: 'Heal 3 per new Green found.', cost: 140, type: 'perm', run: () => { window.G.upgrades.push('vamp'); } },
@@ -569,7 +571,7 @@
 
             async function loadLexicon() {
                 try {
-                    const r = await fetch('https://raw.githubusercontent.com/benjamincrom/scrabble/refs/heads/master/scrabble/dictionary.json');
+                    const r = await fetch('https://raw.githubusercontent.com/benjamincrom/scrabble/master/scrabble/dictionary.json');
                     const data = await r.json();
                     data.forEach(w => { if(w.length>=4 && w.length<=8) { if(!FULL_LEXICON[w.length]) FULL_LEXICON[w.length] = new Set(); FULL_LEXICON[w.length].add(w.toLowerCase()); } });
                 } catch(e) { Object.keys(CURATED_TARGETS).forEach(l => { FULL_LEXICON[l] = new Set(CURATED_TARGETS[l]); }); }
@@ -637,7 +639,7 @@
                 const list = Array.from(pool);
                 window.G.targetWord = list[Math.floor(Math.random()*list.length)];
                 
-                if(window.G.floor === 9 && !window.G.isEndless) triggerBoss("Chimera");
+                if(window.G.floor === 20 && !window.G.isEndless) triggerBoss("Chimera");
                 else if(window.G.archetype === 'hunter' || window.G.floor % 3 === 0) triggerBoss();
                 else if(window.G.floor > 2 && Math.random() > 0.6) window.G.modifiers.push("Hazards");
                 
@@ -748,14 +750,12 @@
                         
                         if (s) {
                             if (isIllusionist && s === 'correct') s = 'present';
-                            // Siren: Vowels remain neutral on keyboard (no color)
                             if (!(isSiren && vowels.includes(low))) {
                                 btn.classList.add(s);
                             }
                         }
                         
                         if(window.G.forbiddenLetters.has(low)) {
-                            // Siren: Vowels remain neutral even if absent/forbidden
                             if (!(isSiren && vowels.includes(low))) {
                                 btn.classList.add('absent');
                             }
@@ -764,7 +764,18 @@
                         if(window.G.corruptedKeys.includes(low)) btn.classList.add('corrupted');
                         if(window.G.taxedLetters.includes(low)) btn.classList.add('taxed');
                         
-                        btn.onclick = () => handleKey(k);
+                        if (k === "DEL") {
+                            btn.onmousedown = btn.ontouchstart = (e) => { 
+                                e.preventDefault(); 
+                                handleKey("DEL");
+                                delRepeatInterval = setInterval(() => handleKey("DEL"), 150);
+                            };
+                            btn.onmouseup = btn.ontouchend = btn.onmouseleave = () => {
+                                clearInterval(delRepeatInterval);
+                            };
+                        } else {
+                            btn.onclick = () => handleKey(k);
+                        }
                         rowEl.appendChild(btn);
                     });
                 });
@@ -776,7 +787,6 @@
                 else if(k === "DEL") window.G.currentGuess = window.G.currentGuess.slice(0, -1);
                 else if(window.G.currentGuess.length < window.G.targetWord.length) {
                     const low = k.toLowerCase();
-                    // All archetypes blocked by void letters now (reverting Outcast bypass)
                     if(window.G.forbiddenLetters.has(low)) { 
                         toast("Key Consumed by the Void"); 
                         return; 
@@ -804,7 +814,6 @@
                 const mimicLie = window.G.modifiers.includes("Glitch") ? Math.floor(Math.random() * g.length) : -1;
                 let newGreens = 0;
 
-                // Dictionary validation block - Outcast bypasses validation entirely
                 if (!isDictionaryWord && !isOutcast) {
                     if (window.G.archetype === 'cursed') {
                         toast("Cursed Archetype: Invalid Guess");
@@ -813,18 +822,16 @@
                     } else {
                         window.G.unknownCount++;
                         if (window.G.unknownCount < 5) {
-                            toast(`Unknown (${window.G.unknownCount}/5)`);
+                            toast(`Obscure Word (${window.G.unknownCount}/5)`);
                             AudioEngine.playWrong();
                             return; 
                         }
-                        
-                        toast("Unknown Knowledge Penalty");
+                        toast("Obscure Word Penalty");
                         window.G.unknownCount = 0; 
                         for(let i=0; i<g.length; i++) statusArr.push('invalid');
                         AudioEngine.playWrong();
                     }
                 } else {
-                    // Outcast or Valid Word: Perform normal check logic
                     window.G.unknownCount = 0; 
                     if(window.G.modifiers.includes("Censor") && g !== window.G.targetWord) {
                         takeDamage(10);
@@ -839,6 +846,8 @@
                         statusArr.push(s);
                         if(s==='correct' || !window.G.keyStatus[g[i]]) window.G.keyStatus[g[i]] = s;
                         if(s==='absent') window.G.forbiddenLetters.add(g[i]);
+                        
+                        // Hazards: reduce vitality
                         if(window.G.hazardTiles.some(h=>h.r===window.G.guesses.length && h.c===i) && g[i]!==window.G.targetWord[i]) takeDamage(12);
                     }
                 }
@@ -846,7 +855,17 @@
                 if(window.G.upgrades.includes('vamp') && newGreens > 0) heal(newGreens * 3);
                 if(window.G.modifiers.includes("Void")) {
                     const activeKeys = "abcdefghijklmnopqrstuvwxyz".split("").filter(l => !window.G.forbiddenLetters.has(l));
-                    for(let i=0; i<2; i++) if(activeKeys.length) window.G.forbiddenLetters.add(activeKeys.splice(Math.floor(Math.random()*activeKeys.length),1)[0]);
+                    // Fix: Siren never sends vowels to void
+                    const filteredKeys = window.G.modifiers.includes("Siren") 
+                        ? activeKeys.filter(l => !"aeiou".includes(l)) 
+                        : activeKeys;
+                    
+                    for(let i=0; i<2; i++) {
+                        if(filteredKeys.length) {
+                            const pick = filteredKeys.splice(Math.floor(Math.random()*filteredKeys.length), 1)[0];
+                            window.G.forbiddenLetters.add(pick);
+                        }
+                    }
                 }
                 window.G.guesses.push({word: g, status: statusArr});
                 window.G.currentGuess = "";
@@ -855,9 +874,14 @@
             }
 
             function heal(amt) { window.G.hp = Math.min(window.G.maxHp, window.G.hp + amt); updateUI(); }
+            
             function revealOne() { 
                 const available = [];
-                for(let i=0; i<window.G.targetWord.length; i++) if(!window.G.hints[i]) available.push(i);
+                for(let i=0; i<window.G.targetWord.length; i++) {
+                    const char = window.G.targetWord[i];
+                    // Fix: reveal non-green letter only
+                    if(!window.G.hints[i] && window.G.keyStatus[char] !== 'correct') available.push(i);
+                }
                 if(available.length) {
                     const idx = available[Math.floor(Math.random()*available.length)];
                     window.G.hints[idx] = window.G.targetWord[idx];
@@ -865,6 +889,7 @@
                     renderGrid(); renderKeyboard(); toast("Letter Revealed");
                 }
             }
+
             function purgeKeys() {
                 const candidates = "abcdefghijklmnopqrstuvwxyz".split("").filter(l => !window.G.targetWord.includes(l) && !window.G.forbiddenLetters.has(l));
                 for(let i=0; i<5; i++) if(candidates.length) window.G.forbiddenLetters.add(candidates.splice(Math.floor(Math.random()*candidates.length), 1)[0]);
@@ -893,7 +918,7 @@
                 let total = 30 + (window.G.targetWord.length-4)*10 + (window.G.maxGuesses - window.G.guesses.length) * 15;
                 if(window.G.archetype === 'scholar') total *= 1.5;
                 if(window.G.upgrades.includes('midas')) total += 15;
-                if(window.G.bossActive) total += 20; // Defeating boss bonus
+                if(window.G.bossActive) total += 20; 
                 window.G.coins += Math.floor(total);
                 if(!window.G.isEndless && window.G.floor === 9) {
                     setTimeout(() => document.getElementById('victory-modal').style.display='flex', 1000);
@@ -925,7 +950,7 @@
                 setTimeout(() => { showScreen('screen-shop'); renderShop(); updateUI(); }, 800);
             }
 
-            function renderShop() {
+            window.renderShop = function() {
                 const cont = document.getElementById('shop-items'); cont.innerHTML = "";
                 window.G.currentShopPool.forEach(k => {
                     const it = ITEMS[k];
@@ -957,7 +982,7 @@
             };
 
             function updateUI() {
-                const rom = ["0","I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII","XIII","XIV","XV","XVI"];
+                const rom = ["0","I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII","XIII","XIV","XV","XVI","XVII","XVIII","XIX","XX"];
                 document.getElementById('floor-val').innerText = rom[window.G.floor] || window.G.floor;
                 document.getElementById('hp-val').innerText = `${Math.ceil(window.G.hp)} / ${window.G.maxHp}`;
                 document.getElementById('hp-bar').style.width = (window.G.hp/window.G.maxHp*100)+"%";
