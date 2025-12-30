@@ -603,7 +603,8 @@
             window.startRun = (type) => {
                 AudioEngine.init();
                 window.G = createInitialState();
-                window.G.archetype = type; window.G.coins = 50; 
+                window.G.archetype = type; 
+                window.G.coins = (type === 'hunter') ? 100 : 50; 
                 if(type === 'poet') { window.G.hp = window.G.maxHp = 80; window.G.maxGuesses = 7; }
                 else if(type === 'scholar') { window.G.hp = window.G.maxHp = 40; window.G.maxGuesses = 6; }
                 else if(type === 'hunter') { window.G.hp = window.G.maxHp = 100; window.G.maxGuesses = 6; }
@@ -746,10 +747,7 @@
                         let s = window.G.keyStatus[low];
                         
                         if (s) {
-                            // Illusionist: Keyboard correct keys appear yellow
                             if (isIllusionist && s === 'correct') s = 'present';
-
-                            // Siren: Keyboard vowels remain neutral - REMOVED per fix request
                             btn.classList.add(s);
                         }
                         
@@ -769,7 +767,10 @@
                 else if(k === "DEL") window.G.currentGuess = window.G.currentGuess.slice(0, -1);
                 else if(window.G.currentGuess.length < window.G.targetWord.length) {
                     const low = k.toLowerCase();
-                    if(window.G.forbiddenLetters.has(low)) { toast("Key Consumed by the Void"); return; }
+                    if(window.G.forbiddenLetters.has(low) && window.G.archetype !== 'outcast') { 
+                        toast("Key Consumed by the Void"); 
+                        return; 
+                    }
                     
                     if(window.G.modifiers.includes("Tax") && window.G.taxedLetters.includes(low)) {
                         if(window.G.coins < 5) { toast("Not enough Coins (Taxed)"); return; }
@@ -793,18 +794,25 @@
                 let newGreens = 0;
 
                 // Unknown Words handle
-                if(!isValid && window.G.archetype !== 'cursed') { 
-                    window.G.unknownCount++;
-                    if (window.G.unknownCount < 5) {
-                        toast(`Unknown (${window.G.unknownCount}/5)`);
+                if (!isValid) {
+                    if (window.G.archetype === 'cursed') {
+                        // Automatic invalid for cursed
+                        toast("Cursed Archetype: Invalid Guess");
+                        for(let i=0; i<g.length; i++) statusArr.push('invalid');
                         AudioEngine.playWrong();
-                        return; // Exit early, no attempt consumed
+                    } else {
+                        window.G.unknownCount++;
+                        if (window.G.unknownCount < 5) {
+                            toast(`Unknown (${window.G.unknownCount}/5)`);
+                            AudioEngine.playWrong();
+                            return; // Exit early, no attempt consumed
+                        }
+                        
+                        toast("Unknown Knowledge Penalty");
+                        window.G.unknownCount = 0; 
+                        for(let i=0; i<g.length; i++) statusArr.push('invalid');
+                        AudioEngine.playWrong();
                     }
-                    
-                    toast("Unknown Knowledge Penalty");
-                    window.G.unknownCount = 0; // Reset after penalty
-                    for(let i=0; i<g.length; i++) statusArr.push('invalid');
-                    AudioEngine.playWrong();
                 } else {
                     window.G.unknownCount = 0; // Reset on valid word
                     if(window.G.modifiers.includes("Censor") && g !== window.G.targetWord) {
@@ -930,8 +938,9 @@
                         else { toast("Bag Full!"); window.G.coins += cost; return; }
                     } else it.run();
                     window.G.floorPurchases.add(k); 
-                    if(it.name === 'Haggler Charm') window.G.discountActive = true;
-                    else window.G.discountActive = false;
+                    
+                    if (window.G.discountActive) window.G.discountActive = false; 
+                    
                     updateUI(); renderShop(); saveGame();
                 } else toast("Not enough Coins");
             };
