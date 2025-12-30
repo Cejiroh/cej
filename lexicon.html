@@ -10,32 +10,50 @@
         :root {
             --bg-color: #d2b48c;
             --ink-black: #1c140d;
+            --parchment-dark: #b89f7a;
             --green: #2d5a27;
             --yellow: #a67c00;
             --gray: #4a443f;
             --hazard: #8b0000;
-            --invalid-red: #5e0000;
+            --invalid-red: #7a0000;
             --accent: #5d3a1a;
             --text: #2c1e14;
             --font-main: 'Crimson Text', serif;
             --font-title: 'Cinzel', serif;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+            -webkit-tap-highlight-color: transparent;
+        }
 
         body {
             background-color: var(--bg-color);
-            background-image: radial-gradient(circle at 50% 50%, transparent 0%, rgba(0,0,0,0.15) 100%), url('https://www.transparenttextures.com/patterns/paper-fibers.png');
+            background-image: 
+                radial-gradient(circle at 50% 50%, transparent 0%, rgba(0,0,0,0.15) 100%),
+                url('https://www.transparenttextures.com/patterns/paper-fibers.png');
             color: var(--text);
             font-family: var(--font-main);
-            height: 100vh; height: 100dvh;
-            width: 100vw; overflow: hidden;
-            display: flex; flex-direction: column; align-items: center;
+            height: 100vh;
+            height: 100dvh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            user-select: none;
+            -webkit-user-select: none;
         }
 
         #damage-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none; z-index: 9999; transition: box-shadow 0.1s;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            box-shadow: inset 0 0 0px rgba(139, 0, 0, 0);
+            z-index: 9999;
+            transition: box-shadow 0.1s;
         }
 
         @keyframes bloodPulse {
@@ -45,123 +63,357 @@
         }
         .damage-flash { animation: bloodPulse 0.4s ease-out forwards; }
 
-        /* Centering Logic */
         .screen {
-            display: none; flex-direction: column;
-            width: 100%; height: 100%;
-            max-width: 500px; padding: 20px;
-            position: relative; justify-content: center; align-items: center;
+            display: none;
+            flex-direction: column;
+            width: 100%;
+            max-width: 500px;
+            flex: 1;
+            padding: 20px;
+            position: relative;
+            justify-content: center; 
+            align-items: center;
             text-align: center;
+            margin: 0 auto;
         }
         .screen.active { display: flex; }
 
-        .screen-content {
-            width: 100%; display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-        }
-
         #main-header {
-            display: none; width: 100%; max-width: 500px;
-            grid-template-columns: 1fr 1.5fr 1fr; gap: 5px;
-            padding: 8px 10px 12px 10px; background: #2c1e14;
-            border: 3px solid #1c140d; margin-top: 10px;
-            border-radius: 6px; color: #d2b48c; z-index: 100;
+            display: none; 
+            flex-shrink: 0;
+            width: 95%;
+            max-width: 500px;
+            grid-template-columns: 1fr 1.5fr 1fr;
+            gap: 5px;
+            padding: 8px 10px 12px 10px;
+            background: #2c1e14;
+            border: 3px solid #1c140d;
+            margin-top: 10px;
+            border-radius: 8px;
+            color: #d2b48c;
+            position: relative;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+            z-index: 100;
         }
 
         .header-panel {
-            background: #b89f7a; border: 1px solid #1c140d;
-            border-radius: 3px; padding: 4px; display: flex;
-            flex-direction: column; justify-content: center; align-items: center;
-            color: var(--ink-black); min-height: 60px;
+            background: #b89f7a;
+            border: 1px solid #1c140d;
+            border-radius: 4px;
+            padding: 4px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: var(--ink-black);
+            min-height: 60px;
         }
 
-        .stat-value { font-family: var(--font-title); font-weight: bold; }
-        .hp-bar-container { width: 100%; height: 6px; background: rgba(0,0,0,0.3); margin-top: 4px; }
-        .hp-bar-fill { height: 100%; background: var(--hazard); transition: width 0.5s; }
+        .stat-label { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); font-weight: bold; }
+        .stat-value { font-size: 1rem; font-weight: bold; line-height: 1.1; font-family: var(--font-title); }
+
+        .hp-bar-container {
+            width: 100%;
+            height: 6px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid #1c140d;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+        .hp-bar-fill { height: 100%; background: linear-gradient(to bottom, var(--hazard), #500); transition: width 0.5s ease; }
 
         .ribbon-btn {
-            position: absolute; bottom: -28px; width: 34px; height: 42px;
-            background: #8b0000; color: #fff; display: flex;
-            align-items: center; justify-content: center; cursor: pointer;
+            position: absolute;
+            bottom: -28px;
+            width: 36px;
+            height: 44px;
+            background: #8b0000;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            cursor: pointer;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.4);
             clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 50% 80%, 0% 100%);
+            transition: transform 0.2s;
+            z-index: 5;
+            border: 1px solid #500;
+            padding-bottom: 5px;
+        }
+        .ribbon-btn.home { left: 10px; background: #3d2b1f; border-color: #1a0f0a; }
+        .ribbon-btn.surrender { right: 10px; background: var(--hazard); }
+        .ribbon-btn.descend { right: 10px; background: var(--green); border-color: #1a3a16; }
+
+        #grid-container { 
+            flex: 1; 
+            width: 100%;
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            overflow: hidden; 
+            padding: 5px 0;
+        }
+        #grid { 
+            display: grid; 
+            gap: 4px; 
+            justify-content: center; 
+            align-content: center;
+            width: 100%;
         }
 
-        /* Keyboard & Grid */
-        #grid { display: grid; gap: 4px; margin: 10px 0; }
         .tile {
-            border: 2px solid #8b7355; background: #fdf5e6;
-            display: flex; align-items: center; justify-content: center;
-            font-weight: bold; font-family: var(--font-title); text-transform: uppercase;
+            border: 2px solid #8b7355;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            text-transform: uppercase;
+            background: #fdf5e6;
+            color: var(--ink-black);
+            position: relative;
+            box-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+            font-family: var(--font-title);
+            border-radius: 4px;
+            transition: background 0.3s;
         }
-        .tile.correct { background: var(--green); color: white; }
-        .tile.present { background: var(--yellow); color: white; }
-        .tile.absent { background: var(--gray); color: rgba(255,255,255,0.3); }
+        .tile.correct { background-color: var(--green); color: #fff; border-color: #1a3a16; }
+        .tile.present { background-color: var(--yellow); color: #fff; border-color: #6a5000; }
+        .tile.absent { background-color: var(--gray); color: rgba(255,255,255,0.4); border-color: #222; }
+        .tile.invalid { background-color: var(--invalid-red); color: #fff; border-color: #400; }
+        .tile.hazard::after { content: '⚔'; position: absolute; top: 0; right: 1px; font-size: 10px; color: var(--hazard); }
+        .tile.blighted { background-color: #1a0f0a !important; color: transparent !important; border-color: #000 !important; box-shadow: inset 0 0 10px #000; }
+        .tile.hidden { opacity: 0; visibility: hidden; }
 
-        .keyboard { display: flex; flex-direction: column; gap: 6px; width: 100%; padding-bottom: 20px; }
-        .kb-row { display: flex; justify-content: center; gap: 4px; }
+        .keyboard { 
+            flex-shrink: 0; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 6px; 
+            padding: 10px 5px 20px 5px; 
+            width: 100%;
+        }
+        .kb-row { display: flex; justify-content: center; gap: 4px; width: 100%; }
         .key {
-            height: 52px; flex: 1; background: #3d2b1f; color: #d2b48c;
-            border-radius: 6px; font-weight: bold; font-family: var(--font-title);
+            height: 52px;
+            flex: 1;
+            background: #3d2b1f; color: #d2b48c; border: 1px solid #2a1d15;
+            border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 1.1rem;
             display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 4px 0 #1a0f0a; border: none;
+            box-shadow: 0 4px 0 #1a0f0a; position: relative;
+            text-transform: uppercase; 
+            font-family: var(--font-title);
         }
-        .key.large { flex: 1.5; }
+        .key.large { flex: 1.5; font-size: 0.85rem; }
+        .key.taxed::after { content: '🪙'; position: absolute; top: -6px; right: -4px; font-size: 11px; }
+        .key.corrupted { background: #500 !important; color: #f00 !important; box-shadow: 0 4px 0 #300 !important; }
+        .key.correct { background: var(--green); box-shadow: 0 4px 0 #1a3a16; }
+        .key.present { background: var(--yellow); box-shadow: 0 4px 0 #6a5000; }
+        .key.absent { background: #222; color: #555; opacity: 0.6; box-shadow: none; transform: translateY(2px); }
+        .key:active { transform: translateY(2px); box-shadow: 0 1px 0 #1a0f0a; }
 
-        /* Shop */
-        .shop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
-        .shop-item { background: #fdf5e6; padding: 10px; border: 1.5px solid #1c140d; display: flex; flex-direction: column; justify-content: space-between; text-align: left; }
+        .difficulty-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+        .diff-btn {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid var(--accent);
+            background: #fdf5e6;
+            font-family: var(--font-title);
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 8px;
+            font-size: 0.8rem;
+        }
+        .diff-btn.active {
+            background: var(--accent);
+            color: #d2b48c;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .archetype-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 100%;
+            overflow-y: auto;
+            flex: 1;
+            padding-right: 5px;
+            margin-bottom: 10px;
+        }
+        .archetype-card { 
+            background: #fdf5e6; padding: 12px; border: 2px solid var(--accent); border-radius: 8px; cursor: pointer; text-align: left; box-shadow: 3px 3px 0px var(--accent); 
+        }
+        .archetype-card h3 { font-family: var(--font-title); color: var(--hazard); font-size: 1rem; margin-bottom: 2px; }
+        .archetype-card p { font-size: 0.8rem; color: var(--text); opacity: 0.8; }
 
         .btn { 
-            background: #3d2b1f; color: #d2b48c; padding: 14px 20px; border: 3px double #d2b48c;
-            font-family: var(--font-title); cursor: pointer; margin: 8px 0;
+            background: #3d2b1f; color: #d2b48c; padding: 14px 25px; border: 3px double #d2b48c; border-radius: 6px; font-weight: bold; cursor: pointer; min-width: 220px; font-size: 1.1rem; font-family: var(--font-title); letter-spacing: 1px; margin: 10px 0; transition: transform 0.1s;
         }
-        .archetype-card { background: #fdf5e6; padding: 12px; border: 2px solid var(--accent); margin-bottom: 10px; width: 100%; text-align: left; }
-        .message-toast { position: fixed; top: 15%; left: 50%; transform: translateX(-50%); background: #1c140d; color: #d2b48c; padding: 10px 20px; border-radius: 6px; opacity: 0; z-index: 9999; transition: 0.3s; font-family: var(--font-title); }
+
+        .shop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
+        .shop-item { background: #fdf5e6; padding: 10px; border: 1.5px solid var(--ink-black); display: flex; flex-direction: column; justify-content: space-between; font-size: 0.8rem; box-shadow: 3px 3px 0 var(--ink-black); border-radius: 6px; text-align: left; }
+        .shop-item.sold { opacity: 0.4; pointer-events: none; }
+
+        .consumables-bar { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; padding: 10px 0; width: 100%; }
+        .item-slot { width: 44px; height: 44px; background: #fdf5e6; border: 2px solid var(--accent); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; cursor: pointer; box-shadow: 2px 2px 0 var(--accent); }
+        .item-slot.empty { opacity: 0.2; cursor: default; border-style: dashed; background: transparent; box-shadow: none; }
+
+        .custom-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 5000; display: none; align-items: center; justify-content: center; padding: 20px; }
+        .modal-box { background: #fdf5e6; border: 6px double var(--ink-black); padding: 30px; border-radius: 15px; text-align: center; max-width: 400px; box-shadow: 0 10px 40px #000; }
+
+        .rules-modal-container { 
+            background: #fdf5e6; color: var(--text); padding: 25px; border: 6px double var(--ink-black); border-radius: 12px; width: 95%; max-width: 500px; text-align: left; max-height: 85vh; overflow-y: auto;
+        }
+        .rules-modal-container h2, .rules-modal-container h3 { font-family: var(--font-title); color: var(--hazard); margin: 15px 0 5px 0; border-bottom: 1px solid var(--parchment-dark); }
+        .rules-modal-container p { font-size: 0.9rem; line-height: 1.4; margin-bottom: 10px; }
+
+        #modifiers-bar { text-align: center; }
+        .boss-info { display: flex; flex-direction: column; align-items: center; line-height: 1.2; }
+        .boss-name-ui { color: var(--hazard); letter-spacing: 1px; font-weight: bold; font-family: var(--font-title); }
+        .boss-desc-ui { font-size: 0.75rem; color: var(--accent); font-style: italic; margin-top: 2px; }
+
+        #timer-display { font-family: var(--font-title); color: var(--hazard); font-size: 1.2rem; margin-top: 5px; font-weight: bold; display: none; }
+
+        .message-toast { position: absolute; top: 15%; left: 50%; transform: translateX(-50%); background: #1c140d; color: #d2b48c; padding: 12px 24px; border: 2px solid #d2b48c; border-radius: 8px; opacity: 0; z-index: 3000; transition: 0.3s; box-shadow: 0 4px 15px #000; font-family: var(--font-title); text-align: center; font-size: 0.9rem; pointer-events: none; }
         .message-toast.show { opacity: 1; transform: translate(-50%, 20px); }
 
-        .boss-alert { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #1a0f0a; color: #d2b48c; padding: 25px; border: 4px double var(--hazard); width: 85%; z-index: 4000; text-align: center; display: none; }
+        .boss-alert { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #1a0f0a; color: #d2b48c; padding: 30px; border: 4px double var(--hazard); width: 90%; max-width: 400px; z-index: 4000; text-align: center; display: none; box-shadow: 0 0 100px #000; border-radius: 12px; }
+        .boss-alert h1 { font-family: var(--font-title); color: var(--hazard); font-size: 2rem; margin-bottom: 12px; letter-spacing: 2px; }
+
+        .loading-dots:after { content: '.'; animation: dots 1.5s steps(5, end) infinite; }
+        @keyframes dots { 0%, 20% { opacity: 0; } 40% { opacity: 1; } 60% { text-shadow: .25em 0 0 var(--text); } 80%, 100% { text-shadow: .25em 0 0 var(--text), .5em 0 0 var(--text); } }
     </style>
 </head>
-<body>
+<body id="game-body">
 
     <div id="damage-overlay"></div>
 
     <div id="main-header">
-        <div class="ribbon-btn" style="left: 10px; background: #3d2b1f;" onclick="goHome()">⌂</div>
-        <div class="ribbon-btn" id="surrender-ribbon" style="right: 10px;">🏳</div>
-        <div class="header-panel"><div>Floor</div><div id="floor-val" class="stat-value">I</div></div>
-        <div class="header-panel"><div>Vitality</div><div id="hp-val" class="stat-value">60/60</div><div class="hp-bar-container"><div id="hp-bar" class="hp-bar-fill"></div></div></div>
-        <div class="header-panel"><div>Coins</div><div id="coins-val" class="stat-value">0</div></div>
+        <div class="ribbon-btn home" onclick="goHome()">⌂</div>
+        <div class="ribbon-btn surrender" id="surrender-ribbon">🏳</div>
+        <div class="header-panel">
+            <div class="stat-label">Floor</div>
+            <div id="floor-val" class="stat-value">I</div>
+        </div>
+        <div class="header-panel">
+            <div class="stat-label">Vitality</div>
+            <div id="hp-val" class="stat-value">60 / 60</div>
+            <div class="hp-bar-container"><div id="hp-bar" class="hp-bar-fill"></div></div>
+            <div id="active-relics" style="display:flex; gap:3px; margin-top:2px;"></div>
+        </div>
+        <div class="header-panel">
+            <div class="stat-label">Coins</div>
+            <div id="coins-val" class="stat-value">0</div>
+        </div>
     </div>
 
-    <div id="screen-loading" class="screen active">
-        <div class="screen-content">
-            <h2 class="title" style="font-size: 3rem; letter-spacing: 6px;">LEXICON</h2>
-            <p style="font-style: italic;">Loading the Archives...</p>
+    <!-- Codex Modal -->
+    <div id="rules-modal" class="custom-modal" onclick="closeRules(event)">
+        <div class="rules-modal-container" onclick="event.stopPropagation()">
+            <h2 style="text-align: center;">THE CODEX</h2>
+            
+            <h3>The Trials (Bosses)</h3>
+            <p><b>Silenced Scribe:</b> 3 random letters cost 5 coins to use.</p>
+            <p><b>The Mimic:</b> Lies about one tile color per guess.</p>
+            <p><b>The Void:</b> Every guess deletes 2 random keys.</p>
+            <p><b>The Censor:</b> Every incorrect guess deals 10 damage to Vitality.</p>
+            <p><b>The Blight:</b> Hides entire rows that have passed (Row 1 hidden when on Row 3, etc).</p>
+            <p><b>The Illusionist:</b> Correct tiles appear Misplaced (Yellow).</p>
+            <p><b>The Hermit:</b> Backpack items are unusable.</p>
+            <p><b>The Siren:</b> Vowels remain neutral on the grid.</p>
+            <p><b>The Phantom:</b> Only the latest guess remains visible.</p>
+            <p><b>The Corruptor:</b> 3 random keys deal 5 damage when used.</p>
+            <p><b>The Clockmaker:</b> You have exactly 3 minutes to win.</p>
+            <p><b>The Chimera:</b> Uses two effects. Final stage only.</p>
+
+            <h3>The Reliquary (Powers)</h3>
+            <p><b>Plate Armor:</b> Block flat 5 damage from any source.</p>
+            <p><b>Ancient Heart:</b> Permanently +20 Max Vitality.</p>
+            <p><b>Satchel:</b> Permanently +1 Backpack space.</p>
+            <p><b>Phoenix Feather:</b> Auto-revive once at 50% Vitality.</p>
+            <p><b>Midas Touch:</b> +15 Coins per victory.</p>
+            <p><b>Encyclopedia:</b> +1 Max Guess per floor.</p>
+            <p><b>Vampiric Ink:</b> Heal 3 Vit for every new Green found.</p>
+
+            <h3>The Archive (Items)</h3>
+            <p><b>Health Potion:</b> Instantly heal 15 Vitality.</p>
+            <p><b>Scryer Dust:</b> Reveal 1 random correct letter once.</p>
+            <p><b>Purge Scroll:</b> Delete 5 guaranteed incorrect keys.</p>
+            <p><b>Haggler Charm:</b> Next item cost is halved.</p>
+
+            <button class="btn" style="width: 100%; margin-top: 20px;" onclick="document.getElementById('rules-modal').style.display='none'">Close Codex</button>
         </div>
+    </div>
+
+    <!-- Existing Modals -->
+    <div id="save-prompt" class="custom-modal">
+        <div class="modal-box">
+            <h2 class="title" style="font-size: 2rem;">Resurrect?</h2>
+            <p style="margin-bottom: 30px; font-style: italic;">A soul remains trapped on Floor <span id="save-floor-val">I</span>.</p>
+            <button class="btn" onclick="loadGame()">Continue Ascent</button>
+            <button class="btn" style="background:var(--hazard); color: white; border-color: black;" onclick="deleteSaveAndStart()">New Sacrifice</button>
+        </div>
+    </div>
+
+    <div id="surrender-modal" class="custom-modal">
+        <div class="modal-box">
+            <h2 class="title" style="color: var(--hazard);">ABANDON?</h2>
+            <p style="margin-bottom: 25px;">Suffer Vitality loss and skip reward?</p>
+            <button class="btn" onclick="executeSurrender()" style="background:var(--hazard); color:white; border-color: black;">Yes, Retreat</button>
+            <button class="btn" onclick="document.getElementById('surrender-modal').style.display='none'">No, Fight On</button>
+        </div>
+    </div>
+
+    <div id="victory-modal" class="custom-modal">
+        <div class="modal-box">
+            <h2 class="title" style="color: var(--yellow);">ARCHIVE COMPLETE</h2>
+            <p style="margin-bottom: 25px;">Will you retire or descend into the Endless Void?</p>
+            <button class="btn" onclick="startEndless()" style="background:var(--accent); color:white;">Endless Mode</button>
+            <button class="btn" onclick="goHome()">Retire in Glory</button>
+        </div>
+    </div>
+
+    <!-- Screens -->
+    <div id="screen-loading" class="screen active">
+        <h2 class="title" style="font-size: 3.5rem; letter-spacing: 8px;">LEXICON</h2>
+        <p class="subtitle loading-dots">Summoning the Great Library</p>
     </div>
 
     <div id="screen-start" class="screen">
-        <div class="screen-content">
-            <h1 class="title" style="font-size: 4rem; letter-spacing: 8px;">LEXICON</h1>
-            <p style="margin-bottom: 30px;">— A Rogue’s Descent —</p>
-            <button class="btn" onclick="showScreen('screen-archetype')">Enter the Abyss</button>
-        </div>
+        <h1 class="title" style="font-size: 4rem; letter-spacing: 10px;">LEXICON</h1>
+        <p style="font-style: italic; margin-bottom: 30px;">— A Rogue’s Descent —</p>
+        <button class="btn" onclick="checkAbyssEntry()">Enter the Abyss</button>
+        <button class="btn" style="background: transparent; border-color: var(--accent); color: var(--accent);" onclick="document.getElementById('rules-modal').style.display='flex'">The Codex (Rules)</button>
     </div>
 
     <div id="screen-archetype" class="screen">
-        <div class="screen-content">
-            <h2 class="title" style="margin-bottom: 20px;">Select Soul</h2>
-            <div class="archetype-card" onclick="startRun('outcast')"><h3>The Outcast (Easy)</h3><p>60 Vit. Reuse forgotten letters.</p></div>
-            <div class="archetype-card" onclick="startRun('poet')"><h3>The Poet</h3><p>80 Vit. +1 Attempt per floor.</p></div>
-            <div class="archetype-card" onclick="startRun('scholar')"><h3>The Scholar</h3><p>40 Vit. 1.5x Coins. Longer words.</p></div>
-            <div class="archetype-card" onclick="startRun('cursed')"><h3>The Cursed</h3><p>110 Vit. Invalid words count as failure.</p></div>
+        <h2 class="title" style="margin-bottom: 5px;">Difficulty</h2>
+        <div class="difficulty-selector">
+            <button id="diff-easy" class="diff-btn active" onclick="setDiff('easy', this)">Easy</button>
+            <button id="diff-medium" class="diff-btn" onclick="setDiff('medium', this)">Medium</button>
+            <button id="diff-hard" class="diff-btn" onclick="setDiff('hard', this)">Hard</button>
         </div>
+        <h2 class="title" style="margin-bottom: 5px;">Soul Selection</h2>
+        <div class="archetype-list">
+            <div class="archetype-card" onclick="startRun('outcast')"><h3>Outcast</h3><p>60 Vit. Reuses forgotten letters.</p></div>
+            <div class="archetype-card" onclick="startRun('poet')"><h3>Poet</h3><p>80 Vit. +1 Attempt. More gold.</p></div>
+            <div class="archetype-card" onclick="startRun('scholar')"><h3>Scholar</h3><p>40 Vit. 1.5x Coins. Longer words.</p></div>
+            <div class="archetype-card" onclick="startRun('hunter')"><h3>Boss Hunter</h3><p>100 Vit. Boss trial on every floor.</p></div>
+            <div class="archetype-card" onclick="startRun('cursed')"><h3>Cursed</h3><p>110 Vit. Invalid words count as failure.</p></div>
+        </div>
+        <button class="btn" style="background: transparent; border-color: var(--accent); color: var(--accent); min-width: 150px; margin: 0;" onclick="showScreen('screen-start')">Back</button>
     </div>
 
     <div id="screen-game" class="screen" style="justify-content: flex-start;">
-        <div id="modifiers-bar" style="color: var(--hazard); font-weight: bold; margin-top: 10px; height: 20px; font-family: var(--font-title); font-size: 0.8rem;"></div>
-        <div id="grid-container" style="flex:1; width:100%; display:flex; align-items:center; justify-content:center;"><div id="grid"></div></div>
+        <div id="modifiers-bar" style="margin: 10px 0; font-family: var(--font-title); font-size: 0.75rem; color: var(--hazard); font-weight: bold; min-height: 2.2em;"></div>
+        <div id="timer-display">03:00</div>
+        <div id="grid-container"><div id="grid"></div></div>
         <div class="consumables-bar" id="inventory-game"></div>
         <div class="keyboard" id="keyboard">
             <div class="kb-row" id="kb-1"></div>
@@ -171,104 +423,309 @@
     </div>
 
     <div id="screen-shop" class="screen" style="justify-content: flex-start;">
-        <h2 class="title" style="margin: 20px 0;">The Library</h2>
+        <h2 class="title" style="margin: 20px 0;">Library</h2>
         <div id="shop-items" class="shop-grid"></div>
-        <p style="margin-top: 20px; font-family: var(--font-title);">Backpack</p>
+        <p style="margin: 20px 0; font-family: var(--font-title);">Backpack</p>
         <div class="consumables-bar" id="inventory-shop"></div>
     </div>
 
     <div id="screen-gameover" class="screen">
-        <h1 class="title" style="color: var(--hazard); font-size: 3rem;">Consumed</h1>
-        <p id="game-summary" style="margin: 20px 0;"></p>
+        <h1 class="title" style="color: var(--hazard); font-size: 4rem;">Consumed</h1>
+        <p id="game-summary" style="margin-bottom: 10px; font-style: italic;"></p>
+        <p id="game-last-word" style="font-weight: bold; color: var(--hazard); margin-bottom: 20px;"></p>
         <button class="btn" onclick="showScreen('screen-archetype')">Reincarnate</button>
     </div>
 
     <div id="boss-alert" class="boss-alert">
         <h1 id="boss-name">BOSS</h1>
-        <p id="boss-desc" style="margin: 20px 0;"></p>
-        <button class="btn" onclick="hideBossAlert()">Accept Trial</button>
+        <p id="boss-desc" style="font-style: italic; margin-bottom: 25px;"></p>
+        <button class="btn" onclick="hideBossAlert()">Continue</button>
     </div>
 
     <div id="toast" class="message-toast"></div>
 
     <script>
         (function() {
-            const kbLayout = ["qwertyuiop".split(""), "asdfghjkl".split(""), ["ENTER", ..."zxcvbnm".split(""), "DEL"]];
-            let FULL_LEXICON = {};
+            var kbLayout = [ "qwertyuiop".split(""), "asdfghjkl".split(""), ["DEL", ..."zxcvbnm".split(""), "⏎"] ];
+            let timerInterval = null;
+
+            const AudioEngine = {
+                ctx: null,
+                init() { if (this.ctx) return; this.ctx = new (window.AudioContext || window.webkitAudioContext)(); },
+                playKey() {
+                    if (!this.ctx) return;
+                    const buffer = this.ctx.createBuffer(1, this.ctx.sampleRate * 0.05, this.ctx.sampleRate);
+                    const output = buffer.getChannelData(0);
+                    for (let i = 0; i < buffer.length; i++) output[i] = Math.random() * 2 - 1;
+                    const whiteNoise = this.ctx.createBufferSource();
+                    whiteNoise.buffer = buffer;
+                    const gain = this.ctx.createGain();
+                    gain.gain.setValueAtTime(0.04, this.ctx.currentTime);
+                    whiteNoise.connect(gain); gain.connect(this.ctx.destination);
+                    whiteNoise.start();
+                },
+                beep(freq, type, dur, vol) {
+                    if (!this.ctx) return;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = type; osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                    gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + dur);
+                    osc.connect(gain); gain.connect(this.ctx.destination);
+                    osc.start(); osc.stop(this.ctx.currentTime + dur);
+                },
+                playCorrect() { this.beep(400, 'sine', 0.1, 0.1); },
+                playWrong() { this.beep(150, 'sawtooth', 0.3, 0.1); },
+                playHurt() { this.beep(80, 'sawtooth', 0.4, 0.2); },
+                playShop() { this.beep(800, 'sine', 0.1, 0.05); }
+            };
+
             const CURATED_TARGETS = {
-                4: ["book", "page", "font", "word", "ink", "read", "sign", "tale", "lore", "myth", "bard"],
-                5: ["write", "story", "verse", "rhyme", "quill", "paper", "novel", "shelf", "study"]
+                4: ["book", "page", "font", "word", "ink", "read", "sign", "tale", "lore", "myth", "bard", "text", "poem", "verb", "writ", "city", "cold", "dark", "data", "fire", "fish", "gold", "hand", "hard", "home", "hope", "kind", "king", "land", "life", "love", "moon", "name", "near", "open", "path", "play", "rain", "real", "road", "rock", "save", "star", "time", "tree", "true", "walk", "wind", "work", "year", "milk", "silk", "cake", "lake", "meal", "boat", "coat", "lamp", "camp", "heal", "meat", "neat", "beat", "feel", "dead", "pest", "test", "west", "east"],
+                5: ["write", "story", "verse", "rhyme", "quill", "paper", "novel", "shelf", "study", "clue", "logic", "craft", "atlas", "folio", "prose", "about", "above", "agent", "alarm", "album", "alert", "alive", "alone", "along", "apple", "audio", "beach", "begin", "black", "blood", "board", "brain", "brand", "bread", "break", "breed", "brief", "bring", "broad", "broke", "brown", "build", "built", "buyer", "cable", "carry", "catch", "cause", "chain", "chair", "chart", "chase", "cheap", "check", "chest", "chief", "child", "china", "chose", "civil", "claim", "class", "clean", "clear", "climb", "clock", "close", "coach", "coast", "could", "count", "court", "cover", "crash", "cream", "crime", "cross", "crowd", "crown", "curve", "cycle", "daily", "dance", "dated", "dealt", "death", "debut", "delay", "depth", "doing", "doubt", "dozen", "draft", "drama", "drawn", "dream", "dress", "drill", "drink", "drive", "early", "earth", "eight", "empty", "entry", "equal", "error", "event", "every", "exact", "exist", "extra", "faith", "false", "fault", "fiber", "field", "fifth", "fifty", "fight", "final", "first", "fixed", "flash", "fleet", "floor", "fluid", "focus", "force", "forth", "forty", "forum", "found", "frame", "frank", "fraud", "fresh", "front", "fruit", "fully", "funny", "giant", "given", "glass", "globe", "going", "grace", "grade", "grand", "grant", "graph", "great", "green", "group", "grown", "guard", "guess", "guest", "guide", "habit", "happy", "heart", "heavy", "hence", "horse", "hotel", "house", "human", "ideal", "image", "index", "inner", "input", "issue", "joint", "judge", "known", "label", "layer", "learn", "lease", "least", "leave", "legal", "level", "light", "limit", "links", "lives", "local", "loose", "lower", "lucky", "lunch", "lying", "magic", "major", "maker", "march", "match", "maybe", "mayor", "meant", "media", "metal", "might", "minor", "money", "month", "moral", "motor", "mount", "mouse", "mouth", "movie", "music", "never", "night", "noise", "north", "novel", "nurse", "occur", "ocean", "offer", "order", "other", "ought", "paint", "paper", "party", "peace", "phone", "photo", "piece", "pilot", "pitch", "place", "plain", "plane", "plant", "plate", "point", "pound", "power", "press", "price", "pride", "prime", "print", "prior", "prize", "proof", "proud", "prove", "queen", "quick", "quiet", "quite", "radio", "raise", "range", "rapid", "ratio", "reach", "ready", "refer", "right", "rival", "river", "rough", "round", "route", "royal", "rural", "scale", "scene", "scope", "score", "sense", "serve", "seven", "shape", "share", "sharp", "sheet", "shelf", "shell", "shift", "shirt", "shock", "shoot", "short", "sight", "since", "sixth", "skill", "skill", "sleep", "slide", "small", "smart", "smile", "smith", "smoke", "solid", "solve", "sorry", "sound", "south", "space", "spare", "speak", "speed", "spend", "spent", "split", "spoke", "sport", "staff", "stage", "stake", "stand", "start", "state", "steam", "steel", "stick", "still", "stock", "stone", "store", "storm", "strip", "stuck", "sugar", "suite", "super", "sweet", "table", "taken", "taste", "texas", "thank", "theft", "their", "theme", "there", "these", "thick", "thing", "think", "third", "those", "three", "throw", "tight", "times", "tired", "title", "today", "topic", "total", "touch", "tough", "tower", "track", "trade", "train", "treat", "trend", "trial", "tried", "truck", "truly", "trust", "truth", "twice", "under", "union", "until", "upper", "urban", "usage", "usual", "valid", "value", "video", "virus", "visit", "vital", "voice", "waste", "watch", "water", "wheel", "where", "which", "while", "white", "whole", "whose", "woman", "world", "worry", "worse", "worst", "worth", "would", "wound", "wrong", "wrote", "yield", "young", "youth"]
+            };
+
+            const BOSS_DATA = {
+                "Tax": "3 random letters cost 5 coins.",
+                "Glitch": "Mimic lies about one color result.",
+                "Void": "Consumes 2 keyboard letters per guess.",
+                "Censor": "Incorrect guesses deal 10 damage.",
+                "Blight": "Shadow consumes passing rows.",
+                "Illusionist": "Correct letters disguised as Misplaced.",
+                "Silence": "Backpack items are unusable.",
+                "Siren": "Vowels remain neutral on the grid.",
+                "Phantom": "Memory fades. Only the latest guess is visible.",
+                "Corrupt": "Uses corrupted keys that deal 5 damage.",
+                "Clock": "Win before the 3:00 timer reaches zero.",
+                "Chimera": "Two deadly effects combined."
             };
 
             const ITEMS = {
-                'potion': { emoji: '🧪', name: 'Health Potion', desc: 'Heal 15 Vit.', cost: 25, type: 'cons', run: () => heal(15) },
-                'dust': { emoji: '👁️', name: 'Scryer Dust', desc: 'Reveal 1 Letter.', cost: 40, type: 'cons', run: () => revealOne() },
-                'holy_water': { emoji: '✨', name: 'Holy Water', desc: 'Purify hazards.', cost: 45, type: 'cons', run: () => { window.G.hazardTiles = []; renderGrid(); toast("Purified"); } },
-                'midas': { emoji: '🪙', name: 'Midas Touch', desc: '+15 Coins/win.', cost: 130, type: 'perm', run: () => { window.G.upgrades.push('midas'); } },
-                'dict': { emoji: '📖', name: 'Encyclopedia', desc: '+1 Guess.', cost: 180, type: 'perm', run: () => { window.G.maxGuesses++; window.G.upgrades.push('dict'); } }
+                'potion': { emoji: '🧪', name: 'Health Potion', desc: 'Heal 15 Vit.', cost: 5, type: 'cons', canUseInShop: true, run: () => heal(15) },
+                'dust': { emoji: '👁️', name: 'Scryer Dust', desc: 'Visual reveal of 1 letter.', cost: 25, type: 'cons', canUseInShop: false, run: () => revealOne() },
+                'purge': { emoji: '📜', name: 'Purge Scroll', desc: 'Remove 5 wrong keys.', cost: 30, type: 'cons', canUseInShop: false, run: () => purgeKeys() },
+                'coupon': { emoji: '🎟️', name: 'Haggler Charm', desc: '50% off next buy.', cost: 65, type: 'cons', canUseInShop: true, run: () => { window.G.discountActive = true; toast("Price Halved"); } },
+                'feather': { emoji: '🪶', name: 'Phoenix Feather', desc: 'Revive at 50% Vit.', cost: 230, type: 'perm', run: () => { window.G.upgrades.push('feather'); window.G.hasPhoenix = true; } },
+                'midas': { emoji: '🪙', name: 'Midas Touch', desc: '+15 Coins/win.', cost: 110, type: 'perm', run: () => { window.G.upgrades.push('midas'); } },
+                'dict': { emoji: '📖', name: 'Encyclopedia', desc: '+1 Guess.', cost: 160, type: 'perm', run: () => { window.G.maxGuesses++; window.G.upgrades.push('dict'); } },
+                'vamp': { emoji: '🖋️', name: 'Vampiric Ink', desc: 'Heal 3 per new Green found.', cost: 140, type: 'perm', run: () => { window.G.upgrades.push('vamp'); } },
+                'satchel': { emoji: '🎒', name: 'Satchel', desc: '+1 Bag Space.', cost: 120, type: 'perm', run: () => { window.G.consumables.push(null); window.G.upgrades.push('satchel'); } },
+                'heart': { emoji: '❤️', name: 'Ancient Heart', desc: '+20 Max Vit.', cost: 130, type: 'perm', run: () => { window.G.maxHp += 20; window.G.hp += 20; window.G.upgrades.push('heart'); } },
+                'armor': { emoji: '🛡️', name: 'Plate Armor', desc: '-5 Flat Damage.', cost: 140, type: 'perm', run: () => { window.G.upgrades.push('armor'); } }
             };
 
+            var FULL_LEXICON = {};
+
             function createInitialState() {
-                return { hp: 60, maxHp: 60, coins: 50, floor: 1, targetWord: "", currentGuess: "", guesses: [], maxGuesses: 6, archetype: 'outcast', upgrades: [], consumables: [null, null, null], keyStatus: {}, forbiddenLetters: new Set(), hazardTiles: [], modifiers: [], bossActive: null, floorPurchases: new Set(), midFloor: false };
+                return {
+                    hp: 60, maxHp: 60, coins: 0, floor: 1, score: 0, targetWord: "", currentGuess: "", guesses: [], maxGuesses: 6, archetype: 'outcast', difficulty: 'easy', upgrades: [], consumables: [null, null, null], keyStatus: {}, forbiddenLetters: new Set(), hazardTiles: [], isGameOver: false, modifiers: [], bossActive: null, blightedTile: null, hints: {}, floorPurchases: new Set(), purchaseTotal: 0, discountActive: false, currentShopPool: [], midFloor: false, hasPhoenix: false, isEndless: false, unknownCount: 0, corruptedKeys: [], timerSeconds: 180, taxedLetters: []
+                };
             }
 
             window.G = createInitialState();
+
+            function showScreen(id) {
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                document.getElementById(id).classList.add('active');
+                if (id !== 'screen-game') {
+                    document.getElementById('boss-alert').style.display = 'none';
+                    stopTimer();
+                }
+                const header = document.getElementById('main-header');
+                const surrenderBtn = document.getElementById('surrender-ribbon');
+                if (id === 'screen-game' || id === 'screen-shop') {
+                    header.style.display = 'grid';
+                    if (id === 'screen-game') {
+                        surrenderBtn.innerText = '🏳'; surrenderBtn.onclick = () => document.getElementById('surrender-modal').style.display='flex';
+                        setTimeout(() => renderGrid(), 10);
+                        if(window.G.modifiers.includes("Clock")) startTimer();
+                    } else {
+                        surrenderBtn.innerText = '➔'; surrenderBtn.onclick = nextFloor;
+                    }
+                } else header.style.display = 'none';
+            }
+            window.showScreen = showScreen;
+
+            function startTimer() {
+                document.getElementById('timer-display').style.display = 'block';
+                stopTimer();
+                timerInterval = setInterval(() => {
+                    window.G.timerSeconds--;
+                    updateTimerUI();
+                    if(window.G.timerSeconds <= 0) {
+                        stopTimer();
+                        toast("Time Expired!");
+                        loseFloor();
+                    }
+                }, 1000);
+            }
+            function stopTimer() { if(timerInterval) clearInterval(timerInterval); document.getElementById('timer-display').style.display = 'none'; }
+            function updateTimerUI() {
+                const m = Math.floor(window.G.timerSeconds / 60);
+                const s = window.G.timerSeconds % 60;
+                document.getElementById('timer-display').innerText = `${m}:${s.toString().padStart(2, '0')}`;
+                updateUI(); // Keep subtext in sync with countdown
+            }
 
             async function loadLexicon() {
                 try {
                     const r = await fetch('https://raw.githubusercontent.com/benjamincrom/scrabble/refs/heads/master/scrabble/dictionary.json');
                     const data = await r.json();
                     data.forEach(w => { if(w.length>=4 && w.length<=8) { if(!FULL_LEXICON[w.length]) FULL_LEXICON[w.length] = new Set(); FULL_LEXICON[w.length].add(w.toLowerCase()); } });
-                } catch(e) { FULL_LEXICON = null; }
+                } catch(e) { Object.keys(CURATED_TARGETS).forEach(l => { FULL_LEXICON[l] = new Set(CURATED_TARGETS[l]); }); }
                 showScreen('screen-start');
             }
 
-            function showScreen(id) {
-                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-                document.getElementById(id).classList.add('active');
-                const header = document.getElementById('main-header');
-                header.style.display = (id === 'screen-game' || id === 'screen-shop') ? 'grid' : 'none';
-                if(id === 'screen-game') {
-                    const srb = document.getElementById('surrender-ribbon');
-                    srb.innerText = '🏳'; srb.onclick = surrenderFloor; srb.style.background = '#8b0000';
-                } else if(id === 'screen-shop') {
-                    const srb = document.getElementById('surrender-ribbon');
-                    srb.innerText = '➔'; srb.onclick = nextFloor; srb.style.background = '#2d5a27';
-                }
-            }
-            window.showScreen = showScreen;
+            window.checkAbyssEntry = () => {
+                const saved = localStorage.getItem('lexicon_run_save');
+                if (saved) {
+                    const data = JSON.parse(saved);
+                    document.getElementById('save-floor-val').innerText = data.floor;
+                    document.getElementById('save-prompt').style.display = 'flex';
+                } else showScreen('screen-archetype');
+            };
 
-            function startRun(type) {
-                window.G = createInitialState(); window.G.archetype = type;
-                if(type==='poet') { window.G.hp=window.G.maxHp=80; window.G.maxGuesses=7; }
-                else if(type==='scholar') { window.G.hp=window.G.maxHp=40; }
-                else if(type==='cursed') { window.G.hp=window.G.maxHp=110; }
-                initFloor(); showScreen('screen-game');
-            }
-            window.startRun = startRun;
+            window.deleteSaveAndStart = () => { localStorage.removeItem('lexicon_run_save'); document.getElementById('save-prompt').style.display = 'none'; showScreen('screen-archetype'); };
+
+            window.loadGame = () => { 
+                const saved = localStorage.getItem('lexicon_run_save');
+                if (saved) {
+                    window.G = JSON.parse(saved);
+                    window.G.forbiddenLetters = new Set(window.G.forbiddenLetters);
+                    window.G.floorPurchases = new Set(window.G.floorPurchases);
+                    document.getElementById('save-prompt').style.display = 'none';
+                    AudioEngine.init();
+                    if (window.G.midFloor) { showScreen('screen-game'); updateUI(); renderGrid(); renderKeyboard(); } 
+                    else initFloor();
+                }
+            };
+
+            window.startRun = (type) => {
+                AudioEngine.init();
+                window.G = createInitialState();
+                window.G.archetype = type; window.G.coins = 50; 
+                if(type === 'poet') { window.G.hp = window.G.maxHp = 80; window.G.maxGuesses = 7; }
+                else if(type === 'scholar') { window.G.hp = window.G.maxHp = 40; window.G.maxGuesses = 6; }
+                else if(type === 'hunter') { window.G.hp = window.G.maxHp = 100; window.G.maxGuesses = 6; }
+                else if(type === 'cursed') { window.G.hp = window.G.maxHp = 110; window.G.maxGuesses = 6; }
+                else { window.G.hp = window.G.maxHp = 60; window.G.maxGuesses = 6; }
+                if(window.G.difficulty === 'medium' || window.G.difficulty === 'hard') window.G.maxGuesses--;
+                initFloor();
+                showScreen('screen-game');
+            };
+
+            window.startEndless = () => { window.G.isEndless = true; document.getElementById('victory-modal').style.display = 'none'; nextFloor(); };
+
+            window.setDiff = (d, btn) => {
+                window.G.difficulty = d;
+                document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            };
 
             function initFloor() {
-                window.G.guesses = []; window.G.keyStatus = {}; window.G.forbiddenLetters = new Set(); window.G.midFloor = true; window.G.floorPurchases = new Set();
-                const len = (window.G.archetype==='scholar'?5:4) + Math.floor(window.G.floor/5);
-                const pool = (FULL_LEXICON && FULL_LEXICON[len]) ? Array.from(FULL_LEXICON[len]) : (CURATED_TARGETS[len] || CURATED_TARGETS[4]);
-                window.G.targetWord = pool[Math.floor(Math.random()*pool.length)];
-                updateUI(); renderGrid(); renderKeyboard();
+                window.G.guesses = []; window.G.currentGuess = ""; window.G.keyStatus = {}; window.G.forbiddenLetters = new Set();
+                window.G.hazardTiles = []; window.G.modifiers = []; window.G.bossActive = null; window.G.blightedTile = null; 
+                window.G.floorPurchases = new Set(); window.G.midFloor = true; window.G.hints = {}; window.G.unknownCount = 0;
+                window.G.corruptedKeys = []; window.G.timerSeconds = 180; window.G.taxedLetters = [];
+                
+                let len = 4;
+                if(window.G.isEndless) len = 4 + Math.floor(Math.random() * 5);
+                else len = Math.min(8, 4 + Math.floor((window.G.floor - 1) / 3) + (window.G.archetype==='scholar'?1:0));
+                
+                const pool = FULL_LEXICON[len] || CURATED_TARGETS[len] || CURATED_TARGETS[4];
+                const list = Array.from(pool);
+                window.G.targetWord = list[Math.floor(Math.random()*list.length)];
+                
+                if(window.G.floor === 9 && !window.G.isEndless) triggerBoss("Chimera");
+                else if(window.G.archetype === 'hunter' || window.G.floor % 3 === 0) triggerBoss();
+                else if(window.G.floor > 2 && Math.random() > 0.6) window.G.modifiers.push("Hazards");
+                
+                if(window.G.modifiers.includes("Hazards")) {
+                    for(let i=0; i<2; i++) window.G.hazardTiles.push({r: Math.floor(Math.random()*window.G.maxGuesses), c: Math.floor(Math.random()*window.G.targetWord.length)});
+                }
+                saveGame(); updateUI(); renderGrid(); renderKeyboard();
             }
 
+            function triggerBoss(forced) {
+                const bosses = [
+                    { n: "SILENCED SCRIBE", d: "3 random letters taxed 5 Coins.", mod: "Tax" },
+                    { n: "THE MIMIC", d: "Master of lies. Lies about one color result.", mod: "Glitch" },
+                    { n: "THE VOID", d: "Every guess consumes 2 keyboard letters.", mod: "Void" },
+                    { n: "THE CENSOR", d: "Incorrect guesses deal 10 damage.", mod: "Censor" },
+                    { n: "THE BLIGHT", d: "Shadow consumes passing rows.", mod: "Blight" },
+                    { n: "THE ILLUSIONIST", d: "Correct tiles appear as Misplaced.", mod: "Illusionist" },
+                    { n: "THE HERMIT", d: "Items are silenced (unusable).", mod: "Silence" },
+                    { n: "THE SIREN", d: "Vowels remain neutral on the grid.", mod: "Siren" },
+                    { n: "THE PHANTOM", d: "Only the latest guess remains visible.", mod: "Phantom" },
+                    { n: "THE CORRUPTOR", d: "3 random keys deal 5 damage when used.", mod: "Corrupt" },
+                    { n: "THE CLOCKMAKER", d: "You have exactly 3 minutes to win.", mod: "Clock" }
+                ];
+                
+                let b;
+                if (forced === "Chimera") {
+                    const pool = [...bosses];
+                    const b1 = pool.splice(Math.floor(Math.random()*pool.length), 1)[0];
+                    const b2 = pool.splice(Math.floor(Math.random()*pool.length), 1)[0];
+                    b = { n: "THE CHIMERA", d: `${b1.n} & ${b2.n} effects combined.`, mods: [b1.mod, b2.mod] };
+                    window.G.modifiers.push(...b.mods);
+                } else {
+                    b = bosses[Math.floor(Math.random() * bosses.length)];
+                    window.G.modifiers.push(b.mod);
+                }
+                
+                window.G.bossActive = b.n;
+                if(window.G.modifiers.includes("Corrupt")) {
+                    const keys = "abcdefghijklmnopqrstuvwxyz".split("");
+                    for(let i=0; i<3; i++) window.G.corruptedKeys.push(keys.splice(Math.floor(Math.random()*keys.length), 1)[0]);
+                }
+
+                if(window.G.modifiers.includes("Tax")) {
+                    const keys = "abcdefghijklmnopqrstuvwxyz".split("");
+                    for(let i=0; i<3; i++) window.G.taxedLetters.push(keys.splice(Math.floor(Math.random()*keys.length), 1)[0]);
+                }
+                
+                document.getElementById('boss-name').innerText = b.n;
+                document.getElementById('boss-desc').innerText = b.d;
+                document.getElementById('boss-alert').style.display = 'block';
+            }
+
+            window.hideBossAlert = () => { document.getElementById('boss-alert').style.display = 'none'; updateUI(); };
+
             function renderGrid() {
-                const grid = document.getElementById('grid'); grid.innerHTML = "";
-                const cols = window.G.targetWord.length; const rows = window.G.maxGuesses;
-                const size = Math.min(350 / cols, 50);
-                grid.style.gridTemplateColumns = `repeat(${cols}, ${size}px)`;
-                for(let r=0; r<rows; r++) {
-                    for(let c=0; c<cols; c++) {
+                const grid = document.getElementById('grid'); 
+                grid.innerHTML = ""; const container = document.getElementById('grid-container');
+                if (!container.clientHeight) return;
+                const colCount = window.G.targetWord.length; const rowCount = window.G.maxGuesses;
+                const size = Math.min((container.clientHeight - 40) / rowCount, (container.clientWidth - 40) / colCount, 55); 
+                grid.style.gridTemplateColumns = `repeat(${colCount}, ${size}px)`;
+                grid.style.gridTemplateRows = `repeat(${rowCount}, ${size}px)`;
+                
+                const isPhantom = window.G.modifiers.includes("Phantom");
+                const isBlight = window.G.modifiers.includes("Blight");
+                const lastIdx = window.G.guesses.length - 1;
+                
+                for(let r=0; r<rowCount; r++) {
+                    for(let c=0; c<colCount; c++) {
                         const tile = document.createElement('div'); tile.className = "tile";
-                        tile.style.width = tile.style.height = size+"px";
+                        tile.style.width = tile.style.height = size+"px"; tile.style.fontSize = (size * 0.5) + "px";
+                        if(window.G.hazardTiles.some(h=>h.r===r && h.c===c)) tile.classList.add('hazard');
+                        
                         if(window.G.guesses[r]) {
-                            tile.innerText = window.G.guesses[r].word[c];
-                            tile.classList.add(window.G.guesses[r].status[c]);
+                            if(isBlight && window.G.guesses.length >= r + 2) {
+                                tile.classList.add('hidden');
+                            } else if(isPhantom && r < lastIdx) {
+                                tile.classList.add('hidden');
+                            } else {
+                                const char = window.G.guesses[r].word[c];
+                                tile.innerText = char;
+                                let s = window.G.guesses[r].status[c];
+                                if(window.G.modifiers.includes("Siren") && "aeiou".includes(char.toLowerCase())) {} 
+                                else if (window.G.modifiers.includes("Illusionist") && s === 'correct') tile.classList.add('present');
+                                else tile.classList.add(s);
+                            }
                         } else if(r === window.G.guesses.length) {
-                            tile.innerText = window.G.currentGuess[c] || "";
+                            if(window.G.currentGuess[c]) tile.innerText = window.G.currentGuess[c];
+                            else if(window.G.hints[c]) { tile.innerText = window.G.hints[c]; tile.style.opacity = "0.4"; }
                         }
                         grid.appendChild(tile);
                     }
@@ -276,105 +733,254 @@
             }
 
             function renderKeyboard() {
+                const isSiren = window.G.modifiers.includes("Siren");
+                const isIllusionist = window.G.modifiers.includes("Illusionist");
+                const vowels = "aeiou".split("");
+                
                 kbLayout.forEach((row, idx) => {
                     const rowEl = document.getElementById(`kb-${idx+1}`); rowEl.innerHTML = "";
                     row.forEach(k => {
                         const btn = document.createElement('button'); btn.className = "key" + (k.length > 1 ? " large" : "");
                         btn.innerText = k === "DEL" ? "⌫" : k;
-                        const status = window.G.keyStatus[k.toLowerCase()];
-                        if(status) btn.classList.add(status);
-                        btn.onclick = () => handleInput(k);
+                        const low = k.toLowerCase();
+                        let s = window.G.keyStatus[low];
+                        
+                        if (s) {
+                            // Illusionist: Keyboard correct keys appear yellow
+                            if (isIllusionist && s === 'correct') s = 'present';
+
+                            // Siren: Keyboard vowels remain neutral - REMOVED per fix request
+                            btn.classList.add(s);
+                        }
+                        
+                        if(window.G.forbiddenLetters.has(low)) btn.classList.add('absent');
+                        if(window.G.corruptedKeys.includes(low)) btn.classList.add('corrupted');
+                        if(window.G.taxedLetters.includes(low)) btn.classList.add('taxed');
+                        
+                        btn.onclick = () => handleKey(k);
                         rowEl.appendChild(btn);
                     });
                 });
             }
 
-            function handleInput(k) {
-                if(k === "ENTER") submitGuess();
+            function handleKey(k) {
+                if(window.G.isGameOver) return; AudioEngine.init(); AudioEngine.playKey();
+                if(k === "⏎") submitGuess();
                 else if(k === "DEL") window.G.currentGuess = window.G.currentGuess.slice(0, -1);
-                else if(window.G.currentGuess.length < window.G.targetWord.length) window.G.currentGuess += k.toLowerCase();
+                else if(window.G.currentGuess.length < window.G.targetWord.length) {
+                    const low = k.toLowerCase();
+                    if(window.G.forbiddenLetters.has(low)) { toast("Key Consumed by the Void"); return; }
+                    
+                    if(window.G.modifiers.includes("Tax") && window.G.taxedLetters.includes(low)) {
+                        if(window.G.coins < 5) { toast("Not enough Coins (Taxed)"); return; }
+                        window.G.coins -= 5;
+                        updateUI();
+                    }
+                    
+                    if(window.G.corruptedKeys.includes(low)) { takeDamage(5); toast("Corrupted Key!"); }
+                    if(/^[a-z]$/i.test(k)) window.G.currentGuess += low;
+                }
                 renderGrid();
             }
 
             function submitGuess() {
                 const g = window.G.currentGuess;
-                if(g.length < window.G.targetWord.length) return;
-                
-                // Logic Fix: Ensure dictionary check works or defaults to curated list
-                const valid = (FULL_LEXICON && FULL_LEXICON[g.length]?.has(g)) || 
-                              (CURATED_TARGETS[g.length]?.includes(g)) || 
-                              window.G.archetype !== 'cursed';
-
-                if(!valid && window.G.archetype === 'cursed') { loseFloor(); return; }
+                if(g.length < window.G.targetWord.length) { toast("Incomplete"); return; }
+                const isValid = FULL_LEXICON[g.length]?.has(g) || CURATED_TARGETS[g.length]?.includes(g);
                 
                 const statusArr = [];
-                for(let i=0; i<g.length; i++) {
-                    let s = 'absent';
-                    if(g[i] === window.G.targetWord[i]) s = 'correct';
-                    else if(window.G.targetWord.includes(g[i])) s = 'present';
-                    statusArr.push(s);
-                    window.G.keyStatus[g[i]] = s;
+                const mimicLie = window.G.modifiers.includes("Glitch") ? Math.floor(Math.random() * g.length) : -1;
+                let newGreens = 0;
+
+                // Unknown Words handle
+                if(!isValid && window.G.archetype !== 'cursed') { 
+                    window.G.unknownCount++;
+                    if (window.G.unknownCount < 5) {
+                        toast(`Unknown (${window.G.unknownCount}/5)`);
+                        AudioEngine.playWrong();
+                        return; // Exit early, no attempt consumed
+                    }
+                    
+                    toast("Unknown Knowledge Penalty");
+                    window.G.unknownCount = 0; // Reset after penalty
+                    for(let i=0; i<g.length; i++) statusArr.push('invalid');
+                    AudioEngine.playWrong();
+                } else {
+                    window.G.unknownCount = 0; // Reset on valid word
+                    if(window.G.modifiers.includes("Censor") && g !== window.G.targetWord) {
+                        takeDamage(10);
+                        toast("Censor Penalty: -10 Vit");
+                    }
+                    
+                    for(let i=0; i<g.length; i++) {
+                        let s = 'absent';
+                        if(g[i] === window.G.targetWord[i]) { s = 'correct'; if(window.G.keyStatus[g[i]] !== 'correct') newGreens++; }
+                        else if(window.G.targetWord.includes(g[i])) s = 'present';
+                        if(i === mimicLie && s === 'absent') s = (Math.random() > 0.5) ? 'correct' : 'present';
+                        statusArr.push(s);
+                        if(s==='correct' || !window.G.keyStatus[g[i]]) window.G.keyStatus[g[i]] = s;
+                        if(s==='absent') window.G.forbiddenLetters.add(g[i]);
+                        if(window.G.hazardTiles.some(h=>h.r===window.G.guesses.length && h.c===i) && g[i]!==window.G.targetWord[i]) takeDamage(12);
+                    }
+                }
+                
+                if(window.G.upgrades.includes('vamp') && newGreens > 0) heal(newGreens * 3);
+                if(window.G.modifiers.includes("Void")) {
+                    const activeKeys = "abcdefghijklmnopqrstuvwxyz".split("").filter(l => !window.G.forbiddenLetters.has(l));
+                    for(let i=0; i<2; i++) if(activeKeys.length) window.G.forbiddenLetters.add(activeKeys.splice(Math.floor(Math.random()*activeKeys.length),1)[0]);
                 }
                 window.G.guesses.push({word: g, status: statusArr});
                 window.G.currentGuess = "";
-                if(g === window.G.targetWord) winFloor();
-                else if(window.G.guesses.length >= window.G.maxGuesses) loseFloor();
-                renderGrid(); renderKeyboard(); updateUI();
+                if(g === window.G.targetWord) winFloor(); else if(window.G.guesses.length >= window.G.maxGuesses) loseFloor();
+                saveGame(); renderGrid(); renderKeyboard(); updateUI();
+            }
+
+            function heal(amt) { window.G.hp = Math.min(window.G.maxHp, window.G.hp + amt); updateUI(); }
+            function revealOne() { 
+                const available = [];
+                for(let i=0; i<window.G.targetWord.length; i++) if(!window.G.hints[i]) available.push(i);
+                if(available.length) {
+                    const idx = available[Math.floor(Math.random()*available.length)];
+                    window.G.hints[idx] = window.G.targetWord[idx];
+                    window.G.keyStatus[window.G.targetWord[idx]] = 'correct';
+                    renderGrid(); renderKeyboard(); toast("Letter Revealed");
+                }
+            }
+            function purgeKeys() {
+                const candidates = "abcdefghijklmnopqrstuvwxyz".split("").filter(l => !window.G.targetWord.includes(l) && !window.G.forbiddenLetters.has(l));
+                for(let i=0; i<5; i++) if(candidates.length) window.G.forbiddenLetters.add(candidates.splice(Math.floor(Math.random()*candidates.length), 1)[0]);
+                renderKeyboard(); toast("Keys Purged");
+            }
+
+            function takeDamage(amt) {
+                if(window.G.upgrades.includes('armor')) amt = Math.max(0, amt - 5);
+                window.G.hp = Math.max(0, window.G.hp - amt); updateUI();
+                document.getElementById('damage-overlay').classList.add('damage-flash');
+                setTimeout(() => document.getElementById('damage-overlay').classList.remove('damage-flash'), 400);
+                if(window.G.hp <= 0) {
+                    if(window.G.hasPhoenix) {
+                        window.G.hasPhoenix = false; 
+                        window.G.upgrades = window.G.upgrades.filter(u => u !== 'feather');
+                        window.G.hp = Math.floor(window.G.maxHp / 2); 
+                        toast("PHOENIX REVIVAL!"); 
+                        updateUI();
+                    } else endRun();
+                }
             }
 
             function winFloor() {
-                window.G.coins += 50 + (window.G.maxGuesses - window.G.guesses.length) * 15;
-                enterShop();
+                stopTimer();
+                window.G.midFloor = false;
+                let total = 30 + (window.G.targetWord.length-4)*10 + (window.G.maxGuesses - window.G.guesses.length) * 15;
+                if(window.G.archetype === 'scholar') total *= 1.5;
+                if(window.G.upgrades.includes('midas')) total += 15;
+                if(window.G.bossActive) total += 20; // Defeating boss bonus
+                window.G.coins += Math.floor(total);
+                if(!window.G.isEndless && window.G.floor === 9) {
+                    setTimeout(() => document.getElementById('victory-modal').style.display='flex', 1000);
+                } else enterShop();
             }
 
-            function loseFloor() { window.G.hp -= 35; if(window.G.hp <= 0) showScreen('screen-gameover'); else enterShop(); }
+            function loseFloor() { 
+                stopTimer();
+                const failWord = window.G.targetWord.toUpperCase();
+                toast(`FAILED. The word was: ${failWord}`);
+                takeDamage(window.G.bossActive ? 55 : 35); 
+                
+                if(window.G.hp > 0) {
+                    if(window.G.bossActive === "THE CHIMERA") {
+                        toast("The Chimera demands another trial...");
+                        setTimeout(() => initFloor(), 1500);
+                    } else { 
+                        window.G.midFloor = false; 
+                        enterShop(); 
+                    }
+                }
+            }
 
             function enterShop() {
-                window.G.midFloor = false;
-                const pool = Object.keys(ITEMS).filter(k => {
-                    const it = ITEMS[k];
-                    const inBag = window.G.consumables.includes(k);
-                    const inRelics = window.G.upgrades.includes(k);
-                    return !inBag && !inRelics;
-                });
-                window.G.currentShopPool = pool.sort(() => 0.5 - Math.random()).slice(0, 4);
-                showScreen('screen-shop'); renderShop(); updateUI();
+                saveGame();
+                window.G.floorPurchases = new Set();
+                const pool = Object.keys(ITEMS).filter(k => !window.G.consumables.includes(k) && !(ITEMS[k].type==='perm' && window.G.upgrades.includes(k)));
+                window.G.currentShopPool = pool.sort(() => 0.5-Math.random()).slice(0, 6);
+                setTimeout(() => { showScreen('screen-shop'); renderShop(); updateUI(); }, 800);
             }
 
             function renderShop() {
-                const container = document.getElementById('shop-items'); container.innerHTML = "";
+                const cont = document.getElementById('shop-items'); cont.innerHTML = "";
                 window.G.currentShopPool.forEach(k => {
                     const it = ITEMS[k];
-                    const div = document.createElement('div'); div.className = "shop-item";
-                    div.innerHTML = `<b>${it.emoji} ${it.name}</b><small>${it.desc}</small>
-                    <button class="btn" style="padding:5px; font-size:0.8rem;" onclick="buyItem('${k}')">${it.cost} Coins</button>`;
-                    container.appendChild(div);
+                    let cost = it.cost; if(window.G.discountActive) cost = Math.floor(cost * 0.5);
+                    const isSold = window.G.floorPurchases.has(k);
+                    const div = document.createElement('div'); div.className = "shop-item" + (isSold ? " sold" : "");
+                    div.innerHTML = `<div><b>${it.emoji} ${it.name}</b><small>${it.desc}</small></div><button class="btn" style="width:100%; min-width:unset; font-size:0.7rem; padding:8px;" ${isSold ? 'disabled' : ''} onclick="buyItem('${k}')">${isSold ? 'Sold' : cost + ' Coins'}</button>`;
+                    cont.appendChild(div);
                 });
             }
 
-            function buyItem(k) {
+            window.buyItem = (k) => {
+                if(window.G.floorPurchases.has(k)) return;
                 const it = ITEMS[k];
-                if(window.G.coins >= it.cost) {
-                    window.G.coins -= it.cost;
-                    if(it.type === 'cons') {
-                        const idx = window.G.consumables.indexOf(null);
-                        if(idx !== -1) window.G.consumables[idx] = k;
+                let cost = it.cost; if(window.G.discountActive) cost = Math.floor(cost * 0.5);
+                if(window.G.coins >= cost) {
+                    window.G.coins -= cost; AudioEngine.playShop();
+                    if(it.type === 'cons') { 
+                        const idx = window.G.consumables.indexOf(null); 
+                        if(idx!==-1) window.G.consumables[idx]=k; 
+                        else { toast("Bag Full!"); window.G.coins += cost; return; }
                     } else it.run();
-                    enterShop();
-                }
-            }
-            window.buyItem = buyItem;
-
-            function nextFloor() { window.G.floor++; initFloor(); showScreen('screen-game'); }
-            window.nextFloor = nextFloor;
+                    window.G.floorPurchases.add(k); 
+                    if(it.name === 'Haggler Charm') window.G.discountActive = true;
+                    else window.G.discountActive = false;
+                    updateUI(); renderShop(); saveGame();
+                } else toast("Not enough Coins");
+            };
 
             function updateUI() {
-                document.getElementById('floor-val').innerText = window.G.floor;
-                document.getElementById('hp-val').innerText = `${Math.ceil(window.G.hp)}/${window.G.maxHp}`;
-                document.getElementById('hp-bar').style.width = (window.G.hp / window.G.maxHp * 100) + "%";
+                const rom = ["0","I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII","XIII","XIV","XV","XVI"];
+                document.getElementById('floor-val').innerText = rom[window.G.floor] || window.G.floor;
+                document.getElementById('hp-val').innerText = `${Math.ceil(window.G.hp)} / ${window.G.maxHp}`;
+                document.getElementById('hp-bar').style.width = (window.G.hp/window.G.maxHp*100)+"%";
                 document.getElementById('coins-val').innerText = window.G.coins;
+                const modBar = document.getElementById('modifiers-bar'); modBar.innerHTML = "";
+                if(window.G.bossActive) { 
+                    const div = document.createElement('div'); div.className = "boss-info";
+                    let desc = window.G.modifiers.map(m => {
+                        let d = BOSS_DATA[m];
+                        if (m === "Clock") {
+                            const min = Math.floor(window.G.timerSeconds / 60);
+                            const sec = window.G.timerSeconds % 60;
+                            d += ` [${min}:${sec.toString().padStart(2, '0')}]`;
+                        }
+                        return d;
+                    }).join(" ");
+                    div.innerHTML = `<span class="boss-name-ui">Trial: ${window.G.bossActive}</span><span class="boss-desc-ui">${desc}</span>`;
+                    modBar.appendChild(div);
+                } else if(window.G.modifiers.length > 0) modBar.innerText = window.G.modifiers.join(" | ");
+                const rb = document.getElementById('active-relics'); rb.innerHTML = "";
+                window.G.upgrades.forEach(u => { const s = document.createElement('span'); s.innerText = ITEMS[u].emoji; rb.appendChild(s); });
                 renderInventory('inventory-game'); renderInventory('inventory-shop');
             }
 
             function renderInventory(id) {
-                const cont = document.getElementById(id); if(!cont) return;
+                const cont = document.getElementById(id); if(!cont) return; cont.innerHTML = "";
+                window.G.consumables.forEach((c, i) => {
+                    const slot = document.createElement('div'); slot.className = "item-slot" + (c ? "" : " empty");
+                    if(c) { slot.innerText = ITEMS[c].emoji; slot.onclick = () => { if(window.G.modifiers.includes("Silence") && id === 'inventory-game') { toast("Silenced!"); return; } ITEMS[c].run(); window.G.consumables[i] = null; AudioEngine.playShop(); updateUI(); saveGame(); }; }
+                    cont.appendChild(slot);
+                });
+            }
+
+            function endRun() { window.G.isGameOver = true; localStorage.removeItem('lexicon_run_save'); document.getElementById('game-last-word').innerText=`Word: ${window.G.targetWord.toUpperCase()}`; showScreen('screen-gameover'); }
+            function nextFloor() { window.G.floor++; initFloor(); showScreen('screen-game'); }
+            window.goHome = () => { saveGame(); showScreen('screen-start'); };
+            window.executeSurrender = () => { document.getElementById('surrender-modal').style.display='none'; loseFloor(); };
+            window.closeRules = () => { document.getElementById('rules-modal').style.display='none'; };
+            function saveGame() { const saveState = {...window.G, forbiddenLetters: Array.from(window.G.forbiddenLetters), floorPurchases: Array.from(window.G.floorPurchases)}; localStorage.setItem('lexicon_run_save', JSON.stringify(saveState)); }
+            function toast(m) { const t=document.getElementById('toast'); t.innerHTML=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 3000); }
+            window.addEventListener('keydown', e => { if(document.getElementById('screen-game').classList.contains('active')) { if(e.key==="Enter") handleKey("⏎"); else if(e.key==="Backspace") handleKey("DEL"); else if(/^[a-z]$/i.test(e.key)) handleKey(e.key.toUpperCase()); } });
+            loadLexicon();
+        })();
+    </script>
+</body>
+</html>
