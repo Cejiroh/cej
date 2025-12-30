@@ -279,6 +279,17 @@
         </div>
     </div>
 
+    <div id="load-prompt-overlay" class="fixed inset-0 bg-black/90 flex items-center justify-center hidden z-[400] p-4 backdrop-blur-md">
+        <div class="modal-animate bg-zinc-900 w-full max-w-sm rounded-2xl p-6 sm:p-8 border-4 border-blue-500 shadow-2xl text-center">
+            <h2 class="font-bungee text-xl sm:text-3xl text-white mb-2 italic">SAVE FOUND</h2>
+            <p class="text-zinc-300 text-xs sm:text-sm mb-8">You have an ongoing run. Would you like to continue or start a new run?</p>
+            <div class="flex flex-col gap-3">
+                <button id="resume-btn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bungee py-4 rounded-lg border-b-4 border-blue-900 text-sm tracking-widest">RESUME JOURNEY</button>
+                <button id="new-game-btn" class="w-full bg-zinc-800 hover:bg-red-600 text-zinc-400 hover:text-white font-bungee py-3 rounded-lg border-b-4 border-zinc-950 text-xs tracking-tighter transition-colors">START NEW RUN</button>
+            </div>
+        </div>
+    </div>
+
     <div id="rules-overlay" class="fixed inset-0 bg-black/90 flex items-center justify-center hidden z-[150] p-4">
         <div class="modal-animate bg-zinc-900 w-full max-w-2xl rounded-2xl overflow-hidden flex flex-col max-h-[90vh] border-4 border-blue-600 shadow-2xl">
             <div class="p-4 sm:p-6 bg-blue-600 flex justify-between items-center">
@@ -439,7 +450,6 @@
             { id: 'the_hook', name: 'THE HOOK', desc: 'Anchored: Discards are disabled.', effect: (state) => { state.discards = 0; } }
         ];
 
-        // DEFAULT SORT SET TO 'RANK'
         let state = {
             round: 1, target: 25, score: 0, excessPoints: 0,
             plays: 3, discards: 3, handLimit: 8, basePlays: 3, baseDiscards: 3, baseHandLimit: 8,
@@ -465,10 +475,8 @@
         const HIGH_SCORE_KEY = 'solatro_high_score';
 
         function saveGame() {
-            // Guard against saving a lost state that would result in a broken load
             const isTechnicallyGameOver = state.plays <= 0 && state.score < state.target && !state.shieldActive;
             if (isTechnicallyGameOver) return;
-            
             localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
         }
 
@@ -478,12 +486,9 @@
                 try {
                     const loadedState = JSON.parse(saved);
                     Object.assign(state, loadedState);
-                    
-                    // RE-INITIALIZE NON-SERIALIZABLE OBJECTS
                     state.swipeTouchedIndices = new Set();
                     state.isSwipeSelecting = false;
                     state.selectedIndices = state.selectedIndices || [];
-                    
                     if (state.currentBoss) {
                         const bossDisplay = document.getElementById('boss-display');
                         bossDisplay.textContent = `ACTIVE BOSS: ${state.currentBoss.name} - ${state.currentBoss.desc}`;
@@ -553,7 +558,6 @@
                 bossDisplay.classList.remove('hidden');
                 header.classList.add('border-red-600', 'bg-red-950/20', 'boss-glow');
                 showMessage("BOSS ROUND!", "text-red-500 font-black scale-125");
-                
                 state.nextBoss = BOSSES[Math.floor(Math.random() * BOSSES.length)];
             }
 
@@ -732,17 +736,14 @@
                     return !alreadyBoughtPermanent && !ownedInInventory && !shieldActive;
                 });
                 const allHandTypes = shuffle([...Object.keys(HAND_SCORES)]);
-                
                 const getDynamicCost = (item) => {
                     if (item.id === 'double_score') return 100 * Math.pow(2, state.doubleScorePurchaseCount);
                     return item.cost;
                 };
-
                 const affordableStandard = availableStandard.filter(i => state.excessPoints >= getDynamicCost(i));
                 const expensiveStandard = availableStandard.filter(i => state.excessPoints < getDynamicCost(i));
                 const affordablePlanets = allHandTypes.filter(h => state.excessPoints >= (10 + (state.handLevels[h] * 5)));
                 const expensivePlanets = allHandTypes.filter(h => state.excessPoints < (10 + (state.handLevels[h] * 5)));
-
                 let finalOffers = [];
                 let planetsForSeed = affordablePlanets.slice(0, 2);
                 if (planetsForSeed.length < 2) { planetsForSeed = planetsForSeed.concat(expensivePlanets.slice(0, 2 - planetsForSeed.length)); }
@@ -941,8 +942,20 @@
                 fs.className = `text-sm sm:text-xl font-bold ${isDebuffed ? 'text-red-500' : 'text-white'}`;
                 fs.classList.remove('hidden');
             } else { fh.classList.add('hidden'); fs.classList.add('hidden'); fl.classList.add('hidden'); }
+            
             const hc = document.getElementById('hand-container'); hc.innerHTML = ''; let dc = 0;
+            const isMobile = window.innerWidth < 640;
+            const handLen = state.hand.length;
+            // Force wrap to balance even hands on mobile (e.g., 8 cards becomes 4+4)
+            const splitPoint = (isMobile && handLen > 5 && handLen % 2 === 0) ? handLen / 2 : -1;
+
             state.hand.forEach((card, i) => {
+                if (i === splitPoint) {
+                    const br = document.createElement('div');
+                    br.className = 'w-full h-0';
+                    hc.appendChild(br);
+                }
+                
                 const s = state.selectedIndices.includes(i); const isRed = card.suit === '♥' || card.suit === '♦';
                 const n = card.batchId === state.drawBatchId; 
                 const isDebuffed = state.debuffSuits.includes(card.suit);
@@ -1012,19 +1025,32 @@
         document.getElementById('restart-game-btn').onclick = resetGame;
         document.getElementById('next-round-btn').onclick = () => { playSound('select'); state.isShopOpen = false; document.getElementById('shop-overlay').classList.add('hidden'); state.round++; startRound(); };
         
+        document.getElementById('resume-btn').onclick = () => {
+            playSound('play');
+            loadGame();
+            document.getElementById('load-prompt-overlay').classList.add('hidden');
+            const isActuallyGameOver = state.plays <= 0 && state.score < state.target && !state.shieldActive;
+            if (isActuallyGameOver) gameOver();
+            else render();
+        };
+
+        document.getElementById('new-game-btn').onclick = () => {
+            playSound('discard');
+            localStorage.removeItem(STORAGE_KEY);
+            document.getElementById('load-prompt-overlay').classList.add('hidden');
+            resetGame();
+        };
+        
         window.onload = () => {
-            if (loadGame()) {
-                // If a dead state was somehow saved, force Game Over screen immediately
-                const isActuallyGameOver = state.plays <= 0 && state.score < state.target && !state.shieldActive;
-                if (isActuallyGameOver) {
-                    gameOver();
-                } else {
-                    render();
-                }
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                document.getElementById('load-prompt-overlay').classList.remove('hidden');
             } else {
                 startRound();
             }
         };
+
+        window.onresize = () => render();
     </script>
 </body>
 </html>
