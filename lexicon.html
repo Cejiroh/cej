@@ -521,7 +521,7 @@
         <h2 class="title" style="margin-bottom: 2px; font-size: 1.5rem; letter-spacing: 1px;">Soul Selection</h2>
         <p id="diff-description" style="font-size: 0.72rem; color: var(--accent); font-style: italic; margin-bottom: 12px; height: 1.2em;">Choose your destiny.</p>
         
-        <div class="archetype-list" id="archetype-list">
+        <div class="archetype-list" id="archetype-list" style="grid-template-columns: 1fr 1fr; max-height: 70vh; overflow-y: auto; padding-right: 5px;">
             <div class="archetype-card" onclick="startRun('outcast')">
                 <div class="archetype-pb" id="pb-outcast">BF: I</div>
                 <div class="archetype-vit">❤️ 60 VIT</div>
@@ -536,13 +536,13 @@
             </div>
             <div class="archetype-card" id="arch-tinker" onclick="startRun('tinker')">
                 <div class="archetype-pb" id="pb-tinker">BF: I</div>
-                <div class="archetype-vit">❤️ 70 VIT</div>
+                <div class="archetype-vit">❤️ 50+ VIT</div>
                 <h3>Tinker</h3>
-                <p>Starts with 4 Bag slots and 2 items.</p>
+                <p>+10 Max VIT per item held. Items consume Max VIT.</p>
             </div>
             <div class="archetype-card" id="arch-prodigy" onclick="startRun('prodigy')">
                 <div class="archetype-pb" id="pb-prodigy">BF: I</div>
-                <div class="archetype-vit">❤️ 30 VIT</div>
+                <div class="archetype-vit">❤️ 50 VIT</div>
                 <h3>Prodigy</h3>
                 <p>Starts floors with 1 Correct letter.</p>
             </div>
@@ -562,7 +562,7 @@
                 <div class="archetype-pb" id="pb-bloodstained">BF: I</div>
                 <div class="archetype-vit">❤️ 120 VIT</div>
                 <h3>Bloodstained</h3>
-                <p>No gold. Costs Vitality.</p>
+                <p>Halves all Vitality restorations.</p>
             </div>
             <div class="archetype-card" id="arch-cursed" onclick="startRun('cursed')">
                 <div class="archetype-pb" id="pb-cursed">BF: I</div>
@@ -570,9 +570,21 @@
                 <h3>Cursed One</h3>
                 <p>Invalid words grant Gold multiplier.</p>
             </div>
+            <div class="archetype-card" id="arch-anchor" onclick="startRun('anchor')">
+                <div class="archetype-pb" id="pb-anchor">BF: I</div>
+                <div class="archetype-vit">❤️ 60 VIT</div>
+                <h3>Iron Oath</h3>
+                <p>Last 2 attempts ignore Boss effects.</p>
+            </div>
+            <div class="archetype-card" id="arch-slayer" onclick="startRun('slayer')">
+                <div class="archetype-pb" id="pb-slayer">BF: I</div>
+                <div class="archetype-vit">❤️ 60 VIT</div>
+                <h3>Slayer</h3>
+                <p>+10 Max VIT on Trial win. Standard Trial difficulty.</p>
+            </div>
         </div>
         
-        <div class="difficulty-selector">
+        <div class="difficulty-selector" id="difficulty-selector-container">
             <button id="diff-easy" class="diff-btn active" onclick="AudioEngine.playKey(); setDiff('easy', this)">Easy</button>
             <button id="diff-medium" class="diff-btn" onclick="AudioEngine.playKey(); setDiff('medium', this)">Medium</button>
             <button id="diff-hard" class="diff-btn" onclick="AudioEngine.playKey(); setDiff('hard', this)">Hard</button>
@@ -651,6 +663,20 @@
             const ITEMS = {
                 'potion': { emoji: '🧪', name: 'Health Potion', desc: 'Heal 15 Vitality.', cost: 5, type: 'cons', run: () => heal(15) },
                 'dust': { emoji: '👁️', name: 'Scryer Dust', desc: 'Reveal non-green letter.', cost: 25, type: 'cons', run: () => revealOne() },
+                'sunstone': { emoji: '☀️', name: 'Sunstone', desc: 'Highlight 2 Yellow keys.', cost: 40, type: 'cons', run: () => {
+                    const targets = [];
+                    for(let char of window.G.targetWord) {
+                        if(window.G.keyStatus[char] !== 'correct' && window.G.keyStatus[char] !== 'present') targets.push(char);
+                    }
+                    const unique = [...new Set(targets)];
+                    for(let i=0; i<2; i++) {
+                        if(unique.length) {
+                            const pick = unique.splice(Math.floor(Math.random()*unique.length), 1)[0];
+                            window.G.keyStatus[pick] = 'present';
+                        }
+                    }
+                    renderKeyboard(); toast("Yellows Highlighted");
+                }},
                 'purge': { emoji: '🧹', name: 'Purge Scroll', desc: 'Remove 5 wrong keys.', cost: 30, type: 'cons', run: () => purgeKeys() },
                 'coupon': { emoji: '🎟️', name: 'Haggler Charm', desc: '50% off next buy.', cost: 65, type: 'cons', run: () => { window.G.discountActive = true; toast("Price Halved"); renderShop(); } },
                 'bell': { emoji: '🔔', name: 'Warding Bell', desc: 'Ignore 1 boss effect for that entire floor.', cost: 50, type: 'cons', run: () => { 
@@ -718,7 +744,7 @@
 
             function createInitialState() {
                 return {
-                    hp: 60, maxHp: 60, coins: 0, floor: 1, targetWord: "", currentGuess: "", guesses: [], maxGuesses: 6, archetype: 'outcast', difficulty: 'easy', upgrades: [], consumables: [null, null, null], keyStatus: {}, forbiddenLetters: new Set(), hazardTiles: [], scrambledKeys: {}, wardActive: false, suppressedModifier: null, isGameOver: false, modifiers: [], bossActive: null, hints: {}, floorPurchases: new Set(), discountActive: false, currentShopPool: [], midFloor: false, hasPhoenix: false, isEndless: false, unknownCount: 0, corruptedKeys: [], timerSeconds: 180, taxedLetters: [], solveFlag: false, availableBosses: [], facedAllBosses: false, invalidWordBonus: 0, currentScreen: 'screen-game'
+                    hp: 60, maxHp: 60, coins: 0, floor: 1, targetWord: "", currentGuess: "", guesses: [], maxGuesses: 6, archetype: 'outcast', difficulty: 'easy', upgrades: [], consumables: [null, null, null], keyStatus: {}, forbiddenLetters: new Set(), hazardTiles: [], scrambledKeys: {}, wardActive: false, suppressedModifier: null, isGameOver: false, modifiers: [], bossActive: null, hints: {}, floorPurchases: new Set(), discountActive: false, currentShopPool: [], midFloor: false, hasPhoenix: false, isEndless: false, unknownCount: 0, corruptedKeys: [], timerSeconds: 180, taxedLetters: [], solveFlag: false, availableBosses: [], facedAllBosses: false, invalidWordBonus: 0, currentScreen: 'screen-game', tinkerBonus: 0
                 };
             }
 
@@ -748,18 +774,24 @@
 
                 if (id === 'screen-archetype') {
                     const high = parseInt(localStorage.getItem('lexicon_high_score') || 0);
-                    const archetypes = ['outcast', 'withered', 'tinker', 'prodigy', 'merchant', 'hunter', 'bloodstained', 'cursed'];
+                    const archetypes = ['outcast', 'withered', 'tinker', 'prodigy', 'merchant', 'hunter', 'bloodstained', 'cursed', 'anchor', 'slayer'];
                     
                     archetypes.forEach(arch => {
                         const pbVal = localStorage.getItem(`lexicon_high_score_${arch}`) || 1;
                         document.getElementById(`pb-${arch}`).innerText = `BF: ${romNums[pbVal] || pbVal}`;
                         const card = document.getElementById(`arch-${arch}`) || document.querySelector(`.archetype-card[onclick*="'${arch}'"]`);
+                        if (!card) return;
                         if (arch !== 'outcast' && high < 8) card.classList.add('locked');
                         else card.classList.remove('locked');
                     });
 
                     document.getElementById('diff-medium').classList.toggle('locked', high < 20);
                     document.getElementById('diff-hard').classList.toggle('locked', high < 21);
+                    
+                    const diffContainer = document.getElementById('difficulty-selector-container');
+                    if (high < 20) diffContainer.style.display = 'none';
+                    else diffContainer.style.display = 'flex';
+                    
                     updateDifficultyInfo();
                 }
 
@@ -889,8 +921,8 @@
                 window.G.archetype = type; window.G.difficulty = diff;
                 
                 if(type === 'withered') { window.G.hp = window.G.maxHp = 60; }
-                else if(type === 'tinker') { window.G.hp = window.G.maxHp = 70; window.G.consumables = [null, null, null, null]; }
-                else if(type === 'prodigy') { window.G.hp = window.G.maxHp = 30; }
+                else if(type === 'tinker') { window.G.hp = window.G.maxHp = 50; window.G.consumables = [null, null, null, null]; }
+                else if(type === 'prodigy') { window.G.hp = window.G.maxHp = 50; }
                 else if(type === 'merchant') { window.G.hp = window.G.maxHp = 90; }
                 else if(type === 'hunter') { window.G.hp = window.G.maxHp = 100; }
                 else if(type === 'bloodstained') { window.G.hp = window.G.maxHp = 120; }
@@ -949,6 +981,15 @@
                 window.G.corruptedKeys = []; window.G.timerSeconds = 180; window.G.taxedLetters = []; window.G.solveFlag = false;
                 window.G.scrambledKeys = {}; window.G.wardActive = false; window.G.suppressedModifier = null; window.G.midFloor = true;
                 
+                if (window.G.archetype === 'tinker') {
+                    window.G.maxHp -= (window.G.tinkerBonus || 0);
+                    window.G.hp = Math.max(1, window.G.hp - (window.G.tinkerBonus || 0));
+                    const itemCount = window.G.consumables.filter(c => c !== null).length;
+                    window.G.tinkerBonus = itemCount * 10;
+                    window.G.maxHp += window.G.tinkerBonus;
+                    window.G.hp += window.G.tinkerBonus;
+                }
+
                 let len = 4;
                 if (window.G.isEndless || window.G.floor > 20) len = 4 + Math.floor(Math.random() * 5);
                 else {
@@ -1031,8 +1072,8 @@
                 grid.style.gridTemplateColumns = `repeat(${colCount}, ${size}px)`;
                 grid.style.gridTemplateRows = `repeat(${rowCount}, ${size}px)`;
                 
-                const isPhantom = window.G.modifiers.includes("Phantom");
-                const isBlight = window.G.modifiers.includes("Blight");
+                const isPhantom = isEffectActive("Phantom");
+                const isBlight = isEffectActive("Blight");
                 const lastIdx = window.G.guesses.length - 1;
                 
                 for(let r=0; r<rowCount; r++) {
@@ -1048,8 +1089,8 @@
                                 const char = window.G.guesses[r].word[c];
                                 tile.innerText = char;
                                 let s = window.G.guesses[r].status[c];
-                                if(window.G.modifiers.includes("Siren") && "aeiou".includes(char.toLowerCase())) {} 
-                                else if (window.G.modifiers.includes("Illusionist") && s === 'correct') {
+                                if(isEffectActive("Siren") && "aeiou".includes(char.toLowerCase())) {} 
+                                else if (isEffectActive("Illusionist") && s === 'correct') {
                                     if (window.G.guesses[r].word === window.G.targetWord) tile.classList.add('correct');
                                     else tile.classList.add('present');
                                 }
@@ -1064,7 +1105,7 @@
                                 let arr = window.G.currentGuess.split("");
                                 while(arr.length < window.G.targetWord.length) arr.push(" ");
                                 arr[c] = " ";
-                                window.G.currentGuess = arr.join("");
+                                window.G.currentGuess = arr.join("").trimEnd();
                                 renderGrid();
                             };
                             tile.style.cursor = "pointer";
@@ -1075,8 +1116,8 @@
             }
 
             function renderKeyboard() {
-                const isSiren = window.G.modifiers.includes("Siren");
-                const isIllusionist = window.G.modifiers.includes("Illusionist");
+                const isSiren = isEffectActive("Siren");
+                const isIllusionist = isEffectActive("Illusionist");
                 const vowels = "aeiou".split("");
                 
                 kbLayout.forEach((row, idx) => {
@@ -1095,8 +1136,8 @@
                             } else btn.classList.add(s);
                         }
                         if(window.G.forbiddenLetters.has(low)) btn.classList.add('absent');
-                        if(window.G.corruptedKeys.includes(low)) btn.classList.add('corrupted');
-                        if(window.G.taxedLetters.includes(low)) btn.classList.add('taxed');
+                        if(window.G.corruptedKeys.includes(low) && isEffectActive("Corrupt")) btn.classList.add('corrupted');
+                        if(window.G.taxedLetters.includes(low) && isEffectActive("Tax")) btn.classList.add('taxed');
                         
                         if (k === "DEL") {
                             btn.onmousedown = btn.ontouchstart = (e) => { e.preventDefault(); handleKey("DEL"); delRepeatInterval = setInterval(() => handleKey("DEL"), 150); };
@@ -1109,6 +1150,7 @@
 
             function isEffectActive(mod) {
                 if (window.G.wardActive && window.G.suppressedModifier === mod) return false;
+                if (window.G.archetype === 'anchor' && (window.G.maxGuesses - window.G.guesses.length) <= 2) return false;
                 return window.G.modifiers.includes(mod);
             }
 
@@ -1206,7 +1248,10 @@
             }
 
             function solveWord() { window.G.solveFlag = true; window.G.currentGuess = window.G.targetWord; submitGuess(); }
-            function heal(amt) { window.G.hp = Math.min(window.G.maxHp, window.G.hp + amt); updateUI(); }
+            function heal(amt) { 
+                if (window.G.archetype === 'bloodstained') amt = Math.floor(amt * 0.5);
+                window.G.hp = Math.min(window.G.maxHp, window.G.hp + amt); updateUI(); 
+            }
 
             function revealOne() { 
                 const available = [];
@@ -1263,13 +1308,19 @@
                     let total = 30 + (window.G.targetWord.length-4)*10 + (window.G.maxGuesses - window.G.guesses.length) * 15;
                     if(window.G.upgrades.includes('midas')) total += 15;
                     if(window.G.bossActive) total += 20; 
-                    if (window.G.archetype === 'bloodstained') { heal(Math.floor(total / 2)); toast(`Blood Harvest: +${Math.floor(total / 2)} VIT`); }
+                    if (window.G.archetype === 'bloodstained') { heal(Math.floor(total / 2)); toast(`Blood Harvest: +${Math.floor(total / 4)} VIT`); }
                     else if (window.G.archetype === 'cursed') {
                         const multiplier = 1 + (window.G.invalidWordBonus * 0.2);
                         window.G.coins += Math.floor(total * multiplier);
                     } else window.G.coins += Math.floor(total);
                 }
                 
+                if (window.G.bossActive && window.G.archetype === 'slayer') {
+                    window.G.maxHp += 10;
+                    window.G.hp += 10;
+                    toast("Slayer: +10 Max Vitality");
+                }
+
                 if(!window.G.isEndless && window.G.floor === 20) setTimeout(() => document.getElementById('victory-modal').style.display='flex', 1000);
                 else openRespite();
             }
@@ -1277,7 +1328,9 @@
             function loseFloor() { 
                 stopTimer(); toast(`The word was: ${window.G.targetWord.toUpperCase()}`);
                 AudioEngine.playWrong();
-                takeDamage(window.G.bossActive ? 55 : 35); 
+                let dmg = 35;
+                if (window.G.bossActive) dmg = 55;
+                takeDamage(dmg); 
                 if(window.G.hp > 0) {
                     if(window.G.bossActive === "THE CHIMERA") { toast("Re-trial..."); setTimeout(() => initFloor(), 1500); }
                     else { window.G.midFloor = false; openRespite(); }
@@ -1331,7 +1384,7 @@
 
             window.executeRest = () => {
                 const lost = window.G.maxHp - window.G.hp;
-                const amt = Math.floor(lost * 0.5);
+                const amt = Math.floor(lost * 0.3);
                 heal(amt);
                 toast(`Restored ${amt} Vitality.`);
                 nextFloor();
@@ -1399,7 +1452,7 @@
                 document.getElementById('coins-val').innerText = window.G.coins;
                 
                 const archNames = {
-                    outcast: "Outcast", withered: "Withered", tinker: "Tinker", prodigy: "Prodigy", merchant: "Merchant", hunter: "Boss Hunter", bloodstained: "Bloodstained", cursed: "Cursed One"
+                    outcast: "Outcast", withered: "Withered", tinker: "Tinker", prodigy: "Prodigy", merchant: "Merchant", hunter: "Boss Hunter", bloodstained: "Bloodstained", cursed: "Cursed One", anchor: "Iron Oath", slayer: "Slayer"
                 };
                 document.getElementById('archetype-header-label').innerText = archNames[window.G.archetype] || "Vitality";
 
@@ -1444,6 +1497,11 @@
                             document.getElementById('confirm-desc').innerText = it.desc;
                             mod.style.display = 'flex';
                             document.getElementById('confirm-yes').onclick = () => {
+                                if (window.G.archetype === 'tinker') {
+                                    window.G.maxHp -= 10;
+                                    window.G.tinkerBonus -= 10;
+                                    window.G.hp = Math.min(window.G.hp, window.G.maxHp);
+                                }
                                 it.run(); window.G.consumables[i] = null; AudioEngine.playShop(); updateUI(); saveGame(); mod.style.display = 'none';
                             };
                         };
