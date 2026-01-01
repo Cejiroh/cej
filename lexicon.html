@@ -370,6 +370,16 @@
         .custom-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 5000; display: none; align-items: center; justify-content: center; padding: 20px; }
         .modal-box { background: #fdf5e6; border: 6px double var(--ink-black); padding: 30px; border-radius: 15px; text-align: center; max-width: 400px; box-shadow: 0 10px 40px #000; width: 100%; }
 
+        #respite-archive-box.boss-style {
+            background-color: #1a0f0a !important;
+            background-image: radial-gradient(circle at 50% 50%, rgba(76, 0, 0, 0.4) 0%, rgba(0,0,0,0.9) 100%) !important;
+            border: 3px double var(--hazard) !important;
+            color: #d2b48c;
+            box-shadow: 0 0 20px rgba(76, 0, 0, 0.5);
+        }
+        #respite-archive-box.boss-style h1 { color: #f00 !important; text-shadow: 0 0 8px #000; }
+        #respite-archive-box.boss-style p { color: #8b7355 !important; }
+
         .confirm-actions { display: flex; gap: 10px; width: 100%; justify-content: center; }
         .confirm-actions .btn { min-width: 0; flex: 1; margin: 0; }
 
@@ -583,11 +593,10 @@
 
     <div id="screen-respite" class="screen">
         <h2 class="title" style="margin-bottom: 10px; font-size: 2.2rem;">RESPITE</h2>
-        <div class="modal-box" style="background: rgba(0,0,0,0.05); border: 2px solid var(--accent); width: 100%;">
-            <p style="font-family: var(--font-title); font-size: 0.8rem; color: var(--accent); text-transform: uppercase;">Last Archive</p>
-            <h1 id="last-word-display" style="font-family: var(--font-title); margin: 5px 0 15px 0; letter-spacing: 4px; color: var(--green);">WORD</h1>
-            
-            <p id="boss-progress-display" style="font-style: italic; font-size: 0.9rem; margin-top: 10px;"></p>
+        <div id="respite-archive-box" class="modal-box" style="background: rgba(0,0,0,0.05); border: 2px solid var(--accent); width: 100%;">
+            <p id="respite-label" style="font-family: var(--font-title); font-size: 0.8rem; color: var(--accent); text-transform: uppercase;">Last Archive</p>
+            <h1 id="respite-header" style="font-family: var(--font-title); margin: 5px 0 15px 0; letter-spacing: 4px; color: var(--green);">WORD</h1>
+            <p id="respite-subtext" style="font-style: italic; font-size: 0.9rem; margin-top: 10px;"></p>
         </div>
         
         <div style="margin-top: 30px; display: flex; flex-direction: column; gap: 12px; width: 100%;">
@@ -636,7 +645,7 @@
 
             const CURATED_TARGETS = {
                 4: ["book", "page", "font", "word", "ink", "read", "sign", "tale", "lore", "myth", "bard", "text", "poem", "verb", "writ", "city", "cold", "dark", "data", "fire", "fish", "gold", "hand", "hard", "home", "hope", "kind", "king", "land", "life", "love", "moon", "name", "near", "open", "path", "play", "rain", "real", "road", "rock", "save", "star", "time", "tree", "true", "walk", "wind", "work", "year", "milk", "silk", "cake", "lake", "meal", "boat", "coat", "lamp", "camp", "heal", "meat", "neat", "beat", "feel", "dead", "pest", "test", "west", "east"],
-                5: ["write", "story", "verse", "rhyme", "quill", "paper", "novel", "shelf", "study", "clue", "logic", "craft", "atlas", "folio", "prose", "about", "above", "agent", "alarm", "album", "alert", "alive", "alone", "along", "apple", "audio", "beach", "begin", "black", "blood", "board", "brain", "brand", "bread", "break", "breed", "brief", "bring", "broad", "broke", "brown", "build", "built", "buyer", "cable", "carry", "catch", "cause", "chain", "chair", "chart", "chase", "cheap", "check", "chest", "chief", "child", "china", "chose", "civil", "claim", "class", "clean", "clear", "climb", "clock", "close", "coach", "coast", "could", "count", "court", "cover", "crash", "cream", "crime", "cross", "crowd", "crown", "curve", "cycle", "daily", "dance", "dated", "dealt", "death", "debut", "delay", "depth", "doing", "doubt", "dozen", "draft", "drama", "drawn", "dream", "dress", "drill", "drink", "drive", "early", "earth", "eight", "empty", "entry", "equal", "error", "event", "every", "exact", "exist", "extra", "faith", "false", "fault", "fiber", "field", "fifth", "fifty", "fight", "final", "first", "fixed", "flash", "fleet", "floor", "fluid", "focus", "force", "forth", "forty", "forum", "found", "frame", "frank", "fraud", "fresh", "front", "fruit", "fully", "funny", "giant", "given", "glass", "globe", "going", "grace", "grade", "grand", "grant", "graph", "great", "green", "group", "grown", "guard", "guess", "guest", "guide", "habit", "happy", "heart", "heavy", "hence", "horse", "hotel", "house", "human", "ideal", "image", "index", "inner", "input", "issue", "joint", "judge", "known", "label", "layer", "learn", "lease", "least", "leave", "legal", "level", "light", "limit", "links", "lives", "local", "loose", "lower", "lucky", "lunch", "lying", "magic", "major", "maker", "march", "match", "maybe", "mayor", "meant", "media", "metal", "might", "minor", "money", "month", "moral", "motor", "mount", "mouse", "mouth", "movie", "music", "never", "night", "noise", "north", "novel", "nurse", "occur", "ocean", "offer", "order", "other", "ought", "paint", "paper", "party", "peace", "phone", "photo", "piece", "pilot", "pitch", "place", "plain", "plane", "plant", "plate", "point", "pound", "power", "press", "price", "pride", "prime", "print", "prior", "prize", "proof", "proud", "prove", "queen", "quick", "quiet", "quite", "radio", "raise", "range", "rapid", "ratio", "reach", "ready", "refer", "right", "rival", "river", "rough", "round", "route", "royal", "rural", "scale", "scene", "scope", "score", "sense", "serve", "seven", "shape", "share", "sharp", "sheet", "shelf", "shell", "shift", "shirt", "shirt", "shock", "shock", "shoot", "short", "sight", "since", "sixth", "skill", "skill", "sleep", "slide", "small", "smart", "smile", "smith", "smoke", "solid", "solve", "sorry", "sound", "south", "space", "spare", "speak", "speed", "spend", "spent", "split", "spoke", "sport", "staff", "stage", "stake", "stand", "start", "state", "steam", "steel", "stick", "still", "stock", "strong", "sugar", "suite", "super", "sweet", "table", "taken", "taste", "texas", "thank", "theft", "their", "theme", "there", "these", "thick", "thing", "think", "third", "those", "three", "throw", "tight", "times", "tired", "title", "today", "topic", "total", "touch", "tough", "tower", "track", "trade", "train", "treat", "trend", "trial", "tried", "truck", "truly", "trust", "truth", "twice", "under", "union", "until", "upper", "urban", "usage", "usual", "valid", "value", "video", "virus", "visit", "vital", "voice", "waste", "watch", "water", "wheel", "where", "which", "while", "white", "whole", "whose", "woman", "world", "worry", "worse", "worst", "worth", "would", "wound", "wrong", "wrote", "yield", "young", "youth"]
+                5: ["write", "story", "verse", "rhyme", "quill", "paper", "novel", "shelf", "study", "clue", "logic", "craft", "atlas", "folio", "prose", "about", "above", "agent", "alarm", "album", "alert", "alive", "alone", "along", "apple", "audio", "beach", "begin", "black", "blood", "board", "brain", "brand", "bread", "break", "breed", "brief", "bring", "broad", "broke", "brown", "build", "built", "buyer", "cable", "carry", "catch", "cause", "chain", "chair", "chart", "chase", "cheap", "check", "chest", "chief", "child", "china", "chose", "civil", "claim", "class", "clean", "clear", "climb", "clock", "close", "coach", "coast", "could", "count", "court", "cover", "crash", "cream", "crime", "cross", "crowd", "crown", "curve", "cycle", "daily", "dance", "dated", "dealt", "death", "debut", "delay", "depth", "doing", "doubt", "dozen", "draft", "drama", "drawn", "dream", "dress", "drill", "drink", "drive", "early", "earth", "eight", "empty", "entry", "equal", "error", "event", "every", "exact", "exist", "extra", "faith", "false", "fault", "fiber", "field", "fifth", "fifty", "fight", "final", "first", "fixed", "flash", "fleet", "floor", "fluid", "focus", "force", "forth", "forty", "forum", "found", "frame", "frank", "fraud", "fresh", "front", "fruit", "fully", "funny", "giant", "given", "glass", "globe", "going", "grace", "grade", "grand", "grant", "graph", "great", "green", "group", "grown", "guard", "guess", "guest", "guide", "habit", "happy", "heart", "heavy", "hence", "horse", "hotel", "house", "human", "ideal", "image", "index", "inner", "input", "issue", "joint", "judge", "known", "label", "layer", "learn", "lease", "least", "leave", "legal", "level", "light", "limit", "links", "lives", "local", "loose", "lower", "lucky", "lunch", "lying", "magic", "major", "maker", "march", "match", "maybe", "mayor", "meant", "media", "metal", "might", "minor", "money", "month", "moral", "motor", "mount", "mouse", "mouth", "movie", "music", "never", "night", "noise", "north", "novel", "nurse", "occur", "ocean", "offer", "order", "other", "ought", "paint", "paper", "party", "peace", "phone", "photo", "piece", "pilot", "pitch", "place", "plain", "plane", "plant", "plate", "point", "pound", "power", "press", "price", "pride", "prime", "print", "prior", "prize", "proof", "proud", "prove", "queen", "quick", "quiet", "quite", "radio", "raise", "range", "rapid", "ratio", "reach", "ready", "refer", "right", "rival", "river", "rough", "round", "route", "royal", "rural", "scale", "scene", "scope", "score", "sense", "serve", "seven", "shape", "share", "sharp", "sheet", "shelf", "shell", "shift", "shirt", "shirt", "shock", "shock", "shoot", "short", "sight", "since", "sixth", "skill", "skill", "sleep", "slide", "small", "smart", "smile", "smith", "smoke", "solid", "solve", "sorry", "sound", "south", "space", "spare", "speak", "speed", "spent", "split", "spoke", "sport", "staff", "stage", "stake", "stand", "start", "state", "steam", "steel", "stick", "still", "stock", "strong", "sugar", "suite", "super", "sweet", "table", "taken", "taste", "texas", "thank", "theft", "their", "theme", "there", "these", "thick", "thing", "think", "third", "those", "three", "throw", "tight", "times", "tired", "title", "today", "topic", "total", "touch", "tough", "tower", "track", "trade", "train", "treat", "trend", "trial", "tried", "truck", "truly", "trust", "truth", "twice", "under", "union", "until", "upper", "urban", "usage", "usual", "valid", "value", "video", "virus", "visit", "vital", "voice", "waste", "watch", "water", "wheel", "where", "which", "while", "white", "whole", "whose", "woman", "world", "worry", "worse", "worst", "worth", "would", "wound", "wrong", "wrote", "yield", "young", "youth"]
             };
 
             const ITEMS = {
@@ -720,11 +729,15 @@
             function showScreen(id) {
                 document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
                 document.getElementById(id).classList.add('active');
+                
+                const body = document.getElementById('game-body');
                 if (id !== 'screen-game') {
+                    body.classList.remove('boss-active');
                     document.getElementById('confirm-modal').style.display = 'none';
                     document.getElementById('boss-alert').style.display = 'none';
                     stopTimer();
                 }
+                
                 const header = document.getElementById('main-header');
                 const surrenderBtn = document.getElementById('surrender-ribbon');
                 
@@ -1273,15 +1286,44 @@
 
             window.openRespite = () => {
                 const lastWord = window.G.targetWord.toUpperCase();
-                document.getElementById('last-word-display').innerText = lastWord;
+                const box = document.getElementById('respite-archive-box');
+                const label = document.getElementById('respite-label');
+                const header = document.getElementById('respite-header');
+                const subtext = document.getElementById('respite-subtext');
+
+                const nextFloorNum = window.G.floor + 1;
+                const isHunter = window.G.archetype === 'hunter';
+                const isEveryFourth = nextFloorNum % 4 === 0;
+                const isEndlessBoss = window.G.isEndless && nextFloorNum % 2 === 0;
+                const isChimera = nextFloorNum === 20 && !window.G.isEndless;
                 
-                let nextBoss;
-                if (window.G.isEndless) nextBoss = window.G.floor + (2 - (window.G.floor % 2));
-                else nextBoss = window.G.floor + (4 - (window.G.floor % 4));
-                
-                const diff = nextBoss - window.G.floor;
-                const progText = (diff === 0) ? "Trial Encounter Imminent" : `${diff} floor${diff > 1 ? 's' : ''} to next Trial.`;
-                document.getElementById('boss-progress-display').innerText = progText;
+                const nextIsBoss = isHunter || isEveryFourth || isEndlessBoss || isChimera;
+
+                if (nextIsBoss) {
+                    box.classList.add('boss-style');
+                    let bossName = "TRIAL ENCOUNTER";
+                    if (isChimera) bossName = "THE CHIMERA";
+                    else if (window.G.availableBosses.length > 0) {
+                        const meta = BOSS_LIST.find(b => b.mod === window.G.availableBosses[0]);
+                        if (meta) bossName = meta.name;
+                    }
+                    
+                    label.innerText = `Floor ${romNums[nextFloorNum] || nextFloorNum} Trial`;
+                    header.innerText = bossName;
+                    subtext.innerText = `Last Archive: ${lastWord}`;
+                } else {
+                    box.classList.remove('boss-style');
+                    let nextBoss;
+                    if (window.G.isEndless) nextBoss = nextFloorNum + (1 - (nextFloorNum % 2));
+                    else nextBoss = nextFloorNum + (3 - (nextFloorNum % 4));
+                    
+                    const diff = nextBoss - window.G.floor;
+                    const progText = `${diff} floor${diff > 1 ? 's' : ''} to next Trial.`;
+                    
+                    label.innerText = "Last Archive";
+                    header.innerText = lastWord;
+                    subtext.innerText = progText;
+                }
                 
                 showScreen('screen-respite');
                 saveGame();
@@ -1363,7 +1405,9 @@
 
                 const modBar = document.getElementById('modifiers-bar'); modBar.innerHTML = "";
                 const body = document.getElementById('game-body');
-                if(window.G.bossActive) { 
+                const isGameScreen = document.getElementById('screen-game').classList.contains('active');
+
+                if(window.G.bossActive && isGameScreen) { 
                     body.classList.add('boss-active');
                     const div = document.createElement('div'); div.className = "boss-info";
                     let desc = window.G.modifiers.map(m => BOSS_DATA[m] || "").join(" ");
