@@ -15,12 +15,13 @@
             --green: #2d5a27;
             --yellow: #a67c00;
             --gray: #4a443f;
-            --hazard: #4c0000; /* Deep Dark Red */
+            --hazard: #4c0000;
             --invalid-red: #8b0000;
             --accent: #5d3a1a;
             --text: #2c1e14;
             --font-main: 'Crimson Text', serif;
             --font-title: 'Cinzel', serif;
+            --screen-bg: radial-gradient(circle at 50% 50%, transparent 0%, rgba(0,0,0,0.15) 100%);
         }
 
         * { 
@@ -32,9 +33,7 @@
 
         body {
             background-color: var(--bg-color);
-            background-image: 
-                radial-gradient(circle at 50% 50%, transparent 0%, rgba(0,0,0,0.15) 100%),
-                url('https://www.transparenttextures.com/patterns/paper-fibers.png');
+            background-image: var(--screen-bg), url('https://www.transparenttextures.com/patterns/paper-fibers.png');
             color: var(--text);
             font-family: var(--font-main);
             height: 100vh;
@@ -46,6 +45,14 @@
             align-items: center;
             user-select: none;
             -webkit-user-select: none;
+            transition: background-color 0.8s ease;
+        }
+
+        body.boss-active {
+            background-color: #1a0f0a;
+            --text: #d2b48c;
+            --accent: #8b7355;
+            --screen-bg: radial-gradient(circle at 50% 50%, rgba(76, 0, 0, 0.2) 0%, rgba(0,0,0,0.8) 100%);
         }
 
         #damage-overlay {
@@ -67,10 +74,10 @@
         .screen {
             display: none;
             flex-direction: column;
-            width: 95%; /* Match header width logic */
+            width: 95%;
             max-width: 500px;
             flex: 1;
-            padding: 20px 0; /* Vertical padding only to maximize side space */
+            padding: 20px 0;
             position: relative;
             justify-content: center; 
             align-items: center;
@@ -192,7 +199,7 @@
             display: flex; 
             flex-direction: column; 
             gap: 6px; 
-            padding: 10px 0 20px 0; /* Reduced padding on left and right to match header width */
+            padding: 10px 0 20px 0;
             width: 100%;
         }
         .kb-row { display: flex; justify-content: center; gap: 4px; width: 100%; }
@@ -217,7 +224,7 @@
         .difficulty-selector {
             display: flex;
             gap: 8px;
-            margin-bottom: 5px;
+            margin-bottom: 15px;
             width: 100%;
             max-width: 440px;
         }
@@ -270,6 +277,16 @@
             position: relative;
             background-image: url('https://www.transparenttextures.com/patterns/handmade-paper.png');
         }
+        .archetype-pb {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            font-size: 0.55rem;
+            font-family: var(--font-title);
+            color: var(--accent);
+            opacity: 0.6;
+            font-weight: bold;
+        }
         .archetype-card.locked {
             opacity: 0.5;
             filter: grayscale(1);
@@ -279,9 +296,6 @@
             transform: translateY(-2px);
             box-shadow: 4px 4px 0px var(--hazard);
             border-color: var(--hazard);
-        }
-        .archetype-card:not(.locked):active {
-            transform: scale(0.97);
         }
         .archetype-card h3 { 
             font-family: var(--font-title); 
@@ -316,17 +330,14 @@
         }
         .btn.small { min-width: 150px; font-size: 0.85rem; padding: 10px; }
 
-        .selection-actions {
-            display: flex;
-            gap: 10px;
-            width: 100%;
-            max-width: 440px;
-            margin-top: 10px;
-        }
-        .selection-actions .btn {
-            flex: 1;
-            margin: 0;
-            min-width: 0;
+        .back-arrow {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--accent);
+            z-index: 100;
         }
 
         .shop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
@@ -365,13 +376,17 @@
         .rules-modal-container { 
             background: #fdf5e6; color: var(--text); padding: 25px; border: 6px double var(--ink-black); border-radius: 12px; width: 95%; max-width: 500px; text-align: left; max-height: 85vh; overflow-y: auto;
         }
-        .rules-modal-container h2, .rules-modal-container h3 { font-family: var(--font-title); color: var(--hazard); margin: 15px 0 5px 0; border-bottom: 1px solid var(--parchment-dark); }
-        .rules-modal-container p { font-size: 0.9rem; line-height: 1.4; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .rules-modal-container h2 { text-align: center; font-family: var(--font-title); color: var(--hazard); margin-bottom: 20px; }
+        .rules-modal-container h3 { font-family: var(--font-title); color: var(--hazard); margin: 25px 0 10px 0; border-bottom: 2px solid var(--parchment-dark); font-size: 1.1rem; }
+        
+        .codex-entry { margin-bottom: 12px; }
+        .codex-name { font-weight: bold; color: var(--ink-black); font-size: 0.95rem; display: flex; align-items: center; gap: 6px; }
+        .codex-desc { font-size: 0.8rem; line-height: 1.3; color: var(--accent); font-style: italic; display: block; margin-top: 2px; }
 
         #modifiers-bar { text-align: center; }
         .boss-info { display: flex; flex-direction: column; align-items: center; line-height: 1.2; }
-        .boss-name-ui { color: var(--hazard); letter-spacing: 1px; font-weight: bold; font-family: var(--font-title); }
-        .boss-desc-ui { font-size: 0.75rem; color: var(--accent); font-style: italic; margin-top: 2px; }
+        .boss-name-ui { color: #f00; text-shadow: 0 0 5px #000; letter-spacing: 1px; font-weight: bold; font-family: var(--font-title); }
+        .boss-desc-ui { font-size: 0.75rem; color: #aaa; font-style: italic; margin-top: 2px; }
 
         #timer-display { font-family: var(--font-title); color: var(--hazard); font-size: 1.2rem; margin-top: 5px; font-weight: bold; display: none; }
 
@@ -381,12 +396,10 @@
         .boss-alert { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #1a0f0a; color: #d2b48c; padding: 30px; border: 4px double var(--hazard); width: 90%; max-width: 400px; z-index: 4000; text-align: center; display: none; box-shadow: 0 0 100px #000; border-radius: 12px; }
         .boss-alert h1 { font-family: var(--font-title); color: var(--hazard); font-size: 2rem; margin-bottom: 12px; letter-spacing: 2px; }
 
-        /* Loading Quill Animation */
         .loading-quill {
             font-size: 3.5rem;
             margin-bottom: 30px;
             animation: quill-writing 2s ease-in-out infinite;
-            filter: drop-shadow(0 0 5px rgba(0,0,0,0.3));
         }
         @keyframes quill-writing {
             0%, 100% { transform: translate(0, 0) rotate(15deg); }
@@ -425,39 +438,21 @@
     <!-- Codex Modal -->
     <div id="rules-modal" class="custom-modal" onclick="closeRules(event)">
         <div class="rules-modal-container" onclick="event.stopPropagation()">
-            <h2 style="text-align: center;">THE CODEX</h2>
+            <h2>THE CODEX</h2>
             
             <h3>The Trials (Bosses)</h3>
-            <p><b>Silenced Scribe:</b> 3 random letters cost 5 coins to use.</p>
-            <p><b>The Mimic:</b> Lies about one tile color per guess.</p>
-            <p><b>Whispering Void:</b> After each guess, 2 keys are scrambled with symbols.</p>
-            <p><b>The Censor:</b> Every incorrect guess deals 10 damage to Vitality.</p>
-            <p><b>The Blight:</b> Hides entire rows that have passed (Row 1 hidden when on Row 3, etc).</p>
-            <p><b>The Illusionist:</b> Correct tiles appear Misplaced (Yellow).</p>
-            <p><b>The Hermit:</b> Backpack items are unusable.</p>
-            <p><b>The Siren:</b> Vowels remain neutral on the grid.</p>
-            <p><b>The Phantom:</b> Only the latest guess remains visible.</p>
-            <p><b>The Corruptor:</b> 3 random keys deal 5 damage when used.</p>
-            <p><b>The Clockmaker:</b> You have exactly 3 minutes to win.</p>
-            <p><b>The Chimera:</b> Uses two effects. Final stage only.</p>
+            <div id="codex-bosses"></div>
 
             <h3>The Reliquary (Powers)</h3>
-            <p><span>🛡️</span> <b>Plate Armor:</b> Block flat 5 damage from any source.</p>
-            <p><span>❤️</span> <b>Ancient Heart:</b> Permanently +20 Max Vitality.</p>
-            <p><span>🎒</span> <b>Satchel:</b> Permanently +1 Backpack space.</p>
-            <p><span>🪶</span> <b>Phoenix Feather:</b> Auto-revive once at 50% Vitality.</p>
-            <p><span>🪙</span> <b>Midas Touch:</b> +15 Coins per victory.</p>
-            <p><span>📖</span> <b>Encyclopedia:</b> +1 Max Guess per floor.</p>
-            <p><span>🖋️</span> <b>Vampiric Ink:</b> Heal 3 Vit for every new Green found.</p>
-            <p><span>💠</span> <b>Runestone of Clarity:</b> 1 tile per guess is guaranteed to show true colors.</p>
-            <p><span>📜</span> <b>Soul Ledger:</b> +1 Coin for every incorrect letter guessed.</p>
-            <p><span>🧭</span> <b>Seer's Compass:</b> Highlight 1 yellow key on keyboard per floor.</p>
+            <div id="codex-relics"></div>
+
+            <h3>The Archive (Items)</h3>
+            <div id="codex-items"></div>
 
             <button class="btn" style="width: 100%; margin-top: 20px;" onclick="document.getElementById('rules-modal').style.display='none'">Close Codex</button>
         </div>
     </div>
 
-    <!-- Confirmation Modal -->
     <div id="confirm-modal" class="custom-modal">
         <div class="modal-box">
             <h2 id="confirm-title" class="title">Use Item?</h2>
@@ -508,53 +503,62 @@
         <p style="font-style: italic; margin-bottom: 10px;">— A Rogue’s Descent —</p>
         <p id="highscore-display" style="font-size: 0.9rem; margin-bottom: 20px; font-family: var(--font-title); color: var(--accent);">Best Floor: I</p>
         <button class="btn" onclick="AudioEngine.init(); AudioEngine.playShop(); checkAbyssEntry()">Enter the Abyss</button>
-        <button class="btn" onclick="AudioEngine.init(); AudioEngine.playShop(); document.getElementById('rules-modal').style.display='flex'">The Codex</button>
+        <button class="btn" onclick="AudioEngine.init(); AudioEngine.playShop(); openCodex()">The Codex</button>
     </div>
 
     <div id="screen-archetype" class="screen">
+        <div class="back-arrow" onclick="AudioEngine.playKey(); showScreen('screen-start')">←</div>
         <h2 class="title" style="margin-bottom: 2px; font-size: 1.5rem; letter-spacing: 1px;">Soul Selection</h2>
         <p id="diff-description" style="font-size: 0.72rem; color: var(--accent); font-style: italic; margin-bottom: 12px; height: 1.2em;">Choose your destiny.</p>
         
         <div class="archetype-list" id="archetype-list">
-            <div class="archetype-card" onclick="AudioEngine.playShop(); selectArchetype('outcast', this)">
+            <div class="archetype-card" onclick="startRun('outcast')">
+                <div class="archetype-pb" id="pb-outcast">BF: I</div>
                 <div class="archetype-vit">❤️ 60 VIT</div>
                 <h3>Outcast</h3>
                 <p>No spelling penalties. Standard path.</p>
             </div>
-            <div class="archetype-card" id="arch-withered" onclick="AudioEngine.playShop(); selectArchetype('withered', this)">
+            <div class="archetype-card" id="arch-withered" onclick="startRun('withered')">
+                <div class="archetype-pb" id="pb-withered">BF: I</div>
                 <div class="archetype-vit">❤️ 60 VIT</div>
                 <h3>Withered</h3>
-                <p>Halves all damage taken, but cannot restore vitality.</p>
+                <p>Halves all damage taken.</p>
             </div>
-            <div class="archetype-card" id="arch-tinker" onclick="AudioEngine.playShop(); selectArchetype('tinker', this)">
+            <div class="archetype-card" id="arch-tinker" onclick="startRun('tinker')">
+                <div class="archetype-pb" id="pb-tinker">BF: I</div>
                 <div class="archetype-vit">❤️ 70 VIT</div>
                 <h3>Tinker</h3>
-                <p>Starts with 4 Bag slots and 2 random items.</p>
+                <p>Starts with 4 Bag slots and 2 items.</p>
             </div>
-            <div class="archetype-card" id="arch-prodigy" onclick="AudioEngine.playShop(); selectArchetype('prodigy', this)">
+            <div class="archetype-card" id="arch-prodigy" onclick="startRun('prodigy')">
+                <div class="archetype-pb" id="pb-prodigy">BF: I</div>
                 <div class="archetype-vit">❤️ 30 VIT</div>
                 <h3>Prodigy</h3>
-                <p>Starts each floor with 1 Correct tile revealed.</p>
+                <p>Starts floors with 1 Correct letter.</p>
             </div>
-            <div class="archetype-card" id="arch-merchant" onclick="AudioEngine.playShop(); selectArchetype('merchant', this)">
+            <div class="archetype-card" id="arch-merchant" onclick="startRun('merchant')">
+                <div class="archetype-pb" id="pb-merchant">BF: I</div>
                 <div class="archetype-vit">❤️ 90 VIT</div>
                 <h3>Merchant</h3>
                 <p>Permanent 25% shop discount.</p>
             </div>
-            <div class="archetype-card" id="arch-hunter" onclick="AudioEngine.playShop(); selectArchetype('hunter', this)">
+            <div class="archetype-card" id="arch-hunter" onclick="startRun('hunter')">
+                <div class="archetype-pb" id="pb-hunter">BF: I</div>
                 <div class="archetype-vit">❤️ 100 VIT</div>
                 <h3>Boss Hunter</h3>
-                <p>Trials on every floor. Starts with a random Relic.</p>
+                <p>Trials on every floor. Random Relic.</p>
             </div>
-            <div class="archetype-card" id="arch-bloodstained" onclick="AudioEngine.playShop(); selectArchetype('bloodstained', this)">
+            <div class="archetype-card" id="arch-bloodstained" onclick="startRun('bloodstained')">
+                <div class="archetype-pb" id="pb-bloodstained">BF: I</div>
                 <div class="archetype-vit">❤️ 120 VIT</div>
                 <h3>Bloodstained</h3>
-                <p>No gold. Every purchase or reward costs Vitality.</p>
+                <p>No gold. Costs Vitality.</p>
             </div>
-            <div class="archetype-card" id="arch-cursed" onclick="AudioEngine.playShop(); selectArchetype('cursed', this)">
+            <div class="archetype-card" id="arch-cursed" onclick="startRun('cursed')">
+                <div class="archetype-pb" id="pb-cursed">BF: I</div>
                 <div class="archetype-vit">❤️ 110 VIT</div>
                 <h3>Cursed One</h3>
-                <p>Invalid words grant +20% Gold multiplier (cumulative).</p>
+                <p>Invalid words grant Gold multiplier.</p>
             </div>
         </div>
         
@@ -562,11 +566,6 @@
             <button id="diff-easy" class="diff-btn active" onclick="AudioEngine.playKey(); setDiff('easy', this)">Easy</button>
             <button id="diff-medium" class="diff-btn" onclick="AudioEngine.playKey(); setDiff('medium', this)">Medium</button>
             <button id="diff-hard" class="diff-btn" onclick="AudioEngine.playKey(); setDiff('hard', this)">Hard</button>
-        </div>
-        
-        <div class="selection-actions">
-            <button class="btn small" style="background: transparent; border-color: var(--accent); color: var(--accent);" onclick="AudioEngine.playKey(); showScreen('screen-start')">Back</button>
-            <button class="btn small" id="start-run-btn" style="background: var(--green); border-color: black; color: white;" onclick="AudioEngine.playShop(); executeStartRun()">Begin Ascent</button>
         </div>
     </div>
 
@@ -579,6 +578,21 @@
             <div class="kb-row" id="kb-1"></div>
             <div class="kb-row" id="kb-2"></div>
             <div class="kb-row" id="kb-3"></div>
+        </div>
+    </div>
+
+    <div id="screen-respite" class="screen">
+        <h2 class="title" style="margin-bottom: 10px; font-size: 2.2rem;">RESPITE</h2>
+        <div class="modal-box" style="background: rgba(0,0,0,0.05); border: 2px solid var(--accent); width: 100%;">
+            <p style="font-family: var(--font-title); font-size: 0.8rem; color: var(--accent); text-transform: uppercase;">Last Archive</p>
+            <h1 id="last-word-display" style="font-family: var(--font-title); margin: 5px 0 15px 0; letter-spacing: 4px; color: var(--green);">WORD</h1>
+            
+            <p id="boss-progress-display" style="font-style: italic; font-size: 0.9rem; margin-top: 10px;"></p>
+        </div>
+        
+        <div style="margin-top: 30px; display: flex; flex-direction: column; gap: 12px; width: 100%;">
+            <button class="btn" onclick="AudioEngine.playShop(); enterShop()">Enter the Library</button>
+            <button class="btn" id="rest-btn" style="background: var(--green); color: white; border-color: black;" onclick="executeRest()">Take a Rest</button>
         </div>
     </div>
 
@@ -622,7 +636,7 @@
 
             const CURATED_TARGETS = {
                 4: ["book", "page", "font", "word", "ink", "read", "sign", "tale", "lore", "myth", "bard", "text", "poem", "verb", "writ", "city", "cold", "dark", "data", "fire", "fish", "gold", "hand", "hard", "home", "hope", "kind", "king", "land", "life", "love", "moon", "name", "near", "open", "path", "play", "rain", "real", "road", "rock", "save", "star", "time", "tree", "true", "walk", "wind", "work", "year", "milk", "silk", "cake", "lake", "meal", "boat", "coat", "lamp", "camp", "heal", "meat", "neat", "beat", "feel", "dead", "pest", "test", "west", "east"],
-                5: ["write", "story", "verse", "rhyme", "quill", "paper", "novel", "shelf", "study", "clue", "logic", "craft", "atlas", "folio", "prose", "about", "above", "agent", "alarm", "album", "alert", "alive", "alone", "along", "apple", "audio", "beach", "begin", "black", "blood", "board", "brain", "brand", "bread", "break", "breed", "brief", "bring", "broad", "broke", "brown", "build", "built", "buyer", "cable", "carry", "catch", "cause", "chain", "chair", "chart", "chase", "cheap", "check", "chest", "chief", "child", "china", "chose", "civil", "claim", "class", "clean", "clear", "climb", "clock", "close", "coach", "coast", "could", "count", "court", "cover", "crash", "cream", "crime", "cross", "crowd", "crown", "curve", "cycle", "daily", "dance", "dated", "dealt", "death", "debut", "delay", "depth", "doing", "doubt", "dozen", "draft", "drama", "drawn", "dream", "dress", "drill", "drink", "drive", "early", "earth", "eight", "empty", "entry", "equal", "error", "event", "every", "exact", "exist", "extra", "faith", "false", "fault", "fiber", "field", "fifth", "fifty", "fight", "final", "first", "fixed", "flash", "fleet", "floor", "fluid", "focus", "force", "forth", "forty", "forum", "found", "frame", "frank", "fraud", "fresh", "front", "fruit", "fully", "funny", "giant", "given", "glass", "globe", "going", "grace", "grade", "grand", "grant", "graph", "great", "green", "group", "grown", "guard", "guess", "guest", "guide", "habit", "happy", "heart", "heavy", "hence", "horse", "hotel", "house", "human", "ideal", "image", "index", "inner", "input", "issue", "joint", "judge", "known", "label", "layer", "learn", "lease", "least", "leave", "legal", "level", "light", "limit", "links", "lives", "local", "loose", "lower", "lucky", "lunch", "lying", "magic", "major", "maker", "march", "match", "maybe", "mayor", "meant", "media", "metal", "might", "minor", "money", "month", "moral", "motor", "mount", "mouse", "mouth", "movie", "music", "never", "night", "noise", "north", "novel", "nurse", "occur", "ocean", "offer", "order", "other", "ought", "paint", "paper", "party", "peace", "phone", "photo", "piece", "pilot", "pitch", "place", "plain", "plane", "plant", "plate", "point", "pound", "power", "press", "price", "pride", "prime", "print", "prior", "prize", "proof", "proud", "prove", "queen", "quick", "quiet", "quite", "radio", "raise", "range", "rapid", "ratio", "reach", "ready", "refer", "right", "rival", "river", "rough", "round", "route", "royal", "rural", "scale", "scene", "scope", "score", "sense", "serve", "seven", "shape", "share", "sharp", "sheet", "shelf", "shell", "shift", "shirt", "shirt", "shock", "shock", "shoot", "short", "sight", "since", "sixth", "skill", "skill", "sleep", "slide", "small", "smart", "smile", "smith", "smoke", "solid", "solve", "sorry", "sound", "south", "space", "spare", "speak", "speed", "spend", "spent", "split", "spoke", "sport", "staff", "stage", "stake", "stand", "start", "state", "steam", "steel", "stick", "still", "stock", "stone", "store", "storm", "strip", "stuck", "sugar", "suite", "super", "sweet", "table", "taken", "taste", "texas", "thank", "theft", "their", "theme", "there", "these", "thick", "thing", "think", "third", "those", "three", "throw", "tight", "times", "tired", "title", "today", "topic", "total", "touch", "tough", "tower", "track", "trade", "train", "treat", "trend", "trial", "tried", "truck", "truly", "trust", "truth", "twice", "under", "union", "until", "upper", "urban", "usage", "usual", "valid", "value", "video", "virus", "visit", "vital", "voice", "waste", "watch", "water", "wheel", "where", "which", "while", "white", "whole", "whose", "woman", "world", "worry", "worse", "worst", "worth", "would", "wound", "wrong", "wrote", "yield", "young", "youth"]
+                5: ["write", "story", "verse", "rhyme", "quill", "paper", "novel", "shelf", "study", "clue", "logic", "craft", "atlas", "folio", "prose", "about", "above", "agent", "alarm", "album", "alert", "alive", "alone", "along", "apple", "audio", "beach", "begin", "black", "blood", "board", "brain", "brand", "bread", "break", "breed", "brief", "bring", "broad", "broke", "brown", "build", "built", "buyer", "cable", "carry", "catch", "cause", "chain", "chair", "chart", "chase", "cheap", "check", "chest", "chief", "child", "china", "chose", "civil", "claim", "class", "clean", "clear", "climb", "clock", "close", "coach", "coast", "could", "count", "court", "cover", "crash", "cream", "crime", "cross", "crowd", "crown", "curve", "cycle", "daily", "dance", "dated", "dealt", "death", "debut", "delay", "depth", "doing", "doubt", "dozen", "draft", "drama", "drawn", "dream", "dress", "drill", "drink", "drive", "early", "earth", "eight", "empty", "entry", "equal", "error", "event", "every", "exact", "exist", "extra", "faith", "false", "fault", "fiber", "field", "fifth", "fifty", "fight", "final", "first", "fixed", "flash", "fleet", "floor", "fluid", "focus", "force", "forth", "forty", "forum", "found", "frame", "frank", "fraud", "fresh", "front", "fruit", "fully", "funny", "giant", "given", "glass", "globe", "going", "grace", "grade", "grand", "grant", "graph", "great", "green", "group", "grown", "guard", "guess", "guest", "guide", "habit", "happy", "heart", "heavy", "hence", "horse", "hotel", "house", "human", "ideal", "image", "index", "inner", "input", "issue", "joint", "judge", "known", "label", "layer", "learn", "lease", "least", "leave", "legal", "level", "light", "limit", "links", "lives", "local", "loose", "lower", "lucky", "lunch", "lying", "magic", "major", "maker", "march", "match", "maybe", "mayor", "meant", "media", "metal", "might", "minor", "money", "month", "moral", "motor", "mount", "mouse", "mouth", "movie", "music", "never", "night", "noise", "north", "novel", "nurse", "occur", "ocean", "offer", "order", "other", "ought", "paint", "paper", "party", "peace", "phone", "photo", "piece", "pilot", "pitch", "place", "plain", "plane", "plant", "plate", "point", "pound", "power", "press", "price", "pride", "prime", "print", "prior", "prize", "proof", "proud", "prove", "queen", "quick", "quiet", "quite", "radio", "raise", "range", "rapid", "ratio", "reach", "ready", "refer", "right", "rival", "river", "rough", "round", "route", "royal", "rural", "scale", "scene", "scope", "score", "sense", "serve", "seven", "shape", "share", "sharp", "sheet", "shelf", "shell", "shift", "shirt", "shirt", "shock", "shock", "shoot", "short", "sight", "since", "sixth", "skill", "skill", "sleep", "slide", "small", "smart", "smile", "smith", "smoke", "solid", "solve", "sorry", "sound", "south", "space", "spare", "speak", "speed", "spend", "spent", "split", "spoke", "sport", "staff", "stage", "stake", "stand", "start", "state", "steam", "steel", "stick", "still", "stock", "strong", "sugar", "suite", "super", "sweet", "table", "taken", "taste", "texas", "thank", "theft", "their", "theme", "there", "these", "thick", "thing", "think", "third", "those", "three", "throw", "tight", "times", "tired", "title", "today", "topic", "total", "touch", "tough", "tower", "track", "trade", "train", "treat", "trend", "trial", "tried", "truck", "truly", "trust", "truth", "twice", "under", "union", "until", "upper", "urban", "usage", "usual", "valid", "value", "video", "virus", "visit", "vital", "voice", "waste", "watch", "water", "wheel", "where", "which", "while", "white", "whole", "whose", "woman", "world", "worry", "worse", "worst", "worth", "would", "wound", "wrong", "wrote", "yield", "young", "youth"]
             };
 
             const ITEMS = {
@@ -630,19 +644,42 @@
                 'dust': { emoji: '👁️', name: 'Scryer Dust', desc: 'Reveal non-green letter.', cost: 25, type: 'cons', run: () => revealOne() },
                 'purge': { emoji: '🧹', name: 'Purge Scroll', desc: 'Remove 5 wrong keys.', cost: 30, type: 'cons', run: () => purgeKeys() },
                 'coupon': { emoji: '🎟️', name: 'Haggler Charm', desc: '50% off next buy.', cost: 65, type: 'cons', run: () => { window.G.discountActive = true; toast("Price Halved"); renderShop(); } },
-                'bell': { emoji: '🔔', name: 'Warding Bell', desc: 'Ignore boss for next guess.', cost: 50, type: 'cons', run: () => { window.G.wardActive = true; toast("Warded"); } },
+                'bell': { emoji: '🔔', name: 'Warding Bell', desc: 'Ignore 1 boss effect for that entire floor.', cost: 50, type: 'cons', run: () => { 
+                    if (window.G.modifiers.length > 0) {
+                        window.G.suppressedModifier = window.G.modifiers[Math.floor(Math.random() * window.G.modifiers.length)];
+                        window.G.wardActive = true;
+                        toast(`Warding ${window.G.suppressedModifier}`);
+                    } else {
+                        toast("No effects to ward.");
+                    }
+                } },
                 'masterkey': { emoji: '🔑', name: 'Master Key', desc: 'Solve instantly (No gold).', cost: 150, type: 'cons', run: () => solveWord() },
-                'feather': { emoji: '🪶', name: 'Phoenix Feather', desc: 'Revive at 50% Vitality.', cost: 230, type: 'perm', run: () => { window.G.upgrades.push('feather'); window.G.hasPhoenix = true; } },
+                'feather': { emoji: '🪶', name: 'Phoenix Feather', desc: 'Revive once at 50% VIT.', cost: 230, type: 'perm', run: () => { window.G.upgrades.push('feather'); window.G.hasPhoenix = true; } },
                 'midas': { emoji: '🪙', name: 'Midas Touch', desc: '+15 Coins per win.', cost: 110, type: 'perm', run: () => { window.G.upgrades.push('midas'); } },
                 'dict': { emoji: '📖', name: 'Encyclopedia', desc: '+1 Max Guess per floor.', cost: 160, type: 'perm', run: () => { window.G.maxGuesses++; window.G.upgrades.push('dict'); } },
                 'vamp': { emoji: '🖋️', name: 'Vampiric Ink', desc: 'Heal on new Green tiles.', cost: 140, type: 'perm', run: () => { window.G.upgrades.push('vamp'); } },
                 'satchel': { emoji: '🎒', name: 'Satchel', desc: '+1 Backpack Space.', cost: 120, type: 'perm', run: () => { window.G.consumables.push(null); window.G.upgrades.push('satchel'); } },
                 'heart': { emoji: '❤️', name: 'Ancient Heart', desc: '+20 Max Vitality.', cost: 130, type: 'perm', run: () => { window.G.maxHp += 20; window.G.hp += 20; window.G.upgrades.push('heart'); } },
-                'armor': { emoji: '🛡️', name: 'Plate Armor', desc: '-5 Flat Damage taken.', cost: 140, type: 'perm', run: () => { window.G.upgrades.push('armor'); } },
-                'clarity': { emoji: '💠', name: 'Runestone', desc: 'See true colors (vs Mimic).', cost: 150, type: 'perm', run: () => { window.G.upgrades.push('clarity'); } },
-                'ledger': { emoji: '📜', name: 'Soul Ledger', desc: '+1 Coin per Grey tile.', cost: 140, type: 'perm', run: () => { window.G.upgrades.push('ledger'); } },
-                'compass': { emoji: '🧭', name: "Seer's Compass", desc: 'Highlight 1 yellow key per floor.', cost: 150, type: 'perm', run: () => { window.G.upgrades.push('compass'); } }
+                'armor': { emoji: '🛡️', name: 'Plate Armor', desc: '-5 Damage taken.', cost: 140, type: 'perm', run: () => { window.G.upgrades.push('armor'); } },
+                'clarity': { emoji: '💠', name: 'Runestone', desc: 'True colors revealed.', cost: 150, type: 'perm', run: () => { window.G.upgrades.push('clarity'); } },
+                'ledger': { emoji: '📜', name: 'Soul Ledger', desc: '+1 VIT/Coin per Grey.', cost: 140, type: 'perm', run: () => { window.G.upgrades.push('ledger'); } },
+                'compass': { emoji: '🧭', name: "Seer's Compass", desc: 'Highlight 1 Yellow per floor.', cost: 150, type: 'perm', run: () => { window.G.upgrades.push('compass'); } }
             };
+
+            const BOSS_LIST = [
+                { name: "SILENCED SCRIBE", desc: "3 letters taxed 5 Coins.", mod: "Tax" },
+                { name: "THE MIMIC", desc: "Lies about one tile color.", mod: "Glitch" },
+                { name: "WHISPERING VOID", desc: "Keys scramble into symbols.", mod: "VoidScramble" },
+                { name: "THE CENSOR", desc: "Incorrect guesses deal 10 dmg.", mod: "Censor" },
+                { name: "THE BLIGHT", desc: "Passing rows are hidden.", mod: "Blight" },
+                { name: "THE ILLUSIONIST", desc: "Correct tiles appear Misplaced.", mod: "Illusionist" },
+                { name: "THE HERMIT", desc: "Items are unusable.", mod: "Silence" },
+                { name: "THE SIREN", desc: "Vowels remain neutral.", mod: "Siren" },
+                { name: "THE PHANTOM", desc: "Only latest guess visible.", mod: "Phantom" },
+                { name: "THE CORRUPTOR", desc: "Keys deal 5 damage.", mod: "Corrupt" },
+                { name: "THE CLOCKMAKER", desc: "3 minute time limit.", mod: "Clock" },
+                { name: "THE CHIMERA", desc: "Uses multiple boss effects.", mod: "Chimera" }
+            ];
 
             var kbLayout = [ "qwertyuiop".split(""), "asdfghjkl".split(""), ["DEL", ..."zxcvbnm".split(""), "⏎"] ];
             let timerInterval = null;
@@ -672,7 +709,7 @@
 
             function createInitialState() {
                 return {
-                    hp: 60, maxHp: 60, coins: 0, floor: 1, targetWord: "", currentGuess: "", guesses: [], maxGuesses: 6, archetype: 'outcast', difficulty: 'easy', upgrades: [], consumables: [null, null, null], keyStatus: {}, forbiddenLetters: new Set(), hazardTiles: [], scrambledKeys: {}, wardActive: false, isGameOver: false, modifiers: [], bossActive: null, hints: {}, floorPurchases: new Set(), discountActive: false, currentShopPool: [], midFloor: false, hasPhoenix: false, isEndless: false, unknownCount: 0, corruptedKeys: [], timerSeconds: 180, taxedLetters: [], solveFlag: false, availableBosses: [], facedAllBosses: false, invalidWordBonus: 0
+                    hp: 60, maxHp: 60, coins: 0, floor: 1, targetWord: "", currentGuess: "", guesses: [], maxGuesses: 6, archetype: 'outcast', difficulty: 'easy', upgrades: [], consumables: [null, null, null], keyStatus: {}, forbiddenLetters: new Set(), hazardTiles: [], scrambledKeys: {}, wardActive: false, suppressedModifier: null, isGameOver: false, modifiers: [], bossActive: null, hints: {}, floorPurchases: new Set(), discountActive: false, currentShopPool: [], midFloor: false, hasPhoenix: false, isEndless: false, unknownCount: 0, corruptedKeys: [], timerSeconds: 180, taxedLetters: [], solveFlag: false, availableBosses: [], facedAllBosses: false, invalidWordBonus: 0
                 };
             }
 
@@ -698,24 +735,22 @@
 
                 if (id === 'screen-archetype') {
                     const high = parseInt(localStorage.getItem('lexicon_high_score') || 0);
-                    // Locks archetypes except Outcast if < Floor 8
-                    document.querySelectorAll('.archetype-card').forEach(card => {
-                        const h3 = card.querySelector('h3').innerText;
-                        if (h3 !== 'Outcast' && high < 8) card.classList.add('locked');
+                    const archetypes = ['outcast', 'withered', 'tinker', 'prodigy', 'merchant', 'hunter', 'bloodstained', 'cursed'];
+                    
+                    archetypes.forEach(arch => {
+                        const pbVal = localStorage.getItem(`lexicon_high_score_${arch}`) || 1;
+                        document.getElementById(`pb-${arch}`).innerText = `BF: ${romNums[pbVal] || pbVal}`;
+                        const card = document.getElementById(`arch-${arch}`) || document.querySelector(`.archetype-card[onclick*="'${arch}'"]`);
+                        if (arch !== 'outcast' && high < 8) card.classList.add('locked');
                         else card.classList.remove('locked');
                     });
-                    // Lock Medium/Hard
+
                     document.getElementById('diff-medium').classList.toggle('locked', high < 20);
                     document.getElementById('diff-hard').classList.toggle('locked', high < 21);
-                    
-                    window.G.archetype = 'outcast';
-                    window.G.difficulty = 'easy';
-                    document.querySelectorAll('.archetype-card').forEach(c => c.style.borderColor = 'var(--parchment-dark)');
-                    document.querySelector('.archetype-card').style.borderColor = 'var(--green)';
                     updateDifficultyInfo();
                 }
 
-                if (id === 'screen-game' || id === 'screen-shop') {
+                if (id === 'screen-game' || id === 'screen-shop' || id === 'screen-respite') {
                     header.style.display = 'grid';
                     if (id === 'screen-game') {
                         surrenderBtn.innerText = '🏳'; 
@@ -729,10 +764,28 @@
                         surrenderBtn.onclick = nextFloor;
                     }
                 } else header.style.display = 'none';
-                
-                if (id === 'screen-archetype') updateDifficultyInfo();
             }
             window.showScreen = showScreen;
+
+            window.openCodex = () => {
+                const bCont = document.getElementById('codex-bosses');
+                const rCont = document.getElementById('codex-relics');
+                const iCont = document.getElementById('codex-items');
+                bCont.innerHTML = ""; rCont.innerHTML = ""; iCont.innerHTML = "";
+
+                BOSS_LIST.forEach(b => {
+                    bCont.innerHTML += `<div class="codex-entry"><span class="codex-name">💀 ${b.name}</span><span class="codex-desc">${b.desc}</span></div>`;
+                });
+
+                Object.keys(ITEMS).forEach(k => {
+                    const item = ITEMS[k];
+                    const entry = `<div class="codex-entry"><span class="codex-name">${item.emoji} ${item.name}</span><span class="codex-desc">${item.desc}</span></div>`;
+                    if (item.type === 'perm') rCont.innerHTML += entry;
+                    else iCont.innerHTML += entry;
+                });
+
+                document.getElementById('rules-modal').style.display = 'flex';
+            };
 
             function startTimer() {
                 document.getElementById('timer-display').style.display = 'block';
@@ -788,26 +841,17 @@
                 }
             };
 
-            window.selectArchetype = (type, el) => {
-                if (el.classList.contains('locked')) {
+            window.startRun = (type) => {
+                const card = document.getElementById(`arch-${type}`) || document.querySelector(`.archetype-card[onclick*="'${type}'"]`);
+                if (card && card.classList.contains('locked')) {
                     toast("Reach Floor VIII to unlock.");
                     return;
                 }
-                window.G.archetype = type;
-                document.querySelectorAll('.archetype-card').forEach(c => c.style.borderColor = 'var(--parchment-dark)');
-                el.style.borderColor = 'var(--green)';
-            };
-
-            window.executeStartRun = () => {
-                startRun(window.G.archetype);
-            };
-
-            window.startRun = (type) => {
-                AudioEngine.init();
+                
+                AudioEngine.init(); AudioEngine.playShop();
                 const diff = window.G.difficulty;
                 window.G = createInitialState();
-                window.G.archetype = type; 
-                window.G.difficulty = diff;
+                window.G.archetype = type; window.G.difficulty = diff;
                 
                 if(type === 'withered') { window.G.hp = window.G.maxHp = 60; }
                 else if(type === 'tinker') { window.G.hp = window.G.maxHp = 70; window.G.consumables = [null, null, null, null]; }
@@ -820,17 +864,13 @@
                 
                 window.G.coins = (type === 'hunter') ? 100 : 50; 
                 if(type === 'bloodstained') window.G.coins = 0;
-
                 if(window.G.difficulty === 'medium' || window.G.difficulty === 'hard') window.G.maxGuesses = 5;
 
-                window.G.availableBosses = Object.keys(BOSS_DATA);
+                window.G.availableBosses = BOSS_LIST.map(b => b.mod).filter(m => m !== 'Chimera');
 
                 if(type === 'tinker') {
                     const archive = Object.keys(ITEMS).filter(k => ITEMS[k].type === 'cons');
-                    for(let i=0; i<2; i++) {
-                        const randItem = archive[Math.floor(Math.random() * archive.length)];
-                        window.G.consumables[i] = randItem;
-                    }
+                    for(let i=0; i<2; i++) window.G.consumables[i] = archive[Math.floor(Math.random() * archive.length)];
                 }
 
                 if(type === 'hunter') {
@@ -848,13 +888,12 @@
                 showScreen('screen-game');
             };
 
-            window.startEndless = () => { window.G.isEndless = true; document.getElementById('victory-modal').style.display = 'none'; nextFloor(); };
+            window.startEndless = () => { window.G.isEndless = true; document.getElementById('victory-modal').style.display = 'none'; openRespite(); };
 
             window.setDiff = (d, btn) => {
                 if (btn.classList.contains('locked')) {
                     const msg = d === 'medium' ? "Reach Floor XX to unlock." : "Reach Floor XXI to unlock.";
-                    toast(msg);
-                    return;
+                    toast(msg); return;
                 }
                 window.G.difficulty = d;
                 document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
@@ -866,14 +905,14 @@
                 const info = document.getElementById('diff-description');
                 if (window.G.difficulty === 'easy') info.innerText = "Easy: 6 attempts per floor. Bosses are manageable.";
                 else if (window.G.difficulty === 'medium') info.innerText = "Medium: 5 attempts per floor. Trials are common.";
-                else info.innerText = "Hard: 5 attempts per floor. Increased Boss power & frequency.";
+                else info.innerText = "Hard: 5 attempts per floor. High Boss frequency.";
             }
 
             function initFloor() {
                 window.G.guesses = []; window.G.currentGuess = ""; window.G.keyStatus = {}; window.G.forbiddenLetters = new Set();
                 window.G.hazardTiles = []; window.G.modifiers = []; window.G.bossActive = null; window.G.hints = {}; window.G.unknownCount = 0;
                 window.G.corruptedKeys = []; window.G.timerSeconds = 180; window.G.taxedLetters = []; window.G.solveFlag = false;
-                window.G.scrambledKeys = {}; window.G.wardActive = false; window.G.midFloor = true;
+                window.G.scrambledKeys = {}; window.G.wardActive = false; window.G.suppressedModifier = null; window.G.midFloor = true;
                 
                 let len = 4;
                 if (window.G.isEndless || window.G.floor > 20) len = 4 + Math.floor(Math.random() * 5);
@@ -890,7 +929,7 @@
                 const isEveryFourth = window.G.floor % 4 === 0;
 
                 if (window.G.floor === 20 && !window.G.isEndless) triggerBoss("Chimera");
-                else if (isHunter || isEveryFourth) triggerBoss();
+                else if (isHunter || isEveryFourth || (window.G.isEndless && window.G.floor % 2 === 0)) triggerBoss(window.G.isEndless ? "Chimera" : "");
                 else if (window.G.floor > 2 && Math.random() > 0.6) window.G.modifiers.push("Hazards");
                 
                 if(window.G.modifiers.includes("Hazards")) {
@@ -898,49 +937,40 @@
                 }
 
                 if(window.G.archetype === 'prodigy') revealOne();
-                
-                // Compass Relic Logic
                 if (window.G.upgrades.includes('compass')) {
-                    const possible = window.G.targetWord.split("");
-                    const randChar = possible[Math.floor(Math.random()*possible.length)];
-                    window.G.keyStatus[randChar] = 'present';
+                    const char = window.G.targetWord[Math.floor(Math.random()*window.G.targetWord.length)];
+                    window.G.keyStatus[char] = 'present';
                 }
 
                 saveGame(); updateUI(); renderGrid(); renderKeyboard();
             }
 
             function triggerBoss(forced) {
-                const bosses = [
-                    { n: "SILENCED SCRIBE", d: "3 letters taxed 5 Coins.", mod: "Tax" },
-                    { n: "THE MIMIC", d: "Lies about one tile color.", mod: "Glitch" },
-                    { n: "WHISPERING VOID", d: "Keys scramble into symbols.", mod: "VoidScramble" },
-                    { n: "THE CENSOR", d: "Incorrect guesses deal 10 dmg.", mod: "Censor" },
-                    { n: "THE BLIGHT", d: "Passing rows are hidden.", mod: "Blight" },
-                    { n: "THE ILLUSIONIST", d: "Correct tiles appear Misplaced.", mod: "Illusionist" },
-                    { n: "THE HERMIT", d: "Items are silenced.", mod: "Silence" },
-                    { n: "THE SIREN", d: "Vowels remain neutral.", mod: "Siren" },
-                    { n: "THE PHANTOM", d: "Only latest guess visible.", mod: "Phantom" },
-                    { n: "THE CORRUPTOR", d: "Keys deal 5 damage.", mod: "Corrupt" },
-                    { n: "THE CLOCKMAKER", d: "3 minute time limit.", mod: "Clock" }
-                ];
-                
                 let b;
-                if (forced === "Chimera" || window.G.facedAllBosses || window.G.availableBosses.length === 0) {
-                    const pool = [...bosses];
-                    const b1 = pool.splice(Math.floor(Math.random()*pool.length), 1)[0];
-                    const b2 = pool.splice(Math.floor(Math.random()*pool.length), 1)[0];
-                    b = { n: "THE CHIMERA", d: `${b1.n} & ${b2.n} effects.`, mods: [b1.mod, b2.mod] };
+                const pool = BOSS_LIST.filter(x => x.mod !== 'Chimera');
+
+                if (forced === "Chimera") {
+                    let bossCount = 2;
+                    if (window.G.isEndless) {
+                        bossCount = 2 + Math.floor((window.G.floor - 20) / 20);
+                        bossCount = Math.min(bossCount, 6);
+                    }
+                    const selection = [];
+                    const tempPool = [...pool];
+                    for(let i=0; i<bossCount; i++) selection.push(tempPool.splice(Math.floor(Math.random()*tempPool.length), 1)[0]);
+                    
+                    b = { name: "THE CHIMERA", desc: selection.map(s => s.name.split(" ").pop()).join(" & ") + " fused.", mods: selection.map(s => s.mod) };
                     window.G.modifiers.push(...b.mods);
-                    window.G.facedAllBosses = true;
                 } else {
                     const randIdx = Math.floor(Math.random() * window.G.availableBosses.length);
                     const bModKey = window.G.availableBosses.splice(randIdx, 1)[0];
-                    b = bosses.find(x => x.mod === bModKey) || bosses[0];
-                    window.G.modifiers.push(bModKey);
-                    if (window.G.availableBosses.length === 0) window.G.facedAllBosses = true;
+                    const meta = BOSS_LIST.find(x => x.mod === bModKey) || BOSS_LIST[0];
+                    b = { name: meta.name, desc: meta.desc, mods: [meta.mod] };
+                    window.G.modifiers.push(meta.mod);
+                    if (window.G.availableBosses.length === 0) window.G.availableBosses = BOSS_LIST.map(b => b.mod).filter(m => m !== 'Chimera');
                 }
                 
-                window.G.bossActive = b.n;
+                window.G.bossActive = b.name;
                 if(window.G.modifiers.includes("Corrupt")) {
                     const keys = "abcdefghijklmnopqrstuvwxyz".split("");
                     for(let i=0; i<3; i++) window.G.corruptedKeys.push(keys.splice(Math.floor(Math.random()*keys.length), 1)[0]);
@@ -950,8 +980,8 @@
                     for(let i=0; i<3; i++) window.G.taxedLetters.push(keys.splice(Math.floor(Math.random()*keys.length), 1)[0]);
                 }
                 
-                document.getElementById('boss-name').innerText = b.n;
-                document.getElementById('boss-desc').innerText = b.d;
+                document.getElementById('boss-name').innerText = b.name;
+                document.getElementById('boss-desc').innerText = b.desc;
                 document.getElementById('boss-alert').style.display = 'block';
             }
 
@@ -991,13 +1021,15 @@
                                 else tile.classList.add(s);
                             }
                         } else if(r === window.G.guesses.length) {
-                            if(window.G.currentGuess[c]) tile.innerText = window.G.currentGuess[c];
+                            if(window.G.currentGuess[c] && window.G.currentGuess[c] !== " ") tile.innerText = window.G.currentGuess[c];
                             else if(window.G.hints[c]) { tile.innerText = window.G.hints[c]; tile.style.opacity = "0.4"; }
                             
-                            // Erasure Tapping Fix: Only delete the tapped letter
                             tile.onclick = () => {
                                 AudioEngine.playKey();
-                                window.G.currentGuess = window.G.currentGuess.substring(0, c) + window.G.currentGuess.substring(c + 1);
+                                let arr = window.G.currentGuess.split("");
+                                while(arr.length < window.G.targetWord.length) arr.push(" ");
+                                arr[c] = " ";
+                                window.G.currentGuess = arr.join("");
                                 renderGrid();
                             };
                             tile.style.cursor = "pointer";
@@ -1040,75 +1072,90 @@
                 });
             }
 
+            function isEffectActive(mod) {
+                if (window.G.wardActive && window.G.suppressedModifier === mod) return false;
+                return window.G.modifiers.includes(mod);
+            }
+
             function handleKey(k) {
                 if(window.G.isGameOver) return; AudioEngine.init(); AudioEngine.playKey();
                 if(k === "⏎") submitGuess();
-                else if(k === "DEL") window.G.currentGuess = window.G.currentGuess.slice(0, -1);
-                else if(window.G.currentGuess.length < window.G.targetWord.length) {
+                else if(k === "DEL") {
+                    let arr = window.G.currentGuess.split("");
+                    for(let i = arr.length - 1; i >= 0; i--) {
+                        if(arr[i] !== " ") { arr[i] = " "; break; }
+                    }
+                    window.G.currentGuess = arr.join("").trimEnd();
+                }
+                else if(window.G.currentGuess.length < window.G.targetWord.length || window.G.currentGuess.includes(" ")) {
                     const low = k.toLowerCase();
                     if(window.G.forbiddenLetters.has(low)) { toast("Consumed by Void"); return; }
-                    if(window.G.modifiers.includes("Tax") && window.G.taxedLetters.includes(low)) {
+                    
+                    if(window.G.taxedLetters.includes(low) && isEffectActive("Tax")) {
                         if(window.G.coins < 5) { toast("No Coins"); return; }
                         window.G.coins -= 5; updateUI();
                     }
-                    if(window.G.corruptedKeys.includes(low)) { takeDamage(5); toast("Corrupted!"); }
-                    if(/^[a-z]$/i.test(k)) window.G.currentGuess += low;
+                    if(window.G.corruptedKeys.includes(low) && isEffectActive("Corrupt")) { takeDamage(5); toast("Corrupted!"); }
+                    
+                    if(/^[a-z]$/i.test(k)) {
+                        let arr = window.G.currentGuess.split("");
+                        while(arr.length < window.G.targetWord.length) arr.push(" ");
+                        let insertIdx = arr.indexOf(" ");
+                        if(insertIdx !== -1) arr[insertIdx] = low;
+                        window.G.currentGuess = arr.join("").trimEnd();
+                    }
                 }
                 renderGrid();
             }
 
             function submitGuess() {
-                const g = window.G.currentGuess;
+                const gRaw = window.G.currentGuess;
+                const g = gRaw.split("").map(c => c === " " ? "" : c).join("");
                 if(g.length < window.G.targetWord.length) { toast("Incomplete"); return; }
                 const isDict = FULL_LEXICON[g.length]?.has(g) || CURATED_TARGETS[g.length]?.includes(g);
                 const isOutcast = window.G.archetype === 'outcast';
                 const statusArr = [];
-                const mimicLie = (window.G.modifiers.includes("Glitch") && !window.G.wardActive) ? Math.floor(Math.random() * g.length) : -1;
+                const mimicLie = (isEffectActive("Glitch")) ? Math.floor(Math.random() * g.length) : -1;
                 const forceTrue = window.G.upgrades.includes('clarity') ? Math.floor(Math.random() * g.length) : -1;
                 let newGreens = 0; let absentCount = 0;
 
                 if (!isDict && !isOutcast) {
                     if (window.G.archetype === 'cursed') {
-                        toast("Cursed: Invalid Guess");
-                        window.G.invalidWordBonus++;
-                        for(let i=0; i<g.length; i++) statusArr.push('invalid');
-                        AudioEngine.playWrong();
+                        toast("Cursed: Invalid Guess"); window.G.invalidWordBonus++;
+                        for(let i=0; i<g.length; i++) statusArr.push('invalid'); AudioEngine.playWrong();
                     } else {
                         window.G.unknownCount++;
                         if (window.G.unknownCount < 5) { toast(`Obscure Word (${window.G.unknownCount}/5)`); AudioEngine.playWrong(); return; }
-                        toast("Obscure Penalty");
                         window.G.unknownCount = 0; for(let i=0; i<g.length; i++) statusArr.push('invalid'); AudioEngine.playWrong();
                     }
                 } else {
                     window.G.unknownCount = 0; 
-                    if(window.G.modifiers.includes("Censor") && !window.G.wardActive && g !== window.G.targetWord) {
-                        takeDamage(10); toast("Censor Penalty");
-                    }
+                    if(isEffectActive("Censor") && g !== window.G.targetWord) takeDamage(10);
                     for(let i=0; i<g.length; i++) {
                         let s = 'absent';
                         if(g[i] === window.G.targetWord[i]) { s = 'correct'; if(window.G.keyStatus[g[i]] !== 'correct') newGreens++; }
                         else if(window.G.targetWord.includes(g[i])) s = 'present';
+                        
                         if (i === forceTrue) {}
-                        else if (!window.G.wardActive && i === mimicLie && s === 'absent') s = (Math.random() > 0.5) ? 'correct' : 'present';
+                        else if (i === mimicLie && s === 'absent') s = (Math.random() > 0.5) ? 'correct' : 'present';
+                        
                         statusArr.push(s);
                         if(s==='absent') absentCount++;
                         if(s==='correct' || !window.G.keyStatus[g[i]]) window.G.keyStatus[g[i]] = s;
                         if(s==='absent') window.G.forbiddenLetters.add(g[i]);
-                        if(!window.G.wardActive && window.G.hazardTiles.some(h=>h.r===window.G.guesses.length && h.c===i) && g[i]!==window.G.targetWord[i]) takeDamage(12);
+                        if(window.G.hazardTiles.some(h=>h.r===window.G.guesses.length && h.c===i) && g[i]!==window.G.targetWord[i]) takeDamage(12);
                     }
                 }
                 if(window.G.upgrades.includes('vamp') && newGreens > 0) heal(newGreens * 3);
                 if(window.G.upgrades.includes('ledger')) { 
-                    const amt = absentCount;
-                    if (window.G.archetype === 'bloodstained') heal(amt);
-                    else window.G.coins += amt;
+                    if (window.G.archetype === 'bloodstained') heal(absentCount);
+                    else window.G.coins += absentCount;
                     updateUI(); 
                 }
                 
-                if(window.G.modifiers.includes("VoidScramble") && !window.G.wardActive) {
+                if(isEffectActive("VoidScramble")) {
                     const symbols = ["†", "‡", "§", "¶", "∞", " ", "◌", "◙"];
                     let activeKeys = "abcdefghijklmnopqrstuvwxyz".split("").filter(l => !window.G.forbiddenLetters.has(l));
-                    if (window.G.modifiers.includes("Siren")) activeKeys = activeKeys.filter(l => !"aeiou".includes(l));
                     for(let i=0; i<2; i++) {
                         if(activeKeys.length) {
                             const pick = activeKeys.splice(Math.floor(Math.random()*activeKeys.length), 1)[0];
@@ -1117,13 +1164,14 @@
                     }
                 }
                 window.G.guesses.push({word: g, status: statusArr});
-                window.G.currentGuess = ""; window.G.wardActive = false;
+                window.G.currentGuess = ""; 
+                
                 if(g === window.G.targetWord) winFloor(); else if(window.G.guesses.length >= window.G.maxGuesses) loseFloor();
                 saveGame(); renderGrid(); renderKeyboard(); updateUI();
             }
 
             function solveWord() { window.G.solveFlag = true; window.G.currentGuess = window.G.targetWord; submitGuess(); }
-            function heal(amt) { if (window.G.archetype === 'withered') return; window.G.hp = Math.min(window.G.maxHp, window.G.hp + amt); updateUI(); }
+            function heal(amt) { window.G.hp = Math.min(window.G.maxHp, window.G.hp + amt); updateUI(); }
 
             function revealOne() { 
                 const available = [];
@@ -1156,20 +1204,25 @@
                 if(window.G.hp <= 0) {
                     if(window.G.hasPhoenix) {
                         window.G.hasPhoenix = false; window.G.upgrades = window.G.upgrades.filter(u => u !== 'feather');
-                        window.G.hp = (window.G.archetype === 'withered') ? 1 : Math.floor(window.G.maxHp / 2); 
+                        window.G.hp = Math.floor(window.G.maxHp / 2); 
                         toast("REVIVED!"); updateUI();
                     } else endRun();
                 }
             }
 
-            function winFloor() {
-                stopTimer(); window.G.midFloor = false;
-                AudioEngine.playCorrect();
-                
-                // High Score
+            function updateHighScores() {
                 const currentFloor = window.G.floor;
                 const high = parseInt(localStorage.getItem('lexicon_high_score') || 0);
                 if (currentFloor > high) localStorage.setItem('lexicon_high_score', currentFloor);
+                
+                const archPB = parseInt(localStorage.getItem(`lexicon_high_score_${window.G.archetype}`) || 0);
+                if (currentFloor > archPB) localStorage.setItem(`lexicon_high_score_${window.G.archetype}`, currentFloor);
+            }
+
+            function winFloor() {
+                stopTimer(); window.G.midFloor = false;
+                AudioEngine.playCorrect();
+                updateHighScores();
 
                 if (!window.G.solveFlag) {
                     let total = 30 + (window.G.targetWord.length-4)*10 + (window.G.maxGuesses - window.G.guesses.length) * 15;
@@ -1178,33 +1231,55 @@
                     if (window.G.archetype === 'bloodstained') { heal(Math.floor(total / 2)); toast(`Blood Harvest: +${Math.floor(total / 2)} VIT`); }
                     else if (window.G.archetype === 'cursed') {
                         const multiplier = 1 + (window.G.invalidWordBonus * 0.2);
-                        const bonusTotal = Math.floor(total * multiplier);
-                        window.G.coins += bonusTotal;
-                        toast(`Chaos Multiplier x${multiplier.toFixed(1)}: +${bonusTotal} Gold`);
+                        window.G.coins += Math.floor(total * multiplier);
                     } else window.G.coins += Math.floor(total);
-                } else toast("Word Solved - No Gold reward");
+                }
                 
                 if(!window.G.isEndless && window.G.floor === 20) setTimeout(() => document.getElementById('victory-modal').style.display='flex', 1000);
-                else enterShop();
+                else openRespite();
             }
 
             function loseFloor() { 
-                stopTimer(); const failWord = window.G.targetWord.toUpperCase();
+                stopTimer(); toast(`The word was: ${window.G.targetWord.toUpperCase()}`);
                 AudioEngine.playWrong();
-                toast(`The word was: ${failWord}`);
                 takeDamage(window.G.bossActive ? 55 : 35); 
                 if(window.G.hp > 0) {
                     if(window.G.bossActive === "THE CHIMERA") { toast("Re-trial..."); setTimeout(() => initFloor(), 1500); }
-                    else { window.G.midFloor = false; enterShop(); }
+                    else { window.G.midFloor = false; openRespite(); }
                 }
             }
+
+            window.openRespite = () => {
+                const lastWord = window.G.targetWord.toUpperCase();
+                document.getElementById('last-word-display').innerText = lastWord;
+                
+                let nextBoss;
+                if (window.G.isEndless) nextBoss = window.G.floor + (2 - (window.G.floor % 2));
+                else nextBoss = window.G.floor + (4 - (window.G.floor % 4));
+                
+                const diff = nextBoss - window.G.floor;
+                const progText = (diff === 0) ? "Trial Encounter Imminent" : `${diff} floor${diff > 1 ? 's' : ''} to next Trial.`;
+                document.getElementById('boss-progress-display').innerText = progText;
+                
+                showScreen('screen-respite');
+                saveGame();
+            };
+
+            window.executeRest = () => {
+                const lost = window.G.maxHp - window.G.hp;
+                const amt = Math.floor(lost * 0.5);
+                heal(amt);
+                toast(`Restored ${amt} Vitality.`);
+                nextFloor();
+            };
 
             function enterShop() {
                 saveGame(); window.G.floorPurchases = new Set();
                 const pool = Object.keys(ITEMS).filter(k => !window.G.consumables.includes(k) && !(ITEMS[k].type==='perm' && window.G.upgrades.includes(k)));
                 window.G.currentShopPool = pool.sort(() => 0.5-Math.random()).slice(0, 6);
-                setTimeout(() => { showScreen('screen-shop'); renderShop(); updateUI(); }, 800);
+                setTimeout(() => { showScreen('screen-shop'); renderShop(); updateUI(); }, 200);
             }
+            window.enterShop = enterShop;
 
             function renderShop() {
                 const cont = document.getElementById('shop-items'); cont.innerHTML = "";
@@ -1265,19 +1340,15 @@
                 document.getElementById('archetype-header-label').innerText = archNames[window.G.archetype] || "Vitality";
 
                 const modBar = document.getElementById('modifiers-bar'); modBar.innerHTML = "";
+                const body = document.getElementById('game-body');
                 if(window.G.bossActive) { 
+                    body.classList.add('boss-active');
                     const div = document.createElement('div'); div.className = "boss-info";
-                    let desc = window.G.modifiers.map(m => {
-                        let d = BOSS_DATA[m];
-                        if (m === "Clock") {
-                            const min = Math.floor(window.G.timerSeconds / 60);
-                            const sec = window.G.timerSeconds % 60;
-                            d += ` [${min}:${sec.toString().padStart(2, '0')}]`;
-                        }
-                        return d;
-                    }).join(" ");
+                    let desc = window.G.modifiers.map(m => BOSS_DATA[m] || "").join(" ");
                     div.innerHTML = `<span class="boss-name-ui">${window.G.bossActive}</span><span class="boss-desc-ui">${desc}</span>`;
                     modBar.appendChild(div);
+                } else {
+                    body.classList.remove('boss-active');
                 }
                 const rb = document.getElementById('active-relics'); rb.innerHTML = "";
                 window.G.upgrades.forEach(u => { const s = document.createElement('span'); s.innerText = ITEMS[u].emoji; rb.appendChild(s); });
@@ -1290,17 +1361,24 @@
                     const slot = document.createElement('div'); slot.className = "item-slot" + (c ? "" : " empty");
                     if(c) {
                         const it = ITEMS[c];
-                        slot.innerText = it.emoji;
-                        slot.setAttribute('data-desc', it.desc);
+                        slot.innerText = it.emoji; slot.setAttribute('data-desc', it.desc);
                         slot.onclick = () => {
-                            if(window.G.modifiers.includes("Silence") && id === 'inventory-game') { toast("Silenced!"); return; }
+                            if(isEffectActive("Silence") && id === 'inventory-game') { toast("Silenced!"); return; }
+                            
+                            if (c === 'masterkey' && window.G.bossActive === "THE CHIMERA") {
+                                toast("The Key shatters vs the Chimera!");
+                                window.G.consumables[i] = null;
+                                AudioEngine.playWrong();
+                                updateUI();
+                                return;
+                            }
+                            
                             const mod = document.getElementById('confirm-modal');
                             document.getElementById('confirm-title').innerText = `Use ${it.name}?`;
                             document.getElementById('confirm-desc').innerText = it.desc;
                             mod.style.display = 'flex';
                             document.getElementById('confirm-yes').onclick = () => {
-                                it.run(); window.G.consumables[i] = null; AudioEngine.playShop(); updateUI(); saveGame();
-                                mod.style.display = 'none';
+                                it.run(); window.G.consumables[i] = null; AudioEngine.playShop(); updateUI(); saveGame(); mod.style.display = 'none';
                             };
                         };
                     }
@@ -1310,15 +1388,18 @@
 
             function endRun() { 
                 window.G.isGameOver = true; 
-                const currentFloor = window.G.floor;
-                const high = parseInt(localStorage.getItem('lexicon_high_score') || 0);
-                if (currentFloor > high) localStorage.setItem('lexicon_high_score', currentFloor);
+                updateHighScores();
                 localStorage.removeItem('lexicon_run_save'); 
                 document.getElementById('game-last-word').innerText=`Word: ${window.G.targetWord.toUpperCase()}`; 
                 showScreen('screen-gameover'); 
             }
             function nextFloor() { window.G.floor++; initFloor(); showScreen('screen-game'); }
-            window.goHome = () => { saveGame(); showScreen('screen-start'); };
+            window.nextFloor = nextFloor;
+
+            window.goHome = () => { 
+                if (!window.G.isGameOver) saveGame(); 
+                showScreen('screen-start'); 
+            };
             window.executeSurrender = () => { document.getElementById('surrender-modal').style.display='none'; loseFloor(); };
             window.closeRules = () => { document.getElementById('rules-modal').style.display='none'; };
             function saveGame() { const saveState = {...window.G, forbiddenLetters: Array.from(window.G.forbiddenLetters), floorPurchases: Array.from(window.G.floorPurchases)}; localStorage.setItem('lexicon_run_save', JSON.stringify(saveState)); }
