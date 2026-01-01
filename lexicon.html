@@ -933,7 +933,7 @@
                 if(type === 'bloodstained') window.G.coins = 0;
                 if(window.G.difficulty === 'medium' || window.G.difficulty === 'hard') window.G.maxGuesses = 5;
 
-                window.G.availableBosses = BOSS_LIST.map(b => b.mod).filter(m => m !== 'Chimera');
+                window.G.availableBosses = BOSS_LIST.map(b => b.mod).filter(m => m !== 'Chimera').sort(() => Math.random() - 0.5);
 
                 if(type === 'tinker') {
                     const archive = Object.keys(ITEMS).filter(k => ITEMS[k].type === 'cons');
@@ -1038,12 +1038,11 @@
                     b = { name: "THE CHIMERA", desc: selection.map(s => s.name.split(" ").pop()).join(" & ") + " fused.", mods: selection.map(s => s.mod) };
                     window.G.modifiers.push(...b.mods);
                 } else {
-                    const randIdx = Math.floor(Math.random() * window.G.availableBosses.length);
-                    const bModKey = window.G.availableBosses.splice(randIdx, 1)[0];
+                    const bModKey = window.G.availableBosses.splice(0, 1)[0];
                     const meta = BOSS_LIST.find(x => x.mod === bModKey) || BOSS_LIST[0];
                     b = { name: meta.name, desc: meta.desc, mods: [meta.mod] };
                     window.G.modifiers.push(meta.mod);
-                    if (window.G.availableBosses.length === 0) window.G.availableBosses = BOSS_LIST.map(b => b.mod).filter(m => m !== 'Chimera');
+                    if (window.G.availableBosses.length === 0) window.G.availableBosses = BOSS_LIST.map(b => b.mod).filter(m => m !== 'Chimera').sort(() => Math.random() - 0.5);
                 }
                 
                 window.G.bossActive = b.name;
