@@ -697,7 +697,7 @@
                 'heart': { emoji: '❤️', name: 'Ancient Heart', desc: '+20 Max Vitality.', cost: 130, type: 'perm', run: () => { window.G.maxHp += 20; window.G.hp += 20; window.G.upgrades.push('heart'); } },
                 'armor': { emoji: '🛡️', name: 'Plate Armor', desc: '-5 Damage taken.', cost: 140, type: 'perm', run: () => { window.G.upgrades.push('armor'); } },
                 'clarity': { emoji: '💠', name: 'Runestone', desc: 'True colors revealed.', cost: 150, type: 'perm', run: () => { window.G.upgrades.push('clarity'); } },
-                'ledger': { emoji: '📜', name: 'Soul Ledger', desc: '+1 VIT/Coin per Grey.', cost: 140, type: 'perm', run: () => { window.G.upgrades.push('ledger'); } },
+                'ledger': { emoji: '📜', name: 'Soul Ledger', desc: '+1 Coin per Grey.', cost: 140, type: 'perm', run: () => { window.G.upgrades.push('ledger'); } },
                 'compass': { emoji: '🧭', name: "Seer's Compass", desc: 'Highlight 1 Yellow per floor.', cost: 150, type: 'perm', run: () => { window.G.upgrades.push('compass'); } }
             };
 
@@ -757,7 +757,7 @@
                 document.getElementById(id).classList.add('active');
                 
                 const body = document.getElementById('game-body');
-                if (id !== 'screen-game') {
+                if (id !== 'screen-game' && id !== 'screen-respite') {
                     body.classList.remove('boss-active');
                     document.getElementById('confirm-modal').style.display = 'none';
                     document.getElementById('boss-alert').style.display = 'none';
@@ -1354,6 +1354,7 @@
 
                 if (nextIsBoss) {
                     box.classList.add('boss-style');
+                    document.body.classList.add('boss-active');
                     let bossName = "TRIAL ENCOUNTER";
                     if (isChimera) bossName = "THE CHIMERA";
                     else if (window.G.availableBosses.length > 0) {
@@ -1366,6 +1367,7 @@
                     subtext.innerText = `Last Archive: ${lastWord}`;
                 } else {
                     box.classList.remove('boss-style');
+                    document.body.classList.remove('boss-active');
                     let nextBoss;
                     if (window.G.isEndless) nextBoss = nextFloorNum + (1 - (nextFloorNum % 2));
                     else nextBoss = nextFloorNum + (3 - (nextFloorNum % 4));
@@ -1463,10 +1465,18 @@
                 if(window.G.bossActive && isGameScreen) { 
                     body.classList.add('boss-active');
                     const div = document.createElement('div'); div.className = "boss-info";
-                    let desc = window.G.modifiers.map(m => BOSS_DATA[m] || "").join(" ");
+                    let desc = window.G.modifiers.map(m => {
+                        let text = BOSS_DATA[m] || "";
+                        if (m === "Clock") {
+                            const min = Math.floor(window.G.timerSeconds / 60);
+                            const sec = window.G.timerSeconds % 60;
+                            text = `Time remaining: ${min}:${sec.toString().padStart(2, '0')}.`;
+                        }
+                        return text;
+                    }).join(" ");
                     div.innerHTML = `<span class="boss-name-ui">${window.G.bossActive}</span><span class="boss-desc-ui">${desc}</span>`;
                     modBar.appendChild(div);
-                } else {
+                } else if (!isGameScreen && !document.getElementById('screen-respite').classList.contains('active')) {
                     body.classList.remove('boss-active');
                 }
                 const rb = document.getElementById('active-relics'); rb.innerHTML = "";
