@@ -709,7 +709,7 @@
 
             function createInitialState() {
                 return {
-                    hp: 60, maxHp: 60, coins: 0, floor: 1, targetWord: "", currentGuess: "", guesses: [], maxGuesses: 6, archetype: 'outcast', difficulty: 'easy', upgrades: [], consumables: [null, null, null], keyStatus: {}, forbiddenLetters: new Set(), hazardTiles: [], scrambledKeys: {}, wardActive: false, suppressedModifier: null, isGameOver: false, modifiers: [], bossActive: null, hints: {}, floorPurchases: new Set(), discountActive: false, currentShopPool: [], midFloor: false, hasPhoenix: false, isEndless: false, unknownCount: 0, corruptedKeys: [], timerSeconds: 180, taxedLetters: [], solveFlag: false, availableBosses: [], facedAllBosses: false, invalidWordBonus: 0
+                    hp: 60, maxHp: 60, coins: 0, floor: 1, targetWord: "", currentGuess: "", guesses: [], maxGuesses: 6, archetype: 'outcast', difficulty: 'easy', upgrades: [], consumables: [null, null, null], keyStatus: {}, forbiddenLetters: new Set(), hazardTiles: [], scrambledKeys: {}, wardActive: false, suppressedModifier: null, isGameOver: false, modifiers: [], bossActive: null, hints: {}, floorPurchases: new Set(), discountActive: false, currentShopPool: [], midFloor: false, hasPhoenix: false, isEndless: false, unknownCount: 0, corruptedKeys: [], timerSeconds: 180, taxedLetters: [], solveFlag: false, availableBosses: [], facedAllBosses: false, invalidWordBonus: 0, currentScreen: 'screen-game'
                 };
             }
 
@@ -764,6 +764,11 @@
                         surrenderBtn.onclick = nextFloor;
                     }
                 } else header.style.display = 'none';
+
+                if (window.G && ['screen-game', 'screen-shop', 'screen-respite'].includes(id)) {
+                    window.G.currentScreen = id;
+                    saveGame();
+                }
             }
             window.showScreen = showScreen;
 
@@ -836,8 +841,25 @@
                     window.G.floorPurchases = new Set(window.G.floorPurchases);
                     document.getElementById('save-prompt').style.display = 'none';
                     AudioEngine.init();
-                    if (window.G.midFloor) { showScreen('screen-game'); updateUI(); renderGrid(); renderKeyboard(); } 
-                    else initFloor();
+
+                    const target = window.G.currentScreen || 'screen-game';
+
+                    if (target === 'screen-game') {
+                        showScreen('screen-game');
+                        updateUI();
+                        renderGrid();
+                        renderKeyboard();
+                    } else if (target === 'screen-respite') {
+                        openRespite();
+                        updateUI();
+                    } else if (target === 'screen-shop') {
+                        showScreen('screen-shop');
+                        renderShop();
+                        updateUI();
+                    } else {
+                        if (window.G.midFloor) { showScreen('screen-game'); updateUI(); renderGrid(); renderKeyboard(); } 
+                        else initFloor();
+                    }
                 }
             };
 
