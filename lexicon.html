@@ -424,6 +424,34 @@
         /* Tutorial specific list styling */
         .tutorial-list { text-align: left; font-size: 0.85rem; margin: 15px 0; line-height: 1.4; color: var(--accent); }
         .tutorial-list li { margin-bottom: 8px; }
+
+        .tutorial-key {
+            display: inline-flex;
+            width: 32px;
+            height: 32px;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            font-weight: bold;
+            font-family: var(--font-title);
+            margin-right: 8px;
+            vertical-align: middle;
+            color: #fff;
+            box-shadow: 0 3px 0 rgba(0,0,0,0.4);
+            font-size: 0.95rem;
+            text-shadow: 1px 1px 1px rgba(0,0,0,0.3);
+        }
+
+        /* Helper to ensure tutorial tiles look exactly like game tiles */
+        .tile-example {
+            width: 32px !important;
+            height: 32px !important;
+            display: inline-flex !important;
+            vertical-align: middle !important;
+            margin-right: 8px !important;
+            font-size: 0.9rem !important;
+            cursor: default !important;
+        }
     </style>
 </head>
 <body id="game-body">
@@ -483,8 +511,14 @@
         <div class="modal-box">
             <h2 class="title" style="color: var(--green);">HOW TO PLAY</h2>
             <ul class="tutorial-list">
-                <li><b>Spelling</b>: Guess the hidden word. <span style="color: var(--green)">Green</span> is correct, <span style="color: var(--yellow)">Yellow</span> is misplaced.</li>
-                <li><b>Vitality</b>: Failing to guess a word or hitting ⚔️ Hazards deals damage. If VIT reaches 0, the run ends.</li>
+                <li><b>Spelling</b>: Guess the hidden word.
+                    <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 8px;">
+                        <div><span class="tile tile-example correct">✓</span> <b>Green</b>: Correct letter on a correct tile.</div>
+                        <div><span class="tile tile-example present">?</span> <b>Yellow</b>: Correct letter, but misplaced spot.</div>
+                        <div><span class="tile tile-example invalid">x</span> <b>Red</b>: Invalid word. Guess not in dictionary.</div>
+                    </div>
+                </li>
+                <li style="margin-top: 15px;"><b>Vitality</b>: Failing to guess a word or hitting ⚔️ Hazards deals damage. If VIT reaches 0, the run ends.</li>
                 <li><b>Coins</b>: Earn coins by guessing words correctly. Spend them in the <b>Library</b> for Items and Relics.</li>
                 <li><b>Trials</b>: Every 4 floors, you face a <b>Boss</b> with unique debilitating effects.</li>
             </ul>
@@ -531,6 +565,7 @@
         <p style="font-style: italic; margin-bottom: 10px;">— A Rogue’s Descent —</p>
         <p id="highscore-display" style="font-size: 0.9rem; margin-bottom: 20px; font-family: var(--font-title); color: var(--accent);">Best Floor: I</p>
         <button class="btn" onclick="AudioEngine.init(); AudioEngine.playShop(); checkAbyssEntry()">Enter the Abyss</button>
+        <button class="btn" onclick="AudioEngine.init(); AudioEngine.playShop(); openTutorial()">How to Play</button>
         <button class="btn" onclick="AudioEngine.init(); AudioEngine.playShop(); openCodex()">The Codex</button>
     </div>
 
@@ -675,7 +710,7 @@
 
             const CURATED_TARGETS = {
                 4: ["book", "page", "font", "word", "ink", "read", "sign", "tale", "lore", "myth", "bard", "text", "poem", "verb", "writ", "city", "cold", "dark", "data", "fire", "fish", "gold", "hand", "hard", "home", "hope", "kind", "king", "land", "life", "love", "moon", "name", "near", "open", "path", "play", "rain", "real", "road", "rock", "save", "star", "time", "tree", "true", "walk", "wind", "work", "year", "milk", "silk", "cake", "lake", "meal", "boat", "coat", "lamp", "camp", "heal", "meat", "neat", "beat", "feel", "dead", "pest", "test", "west", "east"],
-                5: ["write", "story", "verse", "rhyme", "quill", "paper", "novel", "shelf", "study", "clue", "logic", "craft", "atlas", "folio", "prose", "about", "above", "agent", "alarm", "album", "alert", "alive", "alone", "along", "apple", "audio", "beach", "begin", "black", "blood", "board", "brain", "brand", "bread", "break", "breed", "brief", "bring", "broad", "broke", "brown", "build", "built", "buyer", "cable", "carry", "catch", "cause", "chain", "chair", "chart", "chase", "cheap", "check", "chest", "chief", "child", "china", "chose", "civil", "claim", "class", "clean", "clear", "climb", "clock", "close", "coach", "coast", "could", "count", "court", "cover", "crash", "cream", "crime", "cross", "crowd", "crown", "curve", "cycle", "daily", "dance", "dated", "dealt", "death", "debut", "delay", "depth", "doing", "doubt", "dozen", "draft", "drama", "drawn", "dream", "dress", "drill", "drink", "drive", "early", "earth", "eight", "empty", "entry", "equal", "error", "event", "every", "exact", "exist", "extra", "faith", "false", "fault", "fiber", "field", "fifth", "fifty", "fight", "final", "first", "fixed", "flash", "fleet", "floor", "fluid", "focus", "force", "forth", "forty", "forum", "found", "frame", "frank", "fraud", "fresh", "front", "fruit", "fully", "funny", "giant", "given", "glass", "globe", "going", "grace", "grade", "grand", "grant", "graph", "great", "green", "group", "grown", "guard", "guess", "guest", "guide", "habit", "happy", "heart", "heavy", "hence", "horse", "hotel", "house", "human", "ideal", "image", "index", "inner", "input", "issue", "joint", "judge", "known", "label", "layer", "learn", "lease", "least", "leave", "legal", "level", "light", "limit", "links", "lives", "local", "loose", "lower", "lucky", "lunch", "lying", "magic", "major", "maker", "march", "match", "maybe", "mayor", "meant", "media", "metal", "might", "minor", "money", "month", "moral", "motor", "mount", "mouse", "mouth", "movie", "music", "never", "night", "noise", "north", "novel", "nurse", "occur", "ocean", "offer", "order", "other", "ought", "paint", "paper", "party", "peace", "phone", "photo", "piece", "pilot", "pitch", "place", "plain", "plane", "plant", "plate", "point", "pound", "power", "press", "price", "pride", "prime", "print", "prior", "prize", "proof", "proud", "prove", "queen", "quick", "quiet", "quite", "radio", "raise", "range", "rapid", "ratio", "reach", "ready", "refer", "right", "rival", "river", "rough", "round", "route", "royal", "rural", "scale", "scene", "scope", "score", "sense", "serve", "seven", "shape", "share", "sharp", "sheet", "shelf", "shell", "shift", "shirt", "shirt", "shock", "shock", "shoot", "short", "sight", "since", "sixth", "skill", "skill", "sleep", "slide", "small", "smart", "smile", "smith", "smoke", "solid", "solve", "sorry", "sound", "south", "space", "spare", "speak", "speed", "spent", "split", "spoke", "sport", "staff", "stage", "stake", "stand", "start", "state", "steam", "steel", "stick", "still", "stock", "strong", "sugar", "suite", "super", "sweet", "table", "taken", "taste", "texas", "thank", "theft", "their", "theme", "there", "these", "thick", "thing", "think", "third", "those", "three", "throw", "tight", "times", "tired", "title", "today", "topic", "total", "touch", "tough", "tower", "track", "trade", "trade", "train", "treat", "trend", "trial", "tried", "truck", "truly", "trust", "truth", "twice", "under", "union", "until", "upper", "urban", "usage", "usual", "valid", "value", "video", "virus", "visit", "vital", "voice", "waste", "watch", "water", "wheel", "where", "which", "while", "white", "whole", "whose", "woman", "world", "worry", "worse", "worst", "worth", "would", "wound", "wrong", "wrote", "yield", "young", "youth"],
+                5: ["write", "story", "verse", "rhyme", "quill", "paper", "novel", "shelf", "study", "clue", "logic", "craft", "atlas", "folio", "prose", "about", "above", "agent", "alarm", "album", "alert", "alive", "alone", "along", "apple", "audio", "beach", "begin", "black", "blood", "board", "brain", "brand", "bread", "break", "breed", "brief", "bring", "broad", "broke", "brown", "build", "built", "buyer", "cable", "carry", "catch", "cause", "chain", "chair", "chart", "chase", "cheap", "check", "clock", "close", "coach", "coast", "could", "count", "court", "cover", "crash", "cream", "crime", "cross", "crowd", "crown", "curve", "cycle", "daily", "dance", "dated", "dealt", "death", "debut", "delay", "depth", "doing", "doubt", "dozen", "draft", "drama", "drawn", "dream", "dress", "drill", "drink", "drive", "early", "earth", "eight", "empty", "entry", "equal", "error", "event", "every", "exact", "exist", "extra", "faith", "false", "fault", "fiber", "field", "fifth", "fifty", "fight", "final", "first", "fixed", "flash", "fleet", "floor", "fluid", "focus", "force", "forth", "forty", "forum", "found", "frame", "frank", "fraud", "fresh", "front", "fruit", "fully", "funny", "giant", "given", "glass", "globe", "going", "grace", "grade", "grand", "grant", "graph", "great", "green", "group", "grown", "guard", "guess", "guest", "guide", "habit", "happy", "heart", "heavy", "hence", "horse", "hotel", "house", "human", "ideal", "image", "index", "inner", "input", "issue", "joint", "judge", "known", "label", "layer", "learn", "lease", "least", "leave", "legal", "level", "light", "limit", "links", "lives", "local", "loose", "lower", "lucky", "lunch", "lying", "magic", "major", "maker", "march", "match", "maybe", "mayor", "meant", "media", "metal", "might", "minor", "money", "month", "moral", "motor", "mount", "mouse", "mouth", "movie", "music", "never", "night", "noise", "north", "novel", "nurse", "occur", "ocean", "offer", "order", "other", "ought", "paint", "paper", "party", "peace", "phone", "photo", "piece", "pilot", "pitch", "place", "plain", "plane", "plant", "plate", "point", "pound", "power", "press", "price", "pride", "prime", "print", "prior", "prize", "proof", "proud", "prove", "queen", "quick", "quiet", "quite", "radio", "raise", "range", "rapid", "ratio", "reach", "ready", "refer", "right", "rival", "river", "rough", "round", "route", "royal", "rural", "scale", "scene", "scope", "score", "sense", "serve", "seven", "shape", "share", "sharp", "sheet", "shelf", "shell", "shift", "shirt", "shirt", "shock", "shock", "shoot", "short", "sight", "since", "sixth", "skill", "skill", "sleep", "slide", "small", "smart", "smile", "smith", "smoke", "solid", "solve", "sorry", "sound", "south", "space", "spare", "speak", "speed", "spent", "split", "spoke", "sport", "staff", "stage", "stake", "stand", "start", "state", "steam", "steel", "stick", "still", "stock", "strong", "sugar", "suite", "super", "sweet", "table", "taken", "taste", "texas", "thank", "theft", "their", "theme", "there", "these", "thick", "thing", "think", "third", "those", "three", "throw", "tight", "times", "tired", "title", "today", "topic", "total", "touch", "tough", "tower", "track", "trade", "trade", "train", "treat", "trend", "trial", "tried", "truck", "truly", "trust", "truth", "twice", "under", "union", "until", "upper", "urban", "usage", "usual", "valid", "value", "video", "virus", "visit", "vital", "voice", "waste", "watch", "water", "wheel", "where", "which", "while", "white", "whole", "whose", "woman", "world", "worry", "worse", "worst", "worth", "would", "wound", "wrong", "wrote", "yield", "young", "youth"],
                 10: ["determined", "experience", "background", "everything", "collection", "management", "understand", "particular", "investment", "production"],
                 11: ["performance", "alternative", "environment", "description", "opportunity", "development", "competition", "significant", "information"],
                 12: ["professional", "relationship", "organization", "construction", "introduction", "distribution", "architecture", "intelligence"]
@@ -896,8 +931,14 @@
                 const saved = localStorage.getItem('lexicon_run_save');
                 if (saved) {
                     const data = JSON.parse(saved);
-                    document.getElementById('save-floor-val').innerText = data.floor;
-                    document.getElementById('save-prompt').style.display = 'flex';
+                    // CRITICAL: If the saved run is actually finished or dead, wipe it and move to archetype screen
+                    if (data.hp <= 0 || data.isGameOver) {
+                        localStorage.removeItem('lexicon_run_save');
+                        showScreen('screen-archetype');
+                    } else {
+                        document.getElementById('save-floor-val').innerText = data.floor;
+                        document.getElementById('save-prompt').style.display = 'flex';
+                    }
                 } else showScreen('screen-archetype');
             };
 
@@ -986,6 +1027,11 @@
                     initFloor();
                     showScreen('screen-game');
                 }
+            };
+
+            window.openTutorial = () => {
+                AudioEngine.playShop();
+                document.getElementById('tutorial-modal').style.display = 'flex';
             };
 
             window.closeTutorial = () => {
@@ -1583,7 +1629,15 @@
             };
             window.executeSurrender = () => { document.getElementById('surrender-modal').style.display='none'; loseFloor(); };
             window.closeRules = () => { document.getElementById('rules-modal').style.display='none'; };
-            function saveGame() { const saveState = {...window.G, forbiddenLetters: Array.from(window.G.forbiddenLetters), floorPurchases: Array.from(window.G.floorPurchases)}; localStorage.setItem('lexicon_run_save', JSON.stringify(saveState)); }
+            function saveGame() { 
+                // CRITICAL: Never save a state where the player is dead or game is over
+                if (window.G.hp <= 0 || window.G.isGameOver) {
+                    localStorage.removeItem('lexicon_run_save');
+                    return;
+                }
+                const saveState = {...window.G, forbiddenLetters: Array.from(window.G.forbiddenLetters), floorPurchases: Array.from(window.G.floorPurchases)}; 
+                localStorage.setItem('lexicon_run_save', JSON.stringify(saveState)); 
+            }
             function toast(m) { const t=document.getElementById('toast'); t.innerHTML=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 4000); }
             window.addEventListener('keydown', e => { if(document.getElementById('screen-game').classList.contains('active')) { if(e.key==="Enter") handleKey("⏎"); else if(e.key==="Backspace") handleKey("DEL"); else if(/^[a-z]$/i.test(e.key)) handleKey(e.key.toUpperCase()); } });
             loadLexicon();
