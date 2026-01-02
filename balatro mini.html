@@ -20,6 +20,7 @@
             touch-action: none;
             user-select: none;
             -webkit-user-select: none;
+            transition: background-image 0.5s ease;
         }
 
         body::before {
@@ -45,9 +46,16 @@
 
         .card.selected {
             transform: translateY(-12px) !important;
-            box-shadow: 0 0 20px rgba(59, 130, 246, 0.8);
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.6);
             border: 3px solid #ffffff;
             z-index: 10;
+        }
+
+        .card-burn {
+            box-shadow: 0 0 8px 2px #f97316 !important;
+            border-color: #fb923c !important;
+            border-width: 4px !important;
+            z-index: 11 !important;
         }
 
         .card:hover:not(.selected) {
@@ -90,7 +98,7 @@
             background-color: #fbbf24 !important;
             border-color: #ffffff !important;
             box-shadow: 0 0 20px rgba(251, 191, 36, 0.8);
-            transform: scale(1.05);
+            transform: scale(1.05) translateY(-12px);
         }
 
         @keyframes drawCard {
@@ -130,6 +138,7 @@
         .token-item:hover {
             transform: scale(1.05);
             filter: brightness(1.2);
+            box-shadow: 0 0 10px rgba(249, 115, 22, 0.5);
         }
 
         .balatro-btn-blue {
@@ -203,7 +212,7 @@
         <!-- Main Play Area -->
         <div class="flex-grow flex flex-col relative overflow-hidden py-1 sm:py-2">
             
-            <div class="absolute inset-x-0 top-0 flex justify-between items-start pointer-events-none z-20 px-1">
+            <div class="absolute inset-x-0 top-0 flex justify-between items-start pointer-events-none z-20 px-1 pt-4">
                 <div id="joker-bank" class="flex flex-col gap-1 sm:gap-2 pointer-events-auto items-center sm:items-start"></div>
                 <div id="powerups-bank" class="flex flex-row gap-1 sm:gap-2 pointer-events-auto items-center sm:items-end"></div>
             </div>
@@ -225,6 +234,7 @@
                     <div class="flex justify-center gap-1 sm:gap-2 mt-2">
                         <button id="sort-rank-btn" class="bg-zinc-800 hover:bg-zinc-700 text-[7px] sm:text-[10px] font-black uppercase tracking-widest px-2 sm:px-4 py-1 rounded border border-zinc-600 transition">Sort Rank</button>
                         <button id="sort-suit-btn" class="bg-zinc-800 hover:bg-zinc-700 text-[7px] sm:text-[10px] font-black uppercase tracking-widest px-2 sm:px-4 py-1 rounded border border-zinc-600 transition">Sort Suit</button>
+                        <button id="view-scores-btn" class="bg-zinc-800 hover:bg-blue-700 text-[7px] sm:text-[10px] font-black uppercase tracking-widest px-2 sm:px-4 py-1 rounded border border-zinc-600 transition text-blue-400">Scoring</button>
                         <button id="view-deck-btn" class="bg-zinc-800 hover:bg-zinc-700 text-[7px] sm:text-[10px] font-black uppercase tracking-widest px-2 sm:px-4 py-1 rounded border border-zinc-600 transition text-orange-400">View Deck</button>
                     </div>
                 </div>
@@ -267,6 +277,17 @@
         </div>
     </div>
 
+    <!-- Scores Overlay -->
+    <div id="scores-overlay" class="fixed inset-0 bg-black/95 flex items-center justify-center hidden z-[150] p-4">
+        <div class="modal-animate bg-zinc-900 w-full max-w-2xl rounded-2xl overflow-hidden flex flex-col max-h-[90vh] border-4 border-blue-600 shadow-2xl">
+            <div class="p-3 sm:p-4 bg-blue-600 flex justify-between items-center">
+                <h2 class="font-bungee text-sm sm:text-xl text-white uppercase italic">Hand Scoring Table</h2>
+                <button id="close-scores" class="text-white hover:text-black font-bold text-xl sm:text-2xl px-2">&times;</button>
+            </div>
+            <div id="scores-view-content" class="rules-content p-4 sm:p-6 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
+        </div>
+    </div>
+
     <!-- Modals -->
     <div id="token-modal-overlay" class="fixed inset-0 bg-black/80 flex items-center justify-center hidden z-[300] p-4 backdrop-blur-sm">
         <div class="modal-animate bg-zinc-900 w-full max-w-sm rounded-2xl p-6 sm:p-8 border-4 border-orange-500 shadow-2xl text-center">
@@ -298,18 +319,30 @@
             </div>
             <div class="rules-content p-4 sm:p-8 overflow-y-auto space-y-6 sm:space-y-8">
                 <section>
-                    <h3 class="font-bungee text-orange-400 text-base sm:text-xl mb-3 italic underline decoration-blue-500 underline-offset-4">Quick Start Guide</h3>
-                    <ul class="text-zinc-300 text-xs sm:text-sm space-y-2 sm:space-y-3 list-none">
-                        <li class="flex gap-3"><span class="text-blue-500 font-bold">1.</span><span>Select up to 5 cards by clicking or swiping.</span></li>
-                        <li class="flex gap-3"><span class="text-blue-500 font-bold">2.</span><span><strong>Play Hand</strong> to score points based on poker ranks.</span></li>
-                        <li class="flex gap-3"><span class="text-blue-500 font-bold">3.</span><span>Use <strong>Discard</strong> to swap unwanted cards for new ones.</span></li>
-                        <li class="flex gap-3"><span class="text-blue-500 font-bold">4.</span><span>Hitting 0 Plays before hitting the goal is Game Over.</span></li>
-                        <li class="flex gap-3"><span class="text-blue-500 font-bold">5.</span><span>Every 4th round is a <strong>Boss Round</strong> with dangerous modifiers!</span></li>
+                    <h3 class="font-bungee text-orange-400 text-base sm:text-xl mb-3 italic underline decoration-blue-500 underline-offset-4">The Objective</h3>
+                    <p class="text-zinc-300 text-xs sm:text-sm">Reach the <strong>Goal Score</strong> in each round before running out of <strong>Hands</strong>. Accumulate cash to buy upgrades in the shop.</p>
+                </section>
+                <section>
+                    <h3 class="font-bungee text-orange-400 text-base sm:text-xl mb-3 italic underline decoration-blue-500 underline-offset-4">Gameplay Basics</h3>
+                    <ul class="text-zinc-300 text-xs sm:text-sm space-y-2 list-none">
+                        <li class="flex gap-3"><span class="text-blue-500 font-bold">Selection:</span><span>Click or swipe over cards to select up to 5.</span></li>
+                        <li class="flex gap-3"><span class="text-blue-500 font-bold">Hands:</span><span>Play combinations to score. Winning hands glow orange!</span></li>
+                        <li class="flex gap-3"><span class="text-blue-500 font-bold">Discards:</span><span>Discard cards to redraw. Use them wisely!</span></li>
+                        <li class="flex gap-3"><span class="text-blue-500 font-bold">Jokers:</span><span>Jokers are Wild cards. They complete any hand combination.</span></li>
                     </ul>
                 </section>
                 <section>
-                    <h3 class="font-bungee text-orange-400 text-base sm:text-xl mb-3 italic underline decoration-blue-500 underline-offset-4">Scoring Table</h3>
-                    <div id="rules-scoring-list" class="grid grid-cols-2 gap-2 text-[10px] sm:text-sm"></div>
+                    <h3 class="font-bungee text-orange-400 text-base sm:text-xl mb-3 italic underline decoration-blue-500 underline-offset-4">Inventory & Shop</h3>
+                    <p class="text-zinc-300 text-xs sm:text-sm mb-2">Buy items in the shop using cash earned from round efficiency.</p>
+                    <ul class="text-zinc-300 text-xs sm:text-sm space-y-2 list-none">
+                        <li class="flex gap-3"><span class="text-emerald-500 font-bold">Celestial:</span><span>Upgrade the base score of specific hand types permanently.</span></li>
+                        <li class="flex gap-3"><span class="text-orange-500 font-bold">Tokens:</span><span>One-time use powerups. Click them in the <strong>Inventory</strong> to use.</span></li>
+                        <li class="flex gap-3"><span class="text-cyan-500 font-bold">Permanent:</span><span>Boost your hand limit, plays, or discards for the whole run.</span></li>
+                    </ul>
+                </section>
+                <section>
+                    <h3 class="font-bungee text-orange-400 text-base sm:text-xl mb-3 italic underline decoration-blue-500 underline-offset-4">Bosses</h3>
+                    <p class="text-zinc-300 text-xs sm:text-sm">Every 4th round is a Boss. Bosses impose dangerous rules like debuffing specific suits, values, or hand types. Look for the red glow!</p>
                 </section>
             </div>
         </div>
@@ -367,7 +400,7 @@
             gain.connect(audioCtx.destination);
             const now = audioCtx.currentTime;
 
-            switch(type) {
+            switch(now && type) {
                 case 'draw':
                     osc.type = 'sine'; osc.frequency.setValueAtTime(400, now);
                     osc.frequency.exponentialRampToValueAtTime(800, now + 0.1);
@@ -437,6 +470,7 @@
             { id: 'pocket_points', name: 'Pocket Points', cost: 50, desc: 'Adds +25 to total round score' },
             { id: 'extra_hand', name: 'Extra Hand', cost: 100, desc: 'Adds +1 Play permanently' },
             { id: 'double_score', name: 'Double Score', cost: 100, desc: 'Next play gains double points' },
+            { id: 'disable_boss', name: 'The Blindfold', cost: 100, desc: 'Ignores boss effect for 1 hand' },
             { id: 'shield', name: 'Shield', cost: 150, desc: 'Automatic protection from Game Over' }
         ];
 
@@ -447,7 +481,20 @@
             { id: 'the_club', name: 'THE CLUB', desc: 'Blunted Clubs: Clubs score 0.', effect: (state) => { state.debuffSuits = ['♣']; } },
             { id: 'the_spade', name: 'THE SPADE', desc: 'Pitched Spades: Spades score 0.', effect: (state) => { state.debuffSuits = ['♠']; } },
             { id: 'the_diamond', name: 'THE DIAMOND', desc: 'Rigged Diamonds: Diamonds score 0.', effect: (state) => { state.debuffSuits = ['♦']; } },
-            { id: 'the_hook', name: 'THE HOOK', desc: 'Anchored: Discards are disabled.', effect: (state) => { state.discards = 0; } }
+            { id: 'the_hook', name: 'THE HOOK', desc: 'Anchored: Discards are disabled.', effect: (state) => { state.discards = 0; } },
+            { id: 'the_pair', name: 'THE PAIR', desc: 'Even cards (2, 4, 6, 8, 10) are debuffed.', effect: (state) => { state.debuffValues = ['2', '4', '6', '8', '10']; } },
+            { id: 'the_solo', name: 'THE SOLO', desc: 'Odd cards (3, 5, 7, 9, A) are debuffed.', effect: (state) => { state.debuffValues = ['3', '5', '7', '9', 'A']; } },
+            { id: 'the_royal', name: 'THE ROYAL', desc: 'Face cards (J, Q, K) are debuffed.', effect: (state) => { state.debuffValues = ['J', 'Q', 'K']; } },
+            { id: 'the_ink', name: 'THE INK', desc: '25% of the deck is marked and debuffed.', effect: (state) => { 
+                const numToMark = Math.floor(state.deck.length / 4);
+                const shuffledIdx = shuffle([...Array(state.deck.length).keys()]);
+                for(let i=0; i<numToMark; i++) if (state.deck[shuffledIdx[i]]) state.deck[shuffledIdx[i]].isMarked = true;
+            }},
+            { id: 'the_peak', name: 'THE PEAK', desc: 'Your highest level combination is debuffed.', effect: (state) => { 
+                let maxLv = 0; let hand = '';
+                Object.entries(state.handLevels).forEach(([h, lv]) => { if(lv > maxLv) { maxLv = lv; hand = h; } });
+                state.debuffHandType = hand;
+            }}
         ];
 
         let state = {
@@ -455,12 +502,14 @@
             plays: 3, discards: 3, handLimit: 8, basePlays: 3, baseDiscards: 3, baseHandLimit: 8,
             deck: [], hand: [], selectedIndices: [], bankedJokers: 0, jokerSelected: false,
             inventory: [], isShopOpen: false, currentSortMethod: 'rank',
-            drawBatchId: 0, doubleNextPlay: false, shieldActive: false,
+            drawBatchId: 0, doubleNextPlay: false, bossIgnoredForHand: false, shieldActive: false,
             permanentPowerupsBought: [],
             handLevels: Object.fromEntries(Object.keys(HAND_SCORES).map(k => [k, 1])),
             currentBoss: null,
             nextBoss: null,
             debuffSuits: [],
+            debuffValues: [],
+            debuffHandType: null,
             bossesDefeated: 0,
             isSwipeSelecting: false,
             swipeMode: null,
@@ -516,8 +565,8 @@
 
         function initDeck() {
             let deck = [];
-            SUITS.forEach(suit => VALUES.forEach(val => deck.push({ suit, val, isJoker: false })));
-            deck.push({ suit: '?', val: 'Joker', isJoker: true }); 
+            SUITS.forEach(suit => VALUES.forEach(val => deck.push({ suit, val, isJoker: false, isMarked: false })));
+            deck.push({ suit: '?', val: 'Joker', isJoker: true, isMarked: false }); 
             return shuffle(deck);
         }
 
@@ -534,8 +583,11 @@
             state.discards = state.baseDiscards;
             state.handLimit = state.baseHandLimit;
             state.debuffSuits = [];
+            state.debuffValues = [];
+            state.debuffHandType = null;
             state.currentBoss = null;
             state.doubleNextPlay = false;
+            state.bossIgnoredForHand = false;
             state.deck = initDeck();
             state.hand = [];
             state.jokerSelected = false;
@@ -648,14 +700,26 @@
             playSound('play'); 
             let selected = state.selectedIndices.map(i => state.hand[i]);
             let handType = evaluateHand(selected, state.jokerSelected);
-            let isDebuffed = selected.some(c => state.debuffSuits.includes(c.suit));
+            
+            let isDebuffed = !state.bossIgnoredForHand && (selected.some(c => 
+                state.debuffSuits.includes(c.suit) || 
+                state.debuffValues.includes(c.val) ||
+                c.isMarked
+            ) || (state.debuffHandType && handType === state.debuffHandType));
+
             let baseVal = (handType === 'Royal Flush' && state.jokerSelected) ? 250 : (HAND_SCORES[handType] || 5);
             let level = state.handLevels[handType] || 1;
             let handBaseScore = isDebuffed ? 0 : Math.round(baseVal * (1 + (level - 1) * 0.5));
             if (state.doubleNextPlay) { handBaseScore *= 2; state.doubleNextPlay = false; }
             state.score += handBaseScore; 
             state.plays--;
+            
             if (isDebuffed) showMessage("DEBUFFED!", "text-red-400 font-bold");
+            if (state.bossIgnoredForHand) { 
+                showMessage("BLINDFOLDED!", "text-blue-400 font-bold"); 
+                state.bossIgnoredForHand = false; 
+            }
+
             if (state.jokerSelected) { state.bankedJokers = 0; state.jokerSelected = false; }
             state.hand = state.hand.filter((_, i) => !state.selectedIndices.includes(i));
             state.selectedIndices = []; 
@@ -717,9 +781,10 @@
                 inventory: [], shieldActive: false, currentSortMethod: 'rank', 
                 drawBatchId: 0, permanentPowerupsBought: [],
                 handLevels: Object.fromEntries(Object.keys(HAND_SCORES).map(k => [k, 1])),
-                debuffSuits: [], currentBoss: null, nextBoss: null, bossesDefeated: 0,
+                debuffSuits: [], debuffValues: [], debuffHandType: null,
+                currentBoss: null, nextBoss: null, bossesDefeated: 0,
                 maxSingleRoundScore: 0, cumulativeScore: 0, doubleScorePurchaseCount: 0,
-                deck: [], hand: []
+                deck: [], hand: [], doubleNextPlay: false, bossIgnoredForHand: false
             });
             document.getElementById('game-over-overlay').classList.add('hidden');
             startRound();
@@ -731,9 +796,9 @@
                 const availableStandard = SHOP_ITEMS.filter(item => {
                     const isPermanent = item.id === 'extra_hand' || item.id === 'extra_discard_perm' || item.id === 'extra_card_perm';
                     const alreadyBoughtPermanent = isPermanent && state.permanentPowerupsBought.includes(item.id);
-                    const ownedInInventory = !isPermanent && item.id !== 'shield' && item.id !== 'double_score' && state.inventory.some(i => i.id === item.id);
+                    const alreadyOwnedToken = !isPermanent && item.id !== 'shield' && state.inventory.some(i => i.id === item.id);
                     const shieldActive = item.id === 'shield' && state.shieldActive;
-                    return !alreadyBoughtPermanent && !ownedInInventory && !shieldActive;
+                    return !alreadyBoughtPermanent && !alreadyOwnedToken && !shieldActive;
                 });
                 const allHandTypes = shuffle([...Object.keys(HAND_SCORES)]);
                 const getDynamicCost = (item) => {
@@ -744,23 +809,28 @@
                 const expensiveStandard = availableStandard.filter(i => state.excessPoints < getDynamicCost(i));
                 const affordablePlanets = allHandTypes.filter(h => state.excessPoints >= (10 + (state.handLevels[h] * 5)));
                 const expensivePlanets = allHandTypes.filter(h => state.excessPoints < (10 + (state.handLevels[h] * 5)));
+                
                 let finalOffers = [];
+                
+                if (Math.random() < 0.2 || state.round > 12) {
+                    finalOffers.push({ type: 'celestial', data: 'galaxy', name: 'The Galaxy', desc: 'ALL combinations Level UP!', cost: 250 });
+                }
+
                 let planetsForSeed = affordablePlanets.slice(0, 2);
                 if (planetsForSeed.length < 2) { planetsForSeed = planetsForSeed.concat(expensivePlanets.slice(0, 2 - planetsForSeed.length)); }
                 planetsForSeed.forEach(p => finalOffers.push({ type: 'celestial', data: p }));
+                
                 let moreAffPlanets = affordablePlanets.filter(p => !planetsForSeed.includes(p)).slice(0, 2);
                 moreAffPlanets.forEach(p => { if(finalOffers.length < 6) finalOffers.push({ type: 'celestial', data: p }); });
+                
                 let affStandardsToAdd = shuffle(affordableStandard).slice(0, 6 - finalOffers.length);
                 affStandardsToAdd.forEach(s => finalOffers.push({ type: 'token', data: s }));
+                
                 if (finalOffers.length < 6) {
                     let expStandardsToAdd = shuffle(expensiveStandard).slice(0, 6 - finalOffers.length);
                     expStandardsToAdd.forEach(s => finalOffers.push({ type: 'token', data: s }));
                 }
-                if (finalOffers.length < 6) {
-                    let usedPlanets = finalOffers.filter(o => o.type === 'celestial').map(o => o.data);
-                    let expPlanetsToAdd = expensivePlanets.filter(p => !usedPlanets.includes(p)).slice(0, 6 - finalOffers.length);
-                    expPlanetsToAdd.forEach(p => finalOffers.push({ type: 'celestial', data: p }));
-                }
+                
                 state.currentShopOffers = shuffle(finalOffers).slice(0, 6);
             }
             renderShop();
@@ -778,6 +848,11 @@
                     btn.className = `p-1.5 sm:p-3 rounded-lg border transition flex flex-col justify-between h-20 sm:h-28 ${owned ? 'bg-zinc-800 border-zinc-700 opacity-50 cursor-not-allowed' : (canAfford ? 'bg-black border-zinc-700 hover:border-orange-500 cursor-pointer' : 'bg-black border-red-900/50 opacity-60 cursor-default grayscale')}`;
                     btn.innerHTML = `<div class="flex justify-between items-start"><span class="font-bungee text-[9px] sm:text-[11px] text-white uppercase italic leading-tight">${item.name}</span><span class="font-bungee text-[9px] sm:text-[11px] ${canAfford ? 'text-emerald-400' : 'text-red-500'}">$${cost}</span></div><p class="text-[6.5px] sm:text-[9px] text-zinc-400 font-medium mt-0.5">${item.desc}</p>${owned ? '<p class="text-[6.5px] text-orange-500 font-black uppercase">Acquired</p>' : ''}`;
                     if (!owned && canAfford) btn.onclick = () => buyItem(item, idx);
+                } else if (offer.data === 'galaxy') {
+                    const canAfford = state.excessPoints >= offer.cost && !owned;
+                    btn.className = `p-1.5 sm:p-3 rounded-lg border transition flex flex-col justify-between h-20 sm:h-28 ${owned ? 'bg-zinc-800 border-zinc-700 opacity-50 cursor-not-allowed' : (canAfford ? 'bg-black border-yellow-500 hover:border-white cursor-pointer' : 'bg-black border-red-900/20 opacity-60 cursor-default grayscale')}`;
+                    btn.innerHTML = `<div class="flex justify-between items-start"><span class="font-bungee text-[9px] sm:text-[11px] text-yellow-400 uppercase italic leading-tight">${offer.name}</span><span class="font-bungee text-[9px] sm:text-[11px] ${canAfford ? 'text-emerald-400' : 'text-red-500'}">$${offer.cost}</span></div><p class="text-[6.5px] sm:text-[9px] text-zinc-400 mt-0.5">${offer.desc}</p>${owned ? '<p class="text-[6.5px] text-yellow-500 font-black uppercase">ULTIMATE</p>' : ''}`;
+                    if (!owned && canAfford) btn.onclick = () => upgradeAllHands(offer.cost, idx);
                 } else {
                     const handType = offer.data;
                     const level = state.handLevels[handType];
@@ -794,6 +869,16 @@
         function upgradeHand(handType, cost, offerIdx) {
             if (state.excessPoints >= cost) {
                 playSound('buy'); state.excessPoints -= cost; state.handLevels[handType]++; state.currentShopOffers[offerIdx].purchased = true;
+                document.getElementById('excess-points-display').textContent = "$" + state.excessPoints; renderShop();
+                saveGame();
+            }
+        }
+
+        function upgradeAllHands(cost, offerIdx) {
+            if (state.excessPoints >= cost) {
+                playSound('buy'); state.excessPoints -= cost; 
+                Object.keys(state.handLevels).forEach(h => state.handLevels[h]++);
+                state.currentShopOffers[offerIdx].purchased = true;
                 document.getElementById('excess-points-display').textContent = "$" + state.excessPoints; renderShop();
                 saveGame();
             }
@@ -821,6 +906,7 @@
                 case 'extra_discard': state.discards++; break;
                 case 'pocket_points': state.score += 25; break;
                 case 'double_score': state.doubleNextPlay = true; break;
+                case 'disable_boss': state.bossIgnoredForHand = true; break;
             }
             render();
             saveGame();
@@ -843,6 +929,21 @@
             const el = document.getElementById('status-message'); el.innerHTML = msg;
             el.className = `text-lg sm:text-2xl font-bungee ${colorClass} mb-1 drop-shadow-lg`; el.classList.remove('hidden');
             setTimeout(() => el.classList.add('hidden'), 3000);
+        }
+
+        function showScores() {
+            playSound('select');
+            const content = document.getElementById('scores-view-content');
+            content.innerHTML = '';
+            Object.entries(HAND_SCORES).sort((a,b) => b[1]-a[1]).forEach(([name, baseVal]) => {
+                const level = state.handLevels[name];
+                const scaled = Math.round(baseVal * (1 + (level - 1) * 0.5));
+                const row = document.createElement('div');
+                row.className = 'bg-black/40 p-2 sm:p-3 flex justify-between border border-zinc-800 rounded-lg items-center';
+                row.innerHTML = `<span class="capitalize text-zinc-300 font-bold text-[10px] sm:text-xs">${name}</span><div class="flex gap-2 sm:gap-4 items-center"><span class="text-blue-400 font-black text-[8px] sm:text-[10px] uppercase tracking-tighter">LV. ${level}</span><span class="font-bungee text-white text-[10px] sm:text-sm">${scaled}</span></div>`;
+                content.appendChild(row);
+            });
+            document.getElementById('scores-overlay').classList.remove('hidden');
         }
 
         function showDeck() {
@@ -927,18 +1028,30 @@
             const fh = document.getElementById('current-hand-type'); 
             const fs = document.getElementById('current-hand-score');
             const fl = document.getElementById('hand-level-display');
+            
+            let projectedWillWin = false;
+
             if (prospective) {
                 const isLegendary = (prospective === 'Royal Flush' && state.jokerSelected) || prospective === '5 of a Kind';
                 const baseVal = (prospective === 'Royal Flush' && state.jokerSelected) ? 250 : (HAND_SCORES[prospective] || 5);
                 const level = state.handLevels[prospective] || 1;
-                let isDebuffed = sel.some(c => state.debuffSuits.includes(c.suit));
+                
+                let isDebuffed = !state.bossIgnoredForHand && (sel.some(c => 
+                    state.debuffSuits.includes(c.suit) || 
+                    state.debuffValues.includes(c.val) ||
+                    (c.isMarked)
+                ) || (state.debuffHandType && prospective === state.debuffHandType));
+
                 let score = isDebuffed ? 0 : Math.round(baseVal * (1 + (level - 1) * 0.5));
                 if (state.doubleNextPlay) score *= 2;
+                
+                if (state.score + score >= state.target) projectedWillWin = true;
+
                 fh.textContent = (prospective === 'Royal Flush' && state.jokerSelected) ? 'WILD ROYAL FLUSH' : prospective.toUpperCase();
                 fh.className = `text-lg sm:text-3xl font-bungee ${isLegendary ? 'text-orange-400 drop-shadow-[0_0_15px_rgba(251,146,60,0.8)]' : 'text-white'} drop-shadow-lg text-center leading-tight`;
                 fh.classList.remove('hidden'); 
                 fl.textContent = `Level ${level}`; fl.classList.remove('hidden');
-                fs.textContent = isDebuffed ? "0 Points (Invalid Suit)" : `+${score} Points`; 
+                fs.textContent = isDebuffed ? "0 Points (BOSS DEBUFF)" : `+${score} Points`; 
                 fs.className = `text-sm sm:text-xl font-bold ${isDebuffed ? 'text-red-500' : 'text-white'}`;
                 fs.classList.remove('hidden');
             } else { fh.classList.add('hidden'); fs.classList.add('hidden'); fl.classList.add('hidden'); }
@@ -946,7 +1059,6 @@
             const hc = document.getElementById('hand-container'); hc.innerHTML = ''; let dc = 0;
             const isMobile = window.innerWidth < 640;
             const handLen = state.hand.length;
-            // Force wrap to balance even hands on mobile (e.g., 8 cards becomes 4+4)
             const splitPoint = (isMobile && handLen > 5 && handLen % 2 === 0) ? handLen / 2 : -1;
 
             state.hand.forEach((card, i) => {
@@ -958,10 +1070,14 @@
                 
                 const s = state.selectedIndices.includes(i); const isRed = card.suit === '♥' || card.suit === '♦';
                 const n = card.batchId === state.drawBatchId; 
-                const isDebuffed = state.debuffSuits.includes(card.suit);
+                
+                const isDebuffed = !state.bossIgnoredForHand && (state.debuffSuits.includes(card.suit) || 
+                                   state.debuffValues.includes(card.val) ||
+                                   card.isMarked);
+
                 const el = document.createElement('div'); 
                 const cardWidthClass = state.handLimit > 10 ? 'w-[14vw]' : 'w-[18vw]';
-                el.className = `card ${cardWidthClass} sm:w-28 bg-white rounded-lg sm:rounded-xl flex flex-col items-center justify-center shadow-xl border-2 sm:border-4 ${s ? 'selected' : 'border-zinc-300'} ${isRed ? 'text-red-600' : 'text-zinc-900'} ${n ? 'card-draw' : ''} ${isDebuffed ? 'card-debuffed' : ''}`;
+                el.className = `card ${cardWidthClass} sm:w-28 bg-white rounded-lg sm:rounded-xl flex flex-col items-center justify-center shadow-xl border-2 sm:border-4 ${s ? 'selected' : 'border-zinc-300'} ${isRed ? 'text-red-600' : 'text-zinc-900'} ${n ? 'card-draw' : ''} ${isDebuffed ? 'card-debuffed' : ''} ${s && projectedWillWin ? 'card-burn' : ''}`;
                 el.setAttribute('data-card-index', i);
                 if (n) el.style.animationDelay = `${dc++ * 0.05}s`;
                 el.innerHTML = `<div class="absolute top-1 left-1 sm:top-2 sm:left-2 flex flex-col items-center pointer-events-none"><span class="text-xs sm:text-lg font-black leading-none">${card.val}</span><span class="text-[8px] sm:text-sm font-bold leading-none">${card.suit}</span></div><div class="text-2xl sm:text-5xl font-black pointer-events-none">${card.suit}</div>`;
@@ -973,8 +1089,8 @@
             state.hand.forEach(c => c.batchId = -1);
             const jb = document.getElementById('joker-bank'); jb.innerHTML = '';
             if (state.bankedJokers > 0) {
-                const j = document.createElement('div'); j.className = `joker-slot w-14 h-20 sm:w-20 sm:h-28 rounded-xl flex flex-col items-center justify-center border-2 sm:border-4 ${state.jokerSelected ? 'joker-selected' : 'bg-white border-zinc-300'} text-zinc-900 shadow-xl cursor-pointer`;
-                j.innerHTML = `<div class="flex items-center justify-center w-full h-8 sm:h-14 overflow-hidden pointer-events-none">${JOKER_ICON}</div><span class="text-[7px] sm:text-[10px] font-bold uppercase pointer-events-none">${state.jokerSelected ? 'SELECTED' : 'WILD'}</span>`;
+                const j = document.createElement('div'); j.className = `joker-slot w-14 h-20 sm:w-20 sm:h-28 rounded-xl flex flex-col items-center justify-center border-2 sm:border-4 ${state.jokerSelected ? 'joker-selected' : 'bg-white border-zinc-300'} text-zinc-900 shadow-xl cursor-pointer ${state.jokerSelected && projectedWillWin ? 'card-burn' : ''}`;
+                j.innerHTML = `<div class="flex items-center justify-center w-full pointer-events-none">${JOKER_ICON}</div><span class="text-[7px] sm:text-[10px] font-bold uppercase pointer-events-none">WILD</span>`;
                 j.onclick = (e) => { 
                     e.stopPropagation(); const totalSelected = state.selectedIndices.length + (state.jokerSelected ? 1 : 0);
                     if (!state.jokerSelected && totalSelected >= 5) return; 
@@ -996,18 +1112,7 @@
                 const t = document.createElement('div'); t.className = 'token-item px-2 py-0.5 bg-zinc-800 text-[8px] rounded border border-orange-600 text-orange-500 font-black uppercase tracking-tight italic';
                 t.textContent = it.name; t.onclick = (e) => { e.stopPropagation(); showTokenModal(idx); }; tl.appendChild(t);
             });
-            const rl = document.getElementById('rules-scoring-list');
-            if (rl.children.length === 0) {
-                Object.entries(HAND_SCORES).sort((a,b) => b[1]-a[1]).forEach(([name, val]) => {
-                    const row = document.createElement('div'); row.className = 'bg-black/40 p-1.5 flex justify-between border border-zinc-800';
-                    row.innerHTML = `<span class="capitalize text-zinc-400">${name}</span><span id="score-lv-${name.replace(/\s/g, '-')}" class="font-bold text-white">${val}</span>`; rl.appendChild(row);
-                });
-            } else {
-                Object.entries(HAND_SCORES).forEach(([name, val]) => {
-                    const level = state.handLevels[name]; const scaled = Math.round(val * (1 + (level - 1) * 0.5));
-                    const el = document.getElementById(`score-lv-${name.replace(/\s/g, '-')}`); if (el) el.innerHTML = `${scaled} <small class="text-blue-500 text-[7px] sm:text-[8px]">LV${level}</small>`;
-                });
-            }
+            
             const currentTotalSelected = state.selectedIndices.length + (state.jokerSelected ? 1 : 0);
             document.getElementById('discard-btn').disabled = state.discards <= 0 || state.selectedIndices.length === 0;
             document.getElementById('play-btn').disabled = state.plays <= 0 || currentTotalSelected === 0;
@@ -1019,7 +1124,9 @@
         document.getElementById('sort-rank-btn').onclick = () => sortHand('rank');
         document.getElementById('sort-suit-btn').onclick = () => sortHand('suit');
         document.getElementById('view-deck-btn').onclick = showDeck;
+        document.getElementById('view-scores-btn').onclick = showScores;
         document.getElementById('close-deck').onclick = () => document.getElementById('deck-overlay').classList.add('hidden');
+        document.getElementById('close-scores').onclick = () => document.getElementById('scores-overlay').classList.add('hidden');
         document.getElementById('rules-btn').onclick = () => { playSound('select'); document.getElementById('rules-overlay').classList.remove('hidden'); };
         document.getElementById('close-rules').onclick = () => { playSound('select'); document.getElementById('rules-overlay').classList.add('hidden'); };
         document.getElementById('restart-game-btn').onclick = resetGame;
