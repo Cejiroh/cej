@@ -401,7 +401,7 @@
         }
 
         .custom-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 5000; display: none; align-items: center; justify-content: center; padding: 20px; }
-        .modal-box { background: #fdf5e6; border: 6px double var(--ink-black); padding: 30px; border-radius: 15px; text-align: center; max-width: 400px; box-shadow: 0 10px 40px #000; width: 100%; }
+        .modal-box { background: #fdf5e6; border: 6 double var(--ink-black); padding: 30px; border-radius: 15px; text-align: center; max-width: 400px; box-shadow: 0 10px 40px #000; width: 100%; }
 
         #respite-archive-box.boss-style, .boss-alert {
             background-color: #1a0f0a !important;
@@ -773,7 +773,7 @@
         
         <div class="difficulty-selector" id="difficulty-selector-container">
             <button id="diff-easy" class="diff-btn active" onclick="AudioEngine.playKey(); window.setDiff('easy', this)">Easy</button>
-            <button id="diff-medium" class="diff-btn" onclick="AudioEngine.playKey(); window.setDiff('medium', this)">Medium</button>
+            <button id="diff-medium" class="diff-btn" onclick="AudioEngine.playKey(); window.setDiff('medium', this)">Normal</button>
             <button id="diff-hard" class="diff-btn" onclick="AudioEngine.playKey(); window.setDiff('hard', this)">Hard</button>
         </div>
     </div>
@@ -827,7 +827,7 @@
         
         <div class="difficulty-selector" id="leaderboard-diff-filter" style="margin-bottom: 10px; width: 100%;">
             <button id="lb-filter-easy" class="diff-btn active" onclick="window.setLeaderboardDiff('easy', this)">Easy</button>
-            <button id="lb-filter-medium" class="diff-btn" onclick="window.setLeaderboardDiff('medium', this)">Medium</button>
+            <button id="lb-filter-medium" class="diff-btn" onclick="window.setLeaderboardDiff('medium', this)">Normal</button>
             <button id="lb-filter-hard" class="diff-btn" onclick="window.setLeaderboardDiff('hard', this)">Hard</button>
         </div>
 
@@ -835,7 +835,7 @@
             <div class="loading-leaderboard">Reading the scrolls...</div>
         </div>
 
-        <button class="btn" onclick="window.fetchLeaderboard()" style="margin-top: 20px; font-size: 0.8rem; padding: 10px;">Refresh Archives</button>
+        <button class="btn" onclick="window.fetchLeaderboard(true)" style="margin-top: 20px; font-size: 0.8rem; padding: 10px;">Refresh Archives</button>
     </div>
 
     <div id="boss-alert" class="boss-alert">
@@ -976,6 +976,7 @@
             let timerInterval = null;
             let delRepeatInterval = null;
             let currentLeaderboardDiff = 'easy';
+            let leaderboardCache = null;
 
             window.AudioEngine = {
                 ctx: null,
@@ -1012,7 +1013,7 @@
                 if (!desc) return;
                 const d = window.G.difficulty;
                 if (d === 'easy') desc.innerText = "6 Guesses. Common words. Standard trials.";
-                else if (d === 'medium') desc.innerText = "5 Guesses. Full dictionary. Standard trials.";
+                else if (d === 'medium') desc.innerText = "6 Guesses. Full dictionary. Standard trials.";
                 else desc.innerText = "5 Guesses. Longer words. Frequent hazards.";
             };
 
@@ -1290,7 +1291,7 @@
                 window.G.coins = (type === 'hunter') ? 100 : 50; 
                 if(type === 'bloodstained') window.G.coins = 0;
                 
-                window.G.maxGuesses = (diff === 'easy' ? 6 : 5);
+                window.G.maxGuesses = (diff === 'easy' || diff === 'medium' ? 6 : 5);
 
                 window.G.availableBosses = BOSS_LIST.map(b => b.mod).filter(m => m !== 'Chimera').sort(() => Math.random() - 0.5);
 
@@ -1802,34 +1803,42 @@
             window.setLeaderboardDiff = function(d, btn) {
                 AudioEngine.playKey(); currentLeaderboardDiff = d;
                 document.querySelectorAll('#leaderboard-diff-filter .diff-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); 
-                window.fetchLeaderboard();
+                window.fetchLeaderboard(false);
             };
 
-            window.openLeaderboard = () => { window.showScreen('screen-leaderboard'); window.fetchLeaderboard(); };
+            window.openLeaderboard = () => { window.showScreen('screen-leaderboard'); window.fetchLeaderboard(false); };
 
-            window.fetchLeaderboard = async function() {
+            window.fetchLeaderboard = async function(force = false) {
                 const container = document.getElementById('leaderboard-content');
-                container.innerHTML = '<div class="loading-leaderboard">Reading the scrolls...</div>';
-                try {
-                    const response = await fetch(SCRIPT_URL);
-                    const data = await response.json();
-                    const uniquePlayers = {};
-                    data.forEach(entry => {
-                        const ed = (entry.Difficulty || 'easy').toLowerCase();
-                        if (entry.game_name === "Lexicon" && ed === currentLeaderboardDiff) {
-                            if (!uniquePlayers[entry.name] || (parseInt(entry.high_score) || 0) > uniquePlayers[entry.name].score) {
-                                uniquePlayers[entry.name] = { score: parseInt(entry.high_score) || 0, floor: parseInt(entry.Floor || 1), character: entry.Character || "Outcast" };
-                            }
+                
+                if (!leaderboardCache || force) {
+                    container.innerHTML = '<div class="loading-leaderboard">Reading the scrolls...</div>';
+                    try {
+                        const response = await fetch(SCRIPT_URL);
+                        leaderboardCache = await response.json();
+                    } catch (error) {
+                        container.innerHTML = '<div class="loading-leaderboard" style="color: var(--hazard);">Failed to retrieve scrolls.</div>';
+                        return;
+                    }
+                }
+                
+                const data = leaderboardCache;
+                const uniquePlayers = {};
+                data.forEach(entry => {
+                    const ed = (entry.Difficulty || 'easy').toLowerCase();
+                    if (entry.game_name === "Lexicon" && ed === currentLeaderboardDiff) {
+                        if (!uniquePlayers[entry.name] || (parseInt(entry.high_score) || 0) > uniquePlayers[entry.name].score) {
+                            uniquePlayers[entry.name] = { score: parseInt(entry.high_score) || 0, floor: parseInt(entry.Floor || 1), character: entry.Character || "Outcast" };
                         }
-                    });
-                    const sortedArr = Object.entries(uniquePlayers).map(([name, obj]) => ({ name, ...obj })).sort((a, b) => b.score - a.score).slice(0, 10);
-                    if (sortedArr.length === 0) { container.innerHTML = `<div class="loading-leaderboard">Archives are empty.</div>`; return; }
-                    let html = `<table class="leaderboard-table"><thead><tr><th>Rank</th><th>Name</th><th>Soul</th><th>Floor</th><th>Score</th></tr></thead><tbody>`;
-                    sortedArr.forEach((p, i) => {
-                        html += `<tr><td class="leaderboard-rank">#${i + 1}</td><td class="leaderboard-name">${p.name}</td><td class="leaderboard-char">${p.character}</td><td class="leaderboard-floor">${romNums[p.floor] || p.floor}</td><td class="leaderboard-score">${p.score.toLocaleString()}</td></tr>`;
-                    });
-                    container.innerHTML = html + '</tbody></table>';
-                } catch (error) { container.innerHTML = '<div class="loading-leaderboard" style="color: var(--hazard);">Failed to retrieve scrolls.</div>'; }
+                    }
+                });
+                const sortedArr = Object.entries(uniquePlayers).map(([name, obj]) => ({ name, ...obj })).sort((a, b) => b.score - a.score).slice(0, 10);
+                if (sortedArr.length === 0) { container.innerHTML = `<div class="loading-leaderboard">Archives are empty.</div>`; return; }
+                let html = `<table class="leaderboard-table"><thead><tr><th>Rank</th><th>Name</th><th>Soul</th><th>Floor</th><th>Score</th></tr></thead><tbody>`;
+                sortedArr.forEach((p, i) => {
+                    html += `<tr><td class="leaderboard-rank">#${i + 1}</td><td class="leaderboard-name">${p.name}</td><td class="leaderboard-char">${p.character}</td><td class="leaderboard-floor">${romNums[p.floor] || p.floor}</td><td class="leaderboard-score">${p.score.toLocaleString()}</td></tr>`;
+                });
+                container.innerHTML = html + '</tbody></table>';
             };
 
             async function submitScore() {
