@@ -1004,6 +1004,15 @@
                 };
             }
 
+            function updateDifficultyInfo() {
+                const desc = document.getElementById('diff-description');
+                if (!desc) return;
+                const d = window.G.difficulty;
+                if (d === 'easy') desc.innerText = "6 Guesses. Common words. Standard trials.";
+                else if (d === 'medium') desc.innerText = "5 Guesses. Full dictionary. Standard trials.";
+                else desc.innerText = "5 Guesses. Longer words. Frequent hazards.";
+            }
+
             window.G = createInitialState();
 
             const romNums = ["0","I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII","XIII","XIV","XV","XVI","XVII","XVIII","XIX","XX","XXI","XXII","XXIII","XXIV","XXV","XXVI","XXVII","XXVIII","XXIX","XXX"];
@@ -1790,7 +1799,8 @@
 
             window.setLeaderboardDiff = (d, btn) => {
                 AudioEngine.playKey(); currentLeaderboardDiff = d;
-                document.querySelectorAll('#leaderboard-diff-filter .diff-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); fetchLeaderboard();
+                document.querySelectorAll('#leaderboard-diff-filter .diff-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); 
+                fetchLeaderboard();
             };
 
             window.openLeaderboard = () => { showScreen('screen-leaderboard'); fetchLeaderboard(); };
@@ -1852,10 +1862,7 @@
             window.closeRules = () => { document.getElementById('rules-modal').style.display='none'; };
             window.setDiff = (d, btn) => {
                 window.G.difficulty = d; document.querySelectorAll('.difficulty-selector .diff-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active');
-                const desc = document.getElementById('diff-description');
-                if (d === 'easy') desc.innerText = "6 Guesses. Common words. Standard trials.";
-                else if (d === 'medium') desc.innerText = "5 Guesses. Full dictionary. Standard trials.";
-                else desc.innerText = "5 Guesses. Longer words. Frequent hazards.";
+                updateDifficultyInfo();
             };
             window.openTutorial = () => { document.getElementById('tutorial-modal').style.display = 'flex'; };
             window.closeTutorial = () => { document.getElementById('tutorial-modal').style.display = 'none'; };
