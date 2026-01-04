@@ -1008,7 +1008,7 @@
             function createInitialState() {
                 return {
                     playerName: localStorage.getItem('lexicon_player_name') || "",
-                    hp: 60, maxHp: 60, coins: 0, floor: 1, totalScore: 0, targetWord: "", currentGuess: "", guesses: [], maxGuesses: 5, archetype: 'outcast', difficulty: 'easy', upgrades: [], doubledRelics: [], consumables: [null, null, null], keyStatus: {}, forbiddenLetters: new Set(), hazardTiles: [], scrambledKeys: {}, wardActive: false, suppressedModifier: null, isGameOver: false, modifiers: [], bossActive: null, hints: {}, floorPurchases: new Set(), discountActive: false, currentShopPool: [], midFloor: false, hasPhoenix: false, isEndless: false, unknownCount: 0, corruptedKeys: [], timerSeconds: 180, taxedLetters: [], solveFlag: false, availableBosses: [], facedAllBosses: false, invalidWordBonus: 0, currentScreen: 'screen-game', tinkerBonus: 0
+                    hp: 60, maxHp: 60, coins: 0, floorCoins: 0, floor: 1, totalScore: 0, targetWord: "", currentGuess: "", guesses: [], maxGuesses: 5, archetype: 'outcast', difficulty: 'easy', upgrades: [], doubledRelics: [], consumables: [null, null, null], keyStatus: {}, forbiddenLetters: new Set(), hazardTiles: [], scrambledKeys: {}, wardActive: false, suppressedModifier: null, isGameOver: false, modifiers: [], bossActive: null, hints: {}, floorPurchases: new Set(), discountActive: false, currentShopPool: [], midFloor: false, hasPhoenix: false, isEndless: false, unknownCount: 0, corruptedKeys: [], timerSeconds: 180, taxedLetters: [], solveFlag: false, availableBosses: [], facedAllBosses: false, invalidWordBonus: 0, currentScreen: 'screen-game', tinkerBonus: 0
                 };
             }
 
@@ -1315,6 +1315,7 @@
                 window.G.hazardTiles = []; window.G.modifiers = []; window.G.bossActive = null; window.G.hints = {}; window.G.unknownCount = 0;
                 window.G.corruptedKeys = []; window.G.timerSeconds = 180; window.G.taxedLetters = []; window.G.solveFlag = false;
                 window.G.scrambledKeys = {}; window.G.wardActive = false; window.G.suppressedModifier = null; window.G.midFloor = true;
+                window.G.floorCoins = 0; // Reset floor coins tracking
                 
                 if (window.G.archetype === 'tinker') {
                     window.G.maxHp -= (window.G.tinkerBonus || 0);
@@ -1526,7 +1527,7 @@
                         if(arr[i] !== " ") { 
                             const charToRemove = arr[i].toLowerCase();
                             if(isEffectActive("Tax") && window.G.taxedLetters.includes(charToRemove)) {
-                                window.G.coins += 5; updateUI();
+                                window.G.coins += 5; window.G.floorCoins += 5; updateUI();
                             }
                             arr[i] = " "; break; 
                         }
@@ -1539,7 +1540,7 @@
                     
                     if(window.G.taxedLetters.includes(low) && isEffectActive("Tax")) {
                         if(window.G.difficulty !== 'easy' && window.G.coins < 5) { toast("No Coins"); return; }
-                        window.G.coins -= 5; updateUI();
+                        window.G.coins -= 5; window.G.floorCoins -= 5; updateUI();
                     }
                     if(window.G.corruptedKeys.includes(low) && isEffectActive("Corrupt")) { takeDamage(3); toast("Corrupted!"); }
                     
@@ -1606,7 +1607,10 @@
                 if(window.G.upgrades.includes('ledger')) { 
                     const bonus = window.G.doubledRelics?.includes('ledger') ? 2 : 1;
                     if (window.G.archetype === 'bloodstained') heal(absentCount * bonus);
-                    else window.G.coins += absentCount * bonus;
+                    else {
+                        window.G.coins += absentCount * bonus;
+                        window.G.floorCoins += absentCount * bonus; // Update floor earnings
+                    }
                     updateUI(); 
                 }
                 
@@ -1687,7 +1691,7 @@
             }
 
             function calculateScore() {
-                let baseScore = window.G.floor * (window.G.targetWord.length + window.G.coins);
+                let baseScore = window.G.floor * (window.G.targetWord.length + window.G.floorCoins);
                 // Fix: Scholar earns 1.2x score
                 if (window.G.archetype === 'scholar') {
                     baseScore = Math.floor(baseScore * 1.2);
@@ -1709,8 +1713,14 @@
                     if (window.G.archetype === 'bloodstained') { heal(Math.floor(total / 2)); toast(`Blood Harvest: +${Math.floor(total / 4)} VIT`); }
                     else if (window.G.archetype === 'cursed') {
                         const multiplier = 1 + (window.G.invalidWordBonus * 0.2);
-                        window.G.coins += Math.floor(total * multiplier);
-                    } else window.G.coins += Math.floor(total);
+                        const amount = Math.floor(total * multiplier);
+                        window.G.coins += amount;
+                        window.G.floorCoins += amount; // Track floor earnings
+                    } else {
+                        const amount = Math.floor(total);
+                        window.G.coins += amount;
+                        window.G.floorCoins += amount; // Track floor earnings
+                    }
                 }
                 
                 if (window.G.bossActive && window.G.archetype === 'slayer') {
