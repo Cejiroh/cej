@@ -1866,13 +1866,25 @@
             async function submitScore() {
                 const pName = localStorage.getItem('lexicon_player_name') || "Stranger";
                 const soulName = archNames[window.G.archetype] || "Outcast";
+                const diff = window.G.difficulty || 'easy';
+                const currentScore = window.G.totalScore;
                 
+                // Fetch the highest score for this game mode from cache
+                const cacheKey = `lexicon_best_score_${diff}`;
+                const bestInCache = parseInt(localStorage.getItem(cacheKey) || 0);
+
+                // Only submit score if it is higher than the player current score in that current game mode
+                if (currentScore <= bestInCache) return;
+
+                // Update the highest score for this game mode in cache
+                localStorage.setItem(cacheKey, currentScore);
+
                 const scoreData = {
                     name: pName,
                     Character: soulName,
-                    high_score: window.G.totalScore,
+                    high_score: currentScore,
                     game_name: "Lexicon",
-                    Difficulty: window.G.difficulty || 'easy',
+                    Difficulty: diff,
                     Floor: window.G.floor
                 };
 
