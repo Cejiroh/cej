@@ -72,11 +72,9 @@
         .damage-flash { animation: bloodPulse 0.4s ease-out forwards; }
 
         @keyframes heartbeat {
-            0% { transform: scale(1); box-shadow: 0 0 10px rgba(139, 0, 0, 0.4); }
-            14% { transform: scale(1.03); box-shadow: 0 0 35px rgba(139, 0, 0, 0.8); }
-            28% { transform: scale(1); box-shadow: 0 0 10px rgba(139, 0, 0, 0.4); }
-            42% { transform: scale(1.03); box-shadow: 0 0 35px rgba(139, 0, 0, 0.8); }
-            70% { transform: scale(1); box-shadow: 0 0 10px rgba(139, 0, 0, 0.4); }
+            0% { box-shadow: 0 0 10px rgba(139, 0, 0, 0.4); }
+            50% { box-shadow: 0 0 45px rgba(139, 0, 0, 1); }
+            100% { box-shadow: 0 0 10px rgba(139, 0, 0, 0.4); }
         }
 
         .screen {
@@ -412,10 +410,23 @@
 
         .rules-modal-container { 
             background: #fdf5e6; color: var(--text); padding: 25px; border: 6px double var(--ink-black); border-radius: 12px; width: 95%; max-width: 500px; text-align: left; max-height: 85vh; overflow-y: auto;
+            position: relative;
         }
         .rules-modal-container h2 { text-align: center; font-family: var(--font-title); color: var(--hazard); margin-bottom: 20px; }
         .rules-modal-container h3 { font-family: var(--font-title); color: var(--hazard); margin: 25px 0 10px 0; border-bottom: 2px solid var(--parchment-dark); font-size: 1.1rem; }
         
+        .close-x {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 1.8rem;
+            cursor: pointer;
+            line-height: 1;
+            color: var(--ink-black);
+            opacity: 0.6;
+        }
+        .close-x:hover { opacity: 1; }
+
         #codex-bosses, #codex-relics, #codex-items {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -445,6 +456,7 @@
 
         .boss-alert { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 30px; width: 90%; max-width: 400px; z-index: 4000; text-align: center; display: none; border-radius: 12px; }
         .boss-alert h1 { font-family: var(--font-title); font-size: 2rem; margin-bottom: 12px; letter-spacing: 2px; }
+        .boss-alert .btn { margin: 15px auto 0 auto; display: block; min-width: 150px; }
 
         .loading-quill {
             font-size: 3.5rem;
@@ -564,19 +576,20 @@
                 <div id="hp-bar" class="hp-bar-fill"></div>
                 <div id="hp-val">60 / 60</div>
             </div>
+            <div id="active-relics" style="display:flex; gap:3px; margin-top:4px;"></div>
         </div>
 
-        <!-- Right: Coins and Relics -->
+        <!-- Right: Coins -->
         <div class="header-panel">
             <div class="stat-label">Coins</div>
             <div id="coins-subval" class="stat-value">0</div>
-            <div id="active-relics" style="display:flex; gap:3px; margin-top:2px;"></div>
         </div>
     </div>
 
     <!-- Codex Modal -->
     <div id="rules-modal" class="custom-modal" onclick="closeRules(event)">
         <div class="rules-modal-container" onclick="event.stopPropagation()">
+            <span class="close-x" onclick="closeRules()">×</span>
             <h2>THE CODEX</h2>
             
             <h3>The Trials (Bosses)</h3>
@@ -816,7 +829,7 @@
     <div id="boss-alert" class="boss-alert">
         <h1 id="boss-name">BOSS</h1>
         <p id="boss-desc" style="font-style: italic; margin-bottom: 25px;"></p>
-        <button class="btn" onclick="AudioEngine.playShop(); hideBossAlert()" style="width: 100%; border-color: #500; background: #300;">Continue</button>
+        <button class="btn" onclick="AudioEngine.playShop(); hideBossAlert()">Continue</button>
     </div>
 
     <div id="toast" class="message-toast"></div>
@@ -837,7 +850,7 @@
                 "Siren": "Vowels remain neutral on the grid.",
                 "Phantom": "Feedback is delayed by one turn.",
                 "Corrupt": "Keys deals 3 damage.",
-                "Clock": "Win before the 3:00 timer reaches zero."
+                "Clock": "Win before the timer reaches zero."
             };
 
             const CURATED_TARGETS = {
@@ -1034,7 +1047,11 @@
             };
 
             function startTimer() {
-                document.getElementById('timer-display').style.display = 'block';
+                if (window.G.modifiers.includes("Clock")) {
+                    document.getElementById('timer-display').style.display = 'none'; // User wants timer only in text
+                } else {
+                    document.getElementById('timer-display').style.display = 'block';
+                }
                 stopTimer();
                 timerInterval = setInterval(() => {
                     window.G.timerSeconds--;
@@ -1046,7 +1063,7 @@
                     }
                 }, 1000);
             }
-            function stopTimer() { if(timerInterval) clearInterval(timerInterval); document.getElementById('timer-display').style.none = 'none'; }
+            function stopTimer() { if(timerInterval) clearInterval(timerInterval); document.getElementById('timer-display').style.display = 'none'; }
             function updateTimerUI() {
                 const m = Math.floor(window.G.timerSeconds / 60);
                 const s = window.G.timerSeconds % 60;
@@ -1066,7 +1083,7 @@
                 }
 
                 try {
-                    const r2 = await fetch('https://raw.githubusercontent.com/first20hours/google-10000-english/master/google-10000-english-no-swears.txt');
+                    const r2 = await fetch('https://raw.githubusercontent.com/arstgit/high-frequency-vocabulary/master/30k.txt');
                     const text = await r2.text();
                     const words = text.split('\n');
                     words.forEach(w => {
@@ -1119,6 +1136,16 @@
             };
 
             window.deleteSaveAndStart = () => { 
+                const saved = localStorage.getItem('lexicon_run_save');
+                if (saved) {
+                    // Submit score of previous run before deletion
+                    const prevG = JSON.parse(saved);
+                    const currentG = window.G;
+                    window.G = prevG;
+                    calculateScore();
+                    submitScore();
+                    window.G = currentG;
+                }
                 localStorage.removeItem('lexicon_run_save'); 
                 document.getElementById('save-prompt').style.display = 'none'; 
                 const savedName = localStorage.getItem('lexicon_player_name');
@@ -1221,7 +1248,7 @@
 
             function updateDifficultyInfo() {
                 const info = document.getElementById('diff-description');
-                if (window.G.difficulty === 'easy') info.innerText = "Easy: 6 attempts. Common words. Slow scaling.";
+                if (window.G.difficulty === 'easy') info.innerText = "Easy: 6 attempts. High-frequency vocabulary. Slow scaling.";
                 else if (window.G.difficulty === 'medium') info.innerText = "Medium: 5 attempts. Random dictionary. More Trials.";
                 else info.innerText = "Hard: 5 attempts. Obscure words. Fast scaling (up to 12).";
             }
@@ -1383,6 +1410,8 @@
 
             function renderKeyboard() {
                 const isIllusionist = isEffectActive("Illusionist");
+                const isSiren = isEffectActive("Siren");
+                const vowels = "aeiou";
                 
                 kbLayout.forEach((row, idx) => {
                     const rowEl = document.getElementById(`kb-${idx+1}`); rowEl.innerHTML = "";
@@ -1394,10 +1423,16 @@
                         
                         let s = window.G.keyStatus[low];
                         if (s) {
-                            if (isIllusionist && s === 'correct') s = 'present';
-                            btn.classList.add(s);
+                            if (isSiren && vowels.includes(low)) {
+                                // Siren: Vowels stay neutral on keyboard
+                            } else {
+                                if (isIllusionist && s === 'correct') s = 'present';
+                                btn.classList.add(s);
+                            }
                         }
-                        if(window.G.forbiddenLetters.has(low)) btn.classList.add('absent');
+                        if(window.G.forbiddenLetters.has(low)) {
+                            if (!isSiren || !vowels.includes(low)) btn.classList.add('absent');
+                        }
                         if(window.G.corruptedKeys.includes(low) && isEffectActive("Corrupt")) btn.classList.add('corrupted');
                         if(window.G.taxedLetters.includes(low) && isEffectActive("Tax")) btn.classList.add('taxed');
                         
@@ -1755,7 +1790,8 @@
                         if (m === "Clock") {
                             const min = Math.floor(window.G.timerSeconds / 60);
                             const sec = window.G.timerSeconds % 60;
-                            text = `Time remaining: ${min}:${sec.toString().padStart(2, '0')}.`;
+                            const timeStr = `${min}:${sec.toString().padStart(2, '0')}`;
+                            text = `Win before the ${timeStr} timer reaches zero.`;
                         }
                         return text;
                     }).join(" ");
@@ -1869,14 +1905,11 @@
                 const diff = window.G.difficulty || 'easy';
                 const currentScore = window.G.totalScore;
                 
-                // Fetch the highest score for this game mode from cache
                 const cacheKey = `lexicon_best_score_${diff}`;
                 const bestInCache = parseInt(localStorage.getItem(cacheKey) || 0);
 
-                // Only submit score if it is higher than the player current score in that current game mode
                 if (currentScore <= bestInCache) return;
 
-                // Update the highest score for this game mode in cache
                 localStorage.setItem(cacheKey, currentScore);
 
                 const scoreData = {
