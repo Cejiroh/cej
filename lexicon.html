@@ -556,8 +556,8 @@
         }
         .leaderboard-table tr:last-child td { border-bottom: none; }
         .leaderboard-rank { font-family: var(--font-title); font-weight: bold; color: var(--hazard); width: 30px; text-align: center; }
-        .leaderboard-name { text-align: left; font-weight: bold; max-width: 80px; }
-        .leaderboard-char { text-align: left; font-style: italic; opacity: 0.8; max-width: 70px; font-size: 0.7rem; }
+        .leaderboard-name { text-align: center; font-weight: bold; max-width: 80px; }
+        .leaderboard-char { text-align: center; font-style: italic; opacity: 0.8; max-width: 70px; font-size: 0.7rem; }
         .leaderboard-floor { font-family: var(--font-title); color: var(--accent); font-weight: bold; text-align: center; width: 40px; }
         .leaderboard-score { text-align: right; font-family: var(--font-title); color: var(--green); }
         .loading-leaderboard { font-style: italic; margin-top: 40px; color: var(--accent); }
@@ -772,9 +772,9 @@
         </div>
         
         <div class="difficulty-selector" id="difficulty-selector-container">
-            <button id="diff-easy" class="diff-btn active" onclick="AudioEngine.playKey(); setDiff('easy', this)">Easy</button>
-            <button id="diff-medium" class="diff-btn" onclick="AudioEngine.playKey(); setDiff('medium', this)">Medium</button>
-            <button id="diff-hard" class="diff-btn" onclick="AudioEngine.playKey(); setDiff('hard', this)">Hard</button>
+            <button id="diff-easy" class="diff-btn active" onclick="AudioEngine.playKey(); window.setDiff('easy', this)">Easy</button>
+            <button id="diff-medium" class="diff-btn" onclick="AudioEngine.playKey(); window.setDiff('medium', this)">Medium</button>
+            <button id="diff-hard" class="diff-btn" onclick="AudioEngine.playKey(); window.setDiff('hard', this)">Hard</button>
         </div>
     </div>
 
@@ -826,16 +826,16 @@
         <p style="font-style: italic; font-size: 0.8rem; color: var(--accent); margin-bottom: 15px;">The Great Archives of Memory</p>
         
         <div class="difficulty-selector" id="leaderboard-diff-filter" style="margin-bottom: 10px; width: 100%;">
-            <button id="lb-filter-easy" class="diff-btn active" onclick="setLeaderboardDiff('easy', this)">Easy</button>
-            <button id="lb-filter-medium" class="diff-btn" onclick="setLeaderboardDiff('medium', this)">Medium</button>
-            <button id="lb-filter-hard" class="diff-btn" onclick="setLeaderboardDiff('hard', this)">Hard</button>
+            <button id="lb-filter-easy" class="diff-btn active" onclick="window.setLeaderboardDiff('easy', this)">Easy</button>
+            <button id="lb-filter-medium" class="diff-btn" onclick="window.setLeaderboardDiff('medium', this)">Medium</button>
+            <button id="lb-filter-hard" class="diff-btn" onclick="window.setLeaderboardDiff('hard', this)">Hard</button>
         </div>
 
         <div id="leaderboard-content" style="width: 100%; max-height: 55vh; overflow-y: auto;">
             <div class="loading-leaderboard">Reading the scrolls...</div>
         </div>
 
-        <button class="btn" onclick="fetchLeaderboard()" style="margin-top: 20px; font-size: 0.8rem; padding: 10px;">Refresh Archives</button>
+        <button class="btn" onclick="window.fetchLeaderboard()" style="margin-top: 20px; font-size: 0.8rem; padding: 10px;">Refresh Archives</button>
     </div>
 
     <div id="boss-alert" class="boss-alert">
@@ -1007,20 +1007,20 @@
                 };
             }
 
-            function updateDifficultyInfo() {
+            window.updateDifficultyInfo = function() {
                 const desc = document.getElementById('diff-description');
                 if (!desc) return;
                 const d = window.G.difficulty;
                 if (d === 'easy') desc.innerText = "6 Guesses. Common words. Standard trials.";
                 else if (d === 'medium') desc.innerText = "5 Guesses. Full dictionary. Standard trials.";
                 else desc.innerText = "5 Guesses. Longer words. Frequent hazards.";
-            }
+            };
 
             window.G = createInitialState();
 
             const romNums = ["0","I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII","XIII","XIV","XV","XVI","XVII","XVIII","XIX","XX","XXI","XXII","XXIII","XXIV","XXV","XXVI","XXVII","XXVIII","XXIX","XXX"];
 
-            function showScreen(id) {
+            window.showScreen = function(id) {
                 document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
                 document.getElementById(id).classList.add('active');
                 
@@ -1064,7 +1064,7 @@
                     if (high < 20) diffContainer.style.display = 'none';
                     else diffContainer.style.display = 'flex';
                     
-                    updateDifficultyInfo();
+                    window.updateDifficultyInfo();
                 }
 
                 if (id === 'screen-game' || id === 'screen-shop' || id === 'screen-respite') {
@@ -1078,7 +1078,7 @@
                     } else {
                         surrenderBtn.innerText = '➔'; 
                         surrenderBtn.className = 'ribbon-btn descend';
-                        surrenderBtn.onclick = nextFloor;
+                        surrenderBtn.onclick = window.nextFloor;
                     }
                 } else header.style.display = 'none';
 
@@ -1086,8 +1086,7 @@
                     window.G.currentScreen = id;
                     saveGame();
                 }
-            }
-            window.showScreen = showScreen;
+            };
 
             window.openCodex = () => {
                 const bCont = document.getElementById('codex-bosses');
@@ -1181,7 +1180,7 @@
                     }
                 });
 
-                showScreen('screen-start');
+                window.showScreen('screen-start');
             }
 
             window.checkAbyssEntry = () => {
@@ -1191,13 +1190,13 @@
                     const data = JSON.parse(saved);
                     if (data.hp <= 0 || data.isGameOver) {
                         localStorage.removeItem('lexicon_run_save');
-                        if (!savedName) openNamePopup(); else showScreen('screen-archetype');
+                        if (!savedName) window.openNamePopup(); else window.showScreen('screen-archetype');
                     } else {
                         document.getElementById('save-floor-val').innerText = data.floor;
                         document.getElementById('save-prompt').style.display = 'flex';
                     }
                 } else {
-                    if (!savedName) openNamePopup(); else showScreen('screen-archetype');
+                    if (!savedName) window.openNamePopup(); else window.showScreen('screen-archetype');
                 }
             };
 
@@ -1213,7 +1212,7 @@
                 localStorage.setItem('lexicon_player_name', name);
                 document.getElementById('name-modal').style.display = 'none';
                 if (document.getElementById('screen-start').classList.contains('active')) {
-                    showScreen('screen-archetype');
+                    window.showScreen('screen-archetype');
                 } else {
                     updateUI();
                 }
@@ -1232,7 +1231,7 @@
                 localStorage.removeItem('lexicon_run_save'); 
                 document.getElementById('save-prompt').style.display = 'none'; 
                 const savedName = localStorage.getItem('lexicon_player_name');
-                if (!savedName) openNamePopup(); else showScreen('screen-archetype');
+                if (!savedName) window.openNamePopup(); else window.showScreen('screen-archetype');
             };
 
             window.loadGame = () => { 
@@ -1247,7 +1246,7 @@
                     const target = window.G.currentScreen || 'screen-game';
 
                     if (target === 'screen-game') {
-                        showScreen('screen-game');
+                        window.showScreen('screen-game');
                         updateUI();
                         renderGrid();
                         renderKeyboard();
@@ -1255,11 +1254,11 @@
                         openRespite();
                         updateUI();
                     } else if (target === 'screen-shop') {
-                        showScreen('screen-shop');
+                        window.showScreen('screen-shop');
                         renderShop();
                         updateUI();
                     } else {
-                        if (window.G.midFloor) { showScreen('screen-game'); updateUI(); renderGrid(); renderKeyboard(); } 
+                        if (window.G.midFloor) { window.showScreen('screen-game'); updateUI(); renderGrid(); renderKeyboard(); } 
                         else initFloor();
                     }
                 }
@@ -1298,11 +1297,11 @@
                 const high = parseInt(localStorage.getItem('lexicon_high_score') || 0);
                 if (type === 'outcast' && high < 8) {
                     initFloor();
-                    showScreen('screen-game');
+                    window.showScreen('screen-game');
                     document.getElementById('tutorial-modal').style.display = 'flex';
                 } else {
                     initFloor();
-                    showScreen('screen-game');
+                    window.showScreen('screen-game');
                 }
             };
 
@@ -1693,19 +1692,19 @@
                     let nextB = window.G.isEndless ? nf + (1 - (nf % 2)) : nf + (3 - (nf % 4));
                     label.innerText = "Last Archive"; header.innerText = lastWord; subtext.innerText = `${nextB - window.G.floor} floor(s) to next Trial.`;
                 }
-                showScreen('screen-respite'); saveGame();
+                window.showScreen('screen-respite'); saveGame();
             };
 
             window.executeRest = () => {
                 const amt = Math.max(20, Math.floor((window.G.maxHp - window.G.hp) * 0.3));
-                heal(amt); toast(`Restored ${amt} Vitality.`); nextFloor();
+                heal(amt); toast(`Restored ${amt} Vitality.`); window.nextFloor();
             };
 
             function enterShop() {
                 saveGame(); window.G.floorPurchases = new Set();
                 const pool = Object.keys(ITEMS).filter(k => !window.G.consumables.includes(k) && !(ITEMS[k].type==='perm' && window.G.upgrades.includes(k)));
                 window.G.currentShopPool = pool.sort(() => 0.5-Math.random()).slice(0, 6);
-                setTimeout(() => { showScreen('screen-shop'); renderShop(); updateUI(); }, 200);
+                setTimeout(() => { window.showScreen('screen-shop'); renderShop(); updateUI(); }, 200);
             }
             window.enterShop = enterShop;
 
@@ -1800,15 +1799,15 @@
                 });
             }
 
-            window.setLeaderboardDiff = (d, btn) => {
+            window.setLeaderboardDiff = function(d, btn) {
                 AudioEngine.playKey(); currentLeaderboardDiff = d;
                 document.querySelectorAll('#leaderboard-diff-filter .diff-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); 
-                fetchLeaderboard();
+                window.fetchLeaderboard();
             };
 
-            window.openLeaderboard = () => { showScreen('screen-leaderboard'); fetchLeaderboard(); };
+            window.openLeaderboard = () => { window.showScreen('screen-leaderboard'); window.fetchLeaderboard(); };
 
-            async function fetchLeaderboard() {
+            window.fetchLeaderboard = async function() {
                 const container = document.getElementById('leaderboard-content');
                 container.innerHTML = '<div class="loading-leaderboard">Reading the scrolls...</div>';
                 try {
@@ -1831,7 +1830,7 @@
                     });
                     container.innerHTML = html + '</tbody></table>';
                 } catch (error) { container.innerHTML = '<div class="loading-leaderboard" style="color: var(--hazard);">Failed to retrieve scrolls.</div>'; }
-            }
+            };
 
             async function submitScore() {
                 const currentScore = window.G.totalScore;
@@ -1851,25 +1850,32 @@
                 document.getElementById('game-summary').innerText = `${localStorage.getItem('lexicon_player_name') || "Stranger"} reached Floor ${romNums[window.G.floor] || window.G.floor}.`;
                 document.getElementById('game-final-score').innerText = `Final Score: ${window.G.totalScore}`;
                 document.getElementById('game-last-word').innerText = `Word: ${window.G.targetWord.toUpperCase()}`; 
-                showScreen('screen-gameover'); 
+                window.showScreen('screen-gameover'); 
             }
             
-            function nextFloor() { window.G.floor++; initFloor(); showScreen('screen-game'); }
-            window.nextFloor = nextFloor;
+            window.nextFloor = function() { window.G.floor++; initFloor(); window.showScreen('screen-game'); };
+            
             window.goHome = () => { 
                 document.getElementById('victory-modal').style.display = 'none';
-                if (!window.G.isGameOver) { if (window.G.floor >= 20) window.G.isGameOver = true; saveGame(); }
-                showScreen('screen-start'); 
+                if (!window.G.isGameOver) { 
+                    if (window.G.floor >= 20) {
+                        window.G.isGameOver = true;
+                        submitScore(); // Ensure leaderboard is updated on victory retirement
+                    }
+                    saveGame(); 
+                }
+                window.showScreen('screen-start'); 
             };
+            
             window.executeSurrender = () => { document.getElementById('surrender-modal').style.display='none'; loseFloor(); };
             window.closeRules = () => { document.getElementById('rules-modal').style.display='none'; };
-            window.setDiff = (d, btn) => {
+            window.setDiff = function(d, btn) {
                 window.G.difficulty = d; document.querySelectorAll('.difficulty-selector .diff-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active');
-                updateDifficultyInfo();
+                window.updateDifficultyInfo();
             };
             window.openTutorial = () => { document.getElementById('tutorial-modal').style.display = 'flex'; };
             window.closeTutorial = () => { document.getElementById('tutorial-modal').style.display = 'none'; };
-            window.startEndless = () => { window.G.isEndless = true; document.getElementById('victory-modal').style.display = 'none'; nextFloor(); };
+            window.startEndless = () => { window.G.isEndless = true; document.getElementById('victory-modal').style.display = 'none'; window.nextFloor(); };
             function saveGame() { 
                 if (window.G.hp <= 0 || window.G.isGameOver) { localStorage.removeItem('lexicon_run_save'); return; }
                 const saveState = {...window.G, forbiddenLetters: Array.from(window.G.forbiddenLetters), floorPurchases: Array.from(window.G.floorPurchases)}; 
