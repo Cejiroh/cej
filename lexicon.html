@@ -1536,7 +1536,8 @@
                 }
                 else if(window.G.currentGuess.length < window.G.targetWord.length || window.G.currentGuess.includes(" ")) {
                     const low = k.toLowerCase();
-                    if(window.G.forbiddenLetters.has(low)) { toast("Consumed by Void"); return; }
+                    // Fix: Players can now use disabled keys on easy mode
+                    if(window.G.forbiddenLetters.has(low) && window.G.difficulty !== 'easy') { toast("Consumed by Void"); return; }
                     
                     if(window.G.taxedLetters.includes(low) && isEffectActive("Tax")) {
                         if(window.G.difficulty !== 'easy' && window.G.coins < 5) { toast("No Coins"); return; }
@@ -1894,6 +1895,11 @@
                             const timeStr = `${min}:${sec.toString().padStart(2, '0')}`;
                             text = `Win before the ${timeStr} timer reaches zero.`;
                         }
+                        
+                        // Fix: Display disabled effects with strikethrough
+                        if (window.G.wardActive && window.G.suppressedModifier === m) {
+                            return `<s style="opacity: 0.6; text-decoration: line-through;">${text}</s>`;
+                        }
                         return text;
                     }).join(" ");
                     div.innerHTML = `<span class="boss-name-ui">${window.G.bossActive}</span><span class="boss-desc-ui">${desc}</span>`;
@@ -1920,10 +1926,13 @@
                         slot.innerText = it.emoji; slot.setAttribute('data-desc', it.desc);
                         slot.onclick = () => {
                             if(isEffectActive("Silence") && id === 'inventory-game') { toast("Silenced!"); return; }
+                            
+                            // Fix: Chimera is not affected by void master key in all difficulty
                             if (c === 'masterkey' && window.G.bossActive === "THE CHIMERA") {
                                 toast("The Key shatters vs the Chimera!");
                                 window.G.consumables[i] = null; AudioEngine.playWrong(); updateUI(); return;
                             }
+                            
                             const mod = document.getElementById('confirm-modal');
                             document.getElementById('confirm-title').innerText = `Use ${it.name}?`;
                             document.getElementById('confirm-desc').innerText = it.desc;
