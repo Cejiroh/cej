@@ -1360,7 +1360,9 @@
                 
                 const isPhantom = isEffectActive("Phantom");
                 const isBlight = isEffectActive("Blight");
+                const isSiren = isEffectActive("Siren");
                 const lastIdx = window.G.guesses.length - 1;
+                const vowels = "aeiou";
                 
                 for(let r=0; r<rowCount; r++) {
                     for(let c=0; c<colCount; c++) {
@@ -1378,16 +1380,20 @@
                                 tile.innerText = char;
                                 let s = window.G.guesses[r].status[c];
                                 
-                                // PHANTOM EFFECT: Delayed Feedback
-                                if (isPhantom && r === lastIdx) {
-                                    s = 'absent';
-                                }
+                                if (isSiren && vowels.includes(char.toLowerCase())) {
+                                    // Siren: Vowels stay neutral
+                                } else {
+                                    // PHANTOM EFFECT: Delayed Feedback
+                                    if (isPhantom && r === lastIdx) {
+                                        s = 'absent';
+                                    }
 
-                                if (isEffectActive("Illusionist") && s === 'correct') {
-                                    if (window.G.guesses[r].word === window.G.targetWord) tile.classList.add('correct');
-                                    else tile.classList.add('present');
+                                    if (isEffectActive("Illusionist") && s === 'correct') {
+                                        if (window.G.guesses[r].word === window.G.targetWord) tile.classList.add('correct');
+                                        else tile.classList.add('present');
+                                    }
+                                    else tile.classList.add(s);
                                 }
-                                else tile.classList.add(s);
                             }
                         } else if(r === window.G.guesses.length) {
                             if(window.G.currentGuess[c] && window.G.currentGuess[c] !== " ") tile.innerText = window.G.currentGuess[c];
@@ -1703,7 +1709,7 @@
 
             window.executeRest = () => {
                 const lost = window.G.maxHp - window.G.hp;
-                const amt = Math.floor(lost * 0.3);
+                const amt = Math.max(20, Math.floor(lost * 0.3));
                 heal(amt);
                 toast(`Restored ${amt} Vitality.`);
                 nextFloor();
