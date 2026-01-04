@@ -391,6 +391,15 @@
         }
         .item-slot:hover::after { display: block; }
 
+        .relic-icon.doubled {
+            animation: relic-pulse 1.5s infinite alternate;
+            filter: drop-shadow(0 0 4px gold);
+        }
+        @keyframes relic-pulse {
+            from { transform: scale(1); }
+            to { transform: scale(1.2); }
+        }
+
         .custom-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 5000; display: none; align-items: center; justify-content: center; padding: 20px; }
         .modal-box { background: #fdf5e6; border: 6px double var(--ink-black); padding: 30px; border-radius: 15px; text-align: center; max-width: 400px; box-shadow: 0 10px 40px #000; width: 100%; }
 
@@ -648,7 +657,7 @@
 
     <div id="save-prompt" class="custom-modal">
         <div class="modal-box">
-            <h2 class="title" style="font-size: 2rem;">Resurrect?</h2>
+            <h2 id="save-prompt-title" class="title" style="font-size: 2rem;">Resurrect?</h2>
             <p style="margin-bottom: 30px; font-style: italic;">A soul remains trapped on Floor <span id="save-floor-val">I</span>.</p>
             <button class="btn" onclick="AudioEngine.playKey(); loadGame()">Continue Ascent</button>
             <button class="btn" style="background:var(--hazard); color: white; border-color: black;" onclick="AudioEngine.playHurt(); deleteSaveAndStart()">New Sacrifice</button>
@@ -721,11 +730,11 @@
                 <h3>The Prodigy</h3>
                 <p>Starts floors with 1 Correct letter.</p>
             </div>
-            <div class="archetype-card" id="arch-merchant" onclick="startRun('merchant')">
-                <div class="archetype-pb" id="pb-merchant">BF: I</div>
-                <div class="archetype-vit">❤️ 90 VIT</div>
-                <h3>The Merchant</h3>
-                <p>Permanent 25% shop discount.</p>
+            <div class="archetype-card" id="arch-scholar" onclick="startRun('scholar')">
+                <div class="archetype-pb" id="pb-scholar">BF: I</div>
+                <div class="archetype-vit">❤️ 60 VIT</div>
+                <h3>The Scholar</h3>
+                <p>Earns 1.2x score. High academic potential.</p>
             </div>
             <div class="archetype-card" id="arch-hunter" onclick="startRun('hunter')">
                 <div class="archetype-pb" id="pb-hunter">BF: I</div>
@@ -860,6 +869,55 @@
 
             const ITEMS = {
                 'potion': { emoji: '🧪', name: 'Health Potion', desc: 'Heal 15 Vitality.', cost: 5, type: 'cons', run: () => heal(15) },
+                'nectar': { emoji: '🍯', name: 'Great Nectar', desc: 'Restore 50 Vitality.', cost: 35, type: 'cons', run: () => heal(50) },
+                'catalyst': { emoji: '🌀', name: 'Strange Catalyst', get desc() {
+                    const count = (window.G && window.G.doubledRelics ? window.G.doubledRelics.length : 0) + 1;
+                    return `Destroy ${count} Relic${count > 1 ? 's' : ''} to double another.`;
+                }, cost: 90, type: 'cons', run: () => {
+                    if (!window.G.doubledRelics) window.G.doubledRelics = [];
+                    const removeCount = window.G.doubledRelics.length + 1;
+                    
+                    if (window.G.upgrades.length < removeCount + 1) { 
+                        toast(`Requires ${removeCount + 1}+ Relics`); 
+                        return; 
+                    }
+                    
+                    // Helper to reverse benefits of removed relics
+                    const revert = (key) => {
+                        if (key === 'heart') { window.G.maxHp -= 20; window.G.hp = Math.min(window.G.hp, window.G.maxHp); }
+                        if (key === 'satchel') window.G.consumables.pop();
+                        if (key === 'dict') window.G.maxGuesses--;
+                    };
+
+                    for(let i=0; i < removeCount; i++) {
+                        const rIdx = Math.floor(Math.random() * window.G.upgrades.length);
+                        const rKey = window.G.upgrades.splice(rIdx, 1)[0];
+                        
+                        revert(rKey);
+                        
+                        // If it was an empowered relic, remove it from doubledRelics and revert double benefit too
+                        const dIdx = window.G.doubledRelics.indexOf(rKey);
+                        if (dIdx !== -1) {
+                            window.G.doubledRelics.splice(dIdx, 1);
+                            revert(rKey);
+                        }
+                    }
+                    
+                    // Find an un-empowered relic to double
+                    const candidates = window.G.upgrades.filter(u => !window.G.doubledRelics.includes(u));
+                    
+                    if (candidates.length > 0) {
+                        const tKey = candidates[Math.floor(Math.random() * candidates.length)];
+                        window.G.doubledRelics.push(tKey);
+                        
+                        if (tKey === 'heart') { window.G.maxHp += 20; window.G.hp += 20; }
+                        if (tKey === 'satchel') { window.G.consumables.push(null); }
+                        if (tKey === 'dict') { window.G.maxGuesses++; }
+                        
+                        toast(`Void empowered ${ITEMS[tKey].name}`);
+                    }
+                    renderGrid(); updateUI();
+                }},
                 'dust': { emoji: '👁️', name: 'Scryer Dust', desc: 'Reveal non-green letter.', cost: 25, type: 'cons', run: () => revealOne() },
                 'sunstone': { emoji: '☀️', name: 'Sunstone', desc: 'Highlight 2 Yellow keys.', cost: 40, type: 'cons', run: () => {
                     const targets = [];
@@ -916,7 +974,7 @@
             ];
 
             const archNames = {
-                outcast: "The Outcast", withered: "The Withered", tinker: "The Tinker", prodigy: "The Prodigy", merchant: "The Merchant", hunter: "The Boss Hunter", bloodstained: "The Bloodstained", cursed: "The Cursed One", anchor: "The Iron Oath", slayer: "The Slayer"
+                outcast: "The Outcast", withered: "The Withered", tinker: "The Tinker", prodigy: "The Prodigy", scholar: "The Scholar", hunter: "The Boss Hunter", bloodstained: "The Bloodstained", cursed: "The Cursed One", anchor: "The Iron Oath", slayer: "The Slayer"
             };
 
             var kbLayout = [ "qwertyuiop".split(""), "asdfghjkl".split(""), ["DEL", ..."zxcvbnm".split(""), "⏎"] ];
@@ -950,7 +1008,7 @@
             function createInitialState() {
                 return {
                     playerName: localStorage.getItem('lexicon_player_name') || "",
-                    hp: 60, maxHp: 60, coins: 0, floor: 1, totalScore: 0, targetWord: "", currentGuess: "", guesses: [], maxGuesses: 5, archetype: 'outcast', difficulty: 'easy', upgrades: [], consumables: [null, null, null], keyStatus: {}, forbiddenLetters: new Set(), hazardTiles: [], scrambledKeys: {}, wardActive: false, suppressedModifier: null, isGameOver: false, modifiers: [], bossActive: null, hints: {}, floorPurchases: new Set(), discountActive: false, currentShopPool: [], midFloor: false, hasPhoenix: false, isEndless: false, unknownCount: 0, corruptedKeys: [], timerSeconds: 180, taxedLetters: [], solveFlag: false, availableBosses: [], facedAllBosses: false, invalidWordBonus: 0, currentScreen: 'screen-game', tinkerBonus: 0
+                    hp: 60, maxHp: 60, coins: 0, floor: 1, totalScore: 0, targetWord: "", currentGuess: "", guesses: [], maxGuesses: 5, archetype: 'outcast', difficulty: 'easy', upgrades: [], doubledRelics: [], consumables: [null, null, null], keyStatus: {}, forbiddenLetters: new Set(), hazardTiles: [], scrambledKeys: {}, wardActive: false, suppressedModifier: null, isGameOver: false, modifiers: [], bossActive: null, hints: {}, floorPurchases: new Set(), discountActive: false, currentShopPool: [], midFloor: false, hasPhoenix: false, isEndless: false, unknownCount: 0, corruptedKeys: [], timerSeconds: 180, taxedLetters: [], solveFlag: false, availableBosses: [], facedAllBosses: false, invalidWordBonus: 0, currentScreen: 'screen-game', tinkerBonus: 0
                 };
             }
 
@@ -1072,10 +1130,22 @@
             }
 
             async function loadLexicon() {
+                const vowelFilter = /[aeiouy]/;
+                const acronymFilter = /^[A-Z0-9]+$/; // Exclude original strings that are all caps/nums
+
                 try {
                     const r = await fetch('https://raw.githubusercontent.com/benjamincrom/scrabble/master/scrabble/dictionary.json');
                     const data = await r.json();
-                    data.forEach(w => { if(w.length>=4 && w.length<=12) { if(!FULL_LEXICON[w.length]) FULL_LEXICON[w.length] = new Set(); FULL_LEXICON[w.length].add(w.toLowerCase()); } });
+                    data.forEach(w => { 
+                        if(w.length>=4 && w.length<=12) { 
+                            const word = w.toLowerCase();
+                            // Fix: Don't use words without vowel and/or y, and exclude acronyms
+                            if (vowelFilter.test(word) && !acronymFilter.test(w)) {
+                                if(!FULL_LEXICON[w.length]) FULL_LEXICON[w.length] = new Set(); 
+                                FULL_LEXICON[w.length].add(word); 
+                            }
+                        } 
+                    });
                 } catch(e) { 
                     Object.keys(CURATED_TARGETS).forEach(l => { 
                         FULL_LEXICON[l] = new Set(CURATED_TARGETS[l]); 
@@ -1087,15 +1157,32 @@
                     const text = await r2.text();
                     const words = text.split('\n');
                     words.forEach(w => {
-                        const word = w.trim().toLowerCase();
+                        const raw = w.trim();
+                        const word = raw.toLowerCase();
                         if(word.length >= 4 && word.length <= 12) {
-                            if(!EASY_LEXICON[word.length]) EASY_LEXICON[word.length] = new Set();
-                            EASY_LEXICON[word.length].add(word);
+                            if (vowelFilter.test(word) && !acronymFilter.test(raw)) {
+                                if(!EASY_LEXICON[word.length]) EASY_LEXICON[word.length] = new Set();
+                                EASY_LEXICON[word.length].add(word);
+                            }
                         }
                     });
                 } catch(e) {
                     EASY_LEXICON = FULL_LEXICON;
                 }
+
+                // Fix: Recheck Easy words against Medium/Hard dictionary
+                // If an easy word is not found in the master dictionary, remove it to ensure difficulty parity.
+                Object.keys(EASY_LEXICON).forEach(len => {
+                    const easySet = EASY_LEXICON[len];
+                    const fullSet = FULL_LEXICON[len];
+                    if (fullSet) {
+                        for (let word of easySet) {
+                            if (!fullSet.has(word)) {
+                                easySet.delete(word);
+                            }
+                        }
+                    }
+                });
 
                 showScreen('screen-start');
             }
@@ -1199,7 +1286,7 @@
                 if(type === 'withered') { window.G.hp = window.G.maxHp = 60; }
                 else if(type === 'tinker') { window.G.hp = window.G.maxHp = 50; window.G.consumables = [null, null, null, null]; }
                 else if(type === 'prodigy') { window.G.hp = window.G.maxHp = 50; }
-                else if(type === 'merchant') { window.G.hp = window.G.maxHp = 90; }
+                else if(type === 'scholar') { window.G.hp = window.G.maxHp = 60; } // New soul: 60 VIT
                 else if(type === 'hunter') { window.G.hp = window.G.maxHp = 100; }
                 else if(type === 'bloodstained') { window.G.hp = window.G.maxHp = 120; }
                 else if(type === 'cursed') { window.G.hp = window.G.maxHp = 110; }
@@ -1222,36 +1309,6 @@
                     showScreen('screen-game');
                 }
             };
-
-            window.openTutorial = () => {
-                AudioEngine.playShop();
-                document.getElementById('tutorial-modal').style.display = 'flex';
-            };
-
-            window.closeTutorial = () => {
-                document.getElementById('tutorial-modal').style.display = 'none';
-                AudioEngine.playKey();
-            };
-
-            window.startEndless = () => { window.G.isEndless = true; document.getElementById('victory-modal').style.display = 'none'; openRespite(); };
-
-            window.setDiff = (d, btn) => {
-                if (btn.classList.contains('locked')) {
-                    const msg = d === 'medium' ? "Reach Floor XX to unlock." : "Reach Floor XXI to unlock.";
-                    toast(msg); return;
-                }
-                window.G.difficulty = d;
-                document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                updateDifficultyInfo();
-            };
-
-            function updateDifficultyInfo() {
-                const info = document.getElementById('diff-description');
-                if (window.G.difficulty === 'easy') info.innerText = "Easy: 6 attempts. High-frequency vocabulary. Slow scaling.";
-                else if (window.G.difficulty === 'medium') info.innerText = "Medium: 5 attempts. Random dictionary. More Trials.";
-                else info.innerText = "Hard: 5 attempts. Obscure words. Fast scaling (up to 12).";
-            }
 
             function initFloor() {
                 window.G.guesses = []; window.G.currentGuess = ""; window.G.keyStatus = {}; window.G.forbiddenLetters = new Set();
@@ -1298,8 +1355,11 @@
 
                 if(window.G.archetype === 'prodigy') revealOne();
                 if (window.G.upgrades.includes('compass')) {
-                    const char = window.G.targetWord[Math.floor(Math.random()*window.G.targetWord.length)];
-                    window.G.keyStatus[char] = 'present';
+                    const count = window.G.doubledRelics?.includes('compass') ? 2 : 1;
+                    for(let i=0; i<count; i++) {
+                        const char = window.G.targetWord[Math.floor(Math.random()*window.G.targetWord.length)];
+                        window.G.keyStatus[char] = 'present';
+                    }
                 }
 
                 saveGame(); updateUI(); renderGrid(); renderKeyboard();
@@ -1539,10 +1599,14 @@
                         if(window.G.hazardTiles.some(h=>h.r===window.G.guesses.length && h.c===i) && g[i]!==window.G.targetWord[i]) takeDamage(12);
                     }
                 }
-                if(window.G.upgrades.includes('vamp') && newGreens > 0) heal(newGreens * 3);
+                if(window.G.upgrades.includes('vamp') && newGreens > 0) {
+                    const healBonus = window.G.doubledRelics?.includes('vamp') ? 6 : 3;
+                    heal(newGreens * healBonus);
+                }
                 if(window.G.upgrades.includes('ledger')) { 
-                    if (window.G.archetype === 'bloodstained') heal(absentCount);
-                    else window.G.coins += absentCount;
+                    const bonus = window.G.doubledRelics?.includes('ledger') ? 2 : 1;
+                    if (window.G.archetype === 'bloodstained') heal(absentCount * bonus);
+                    else window.G.coins += absentCount * bonus;
                     updateUI(); 
                 }
                 
@@ -1592,7 +1656,10 @@
 
             function takeDamage(amt) {
                 if (window.G.archetype === 'withered') amt *= 0.5;
-                if(window.G.upgrades.includes('armor')) amt = Math.max(0, amt - 5);
+                if(window.G.upgrades.includes('armor')) {
+                    const reduction = window.G.doubledRelics?.includes('armor') ? 10 : 5;
+                    amt = Math.max(0, amt - reduction);
+                }
                 if (amt > 0) AudioEngine.playHurt();
                 window.G.hp = Math.max(0, window.G.hp - amt); updateUI();
                 document.getElementById('damage-overlay').classList.add('damage-flash');
@@ -1620,7 +1687,12 @@
             }
 
             function calculateScore() {
-                window.G.totalScore = window.G.floor * (window.G.targetWord.length + window.G.coins);
+                let baseScore = window.G.floor * (window.G.targetWord.length + window.G.coins);
+                // Fix: Scholar earns 1.2x score
+                if (window.G.archetype === 'scholar') {
+                    baseScore = Math.floor(baseScore * 1.2);
+                }
+                window.G.totalScore = baseScore;
             }
 
             function winFloor() {
@@ -1629,7 +1701,10 @@
                 
                 if (!window.G.solveFlag) {
                     let total = 30 + (window.G.targetWord.length-4)*10 + (window.G.maxGuesses - window.G.guesses.length) * 15;
-                    if(window.G.upgrades.includes('midas')) total += 15;
+                    if(window.G.upgrades.includes('midas')) {
+                        const midasBonus = window.G.doubledRelics?.includes('midas') ? 30 : 15;
+                        total += midasBonus;
+                    }
                     if(window.G.bossActive) total += 20; 
                     if (window.G.archetype === 'bloodstained') { heal(Math.floor(total / 2)); toast(`Blood Harvest: +${Math.floor(total / 4)} VIT`); }
                     else if (window.G.archetype === 'cursed') {
@@ -1729,7 +1804,6 @@
                     const it = ITEMS[k];
                     let cost = it.cost; 
                     if(window.G.discountActive) cost = Math.floor(cost * 0.5);
-                    if(window.G.archetype === 'merchant') cost = Math.floor(cost * 0.75);
                     const isSold = window.G.floorPurchases.has(k);
                     const div = document.createElement('div'); div.className = "shop-item" + (isSold ? " sold" : "");
                     let costStr = cost + ' Coins';
@@ -1743,7 +1817,6 @@
                 const it = ITEMS[k];
                 let cost = it.cost; 
                 if(window.G.discountActive) cost = Math.floor(cost * 0.5);
-                if(window.G.archetype === 'merchant') cost = Math.floor(cost * 0.75);
                 
                 if (window.G.archetype === 'bloodstained') {
                     const hpCost = Math.ceil(cost / 2);
@@ -1777,7 +1850,10 @@
                 document.getElementById('player-name-val').innerText = savedName;
                 document.getElementById('soul-name-val').innerText = soulName;
                 
-                document.getElementById('floor-val-header').innerText = `Floor ${romNums[window.G.floor] || window.G.floor}`;
+                const floorHeader = document.getElementById('floor-val-header');
+                floorHeader.innerText = `Floor ${romNums[window.G.floor] || window.G.floor}`;
+                floorHeader.style.color = window.G.bossActive ? 'var(--hazard)' : '';
+
                 document.getElementById('score-val').innerText = `${window.G.totalScore} Points`;
                 
                 document.getElementById('hp-val').innerText = `${Math.ceil(window.G.hp)} / ${window.G.maxHp}`;
@@ -1807,7 +1883,12 @@
                     body.classList.remove('boss-active');
                 }
                 const rb = document.getElementById('active-relics'); rb.innerHTML = "";
-                window.G.upgrades.forEach(u => { const s = document.createElement('span'); s.innerText = ITEMS[u].emoji; rb.appendChild(s); });
+                window.G.upgrades.forEach(u => { 
+                    const s = document.createElement('span'); 
+                    s.innerText = ITEMS[u].emoji; 
+                    s.className = "relic-icon" + (window.G.doubledRelics?.includes(u) ? " doubled" : "");
+                    rb.appendChild(s); 
+                });
                 renderInventory('inventory-game'); renderInventory('inventory-shop');
             }
 
@@ -1961,6 +2042,31 @@
             window.executeSurrender = () => { document.getElementById('surrender-modal').style.display='none'; loseFloor(); };
             window.closeRules = () => { document.getElementById('rules-modal').style.display='none'; };
             
+            // Fix missing UI handlers
+            window.setDiff = (d, btn) => {
+                window.G.difficulty = d;
+                document.querySelectorAll('.difficulty-selector .diff-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                updateDifficultyInfo();
+            };
+
+            function updateDifficultyInfo() {
+                const desc = document.getElementById('diff-description');
+                if (!desc) return;
+                if (window.G.difficulty === 'easy') desc.innerText = "6 Guesses. Common words. Standard trials.";
+                else if (window.G.difficulty === 'medium') desc.innerText = "5 Guesses. Full dictionary. Standard trials.";
+                else desc.innerText = "5 Guesses. Longer words. Frequent hazards.";
+            }
+
+            window.openTutorial = () => { document.getElementById('tutorial-modal').style.display = 'flex'; };
+            window.closeTutorial = () => { document.getElementById('tutorial-modal').style.display = 'none'; };
+            
+            window.startEndless = () => {
+                window.G.isEndless = true;
+                document.getElementById('victory-modal').style.display = 'none';
+                nextFloor();
+            };
+
             function saveGame() { 
                 if (window.G.hp <= 0 || window.G.isGameOver) { localStorage.removeItem('lexicon_run_save'); return; }
                 const saveState = {...window.G, forbiddenLetters: Array.from(window.G.forbiddenLetters), floorPurchases: Array.from(window.G.floorPurchases)}; 
