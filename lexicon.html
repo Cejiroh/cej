@@ -1032,8 +1032,8 @@
                 const surrenderBtn = document.getElementById('surrender-ribbon');
                 
                 if (id === 'screen-start') {
-                    const highFloor = localStorage.getItem('lexicon_high_score') || 0;
-                    const highScore = localStorage.getItem('lexicon_high_score_total') || 0;
+                    const highFloor = parseInt(localStorage.getItem('lexicon_high_score') || 1);
+                    const highScore = parseInt(localStorage.getItem('lexicon_high_score_total') || 0);
                     document.getElementById('highscore-display').innerText = `Highest Floor: ${romNums[highFloor] || highFloor}`;
                     document.getElementById('high-score-total').innerText = `Highest Score: ${highScore}`;
                 }
@@ -1043,7 +1043,7 @@
                     const archetypes = Object.keys(archNames);
                     
                     archetypes.forEach(arch => {
-                        const pbVal = localStorage.getItem(`lexicon_high_score_${arch}`) || 1;
+                        const pbVal = parseInt(localStorage.getItem(`lexicon_high_score_${arch}`) || 1);
                         const pbElement = document.getElementById(`pb-${arch}`);
                         if (pbElement) pbElement.innerText = `BF: ${romNums[pbVal] || pbVal}`;
                         const card = document.getElementById(`arch-${arch}`) || document.querySelector(`.archetype-card[onclick*="'${arch}'"]`);
@@ -1691,12 +1691,21 @@
             }
 
             function calculateScore() {
-                let baseScore = window.G.floor * (window.G.targetWord.length + window.G.floorCoins);
-                // Fix: Scholar earns 1.2x score
+                // Points are based on word length and coins earned on this floor
+                let floorPoints = (window.G.targetWord.length + window.G.floorCoins);
+                
+                // Adjust points based on difficulty or archetype
                 if (window.G.archetype === 'scholar') {
-                    baseScore = Math.floor(baseScore * 1.2);
+                    floorPoints = Math.floor(floorPoints * 1.2);
                 }
-                window.G.totalScore = baseScore;
+                
+                // Ensure score only adds up (cumulative) multiplied by depth
+                const floorBonus = window.G.floor * Math.max(0, floorPoints);
+                window.G.totalScore += floorBonus;
+                
+                // Reset floor coins after calculation to avoid double-counting if calculateScore 
+                // is called again (e.g. during endRun after a floor win)
+                window.G.floorCoins = 0;
             }
 
             function winFloor() {
