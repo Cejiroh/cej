@@ -1147,9 +1147,7 @@
                         } 
                     });
                 } catch(e) { 
-                    Object.keys(CURATED_TARGETS).forEach(l => { 
-                        FULL_LEXICON[l] = new Set(CURATED_TARGETS[l]); 
-                    }); 
+                    console.error("Master dictionary fetch failed.");
                 }
 
                 try {
@@ -1160,14 +1158,14 @@
                         const raw = w.trim();
                         const word = raw.toLowerCase();
                         if(word.length >= 4 && word.length <= 12) {
-                            if (vowelFilter.test(word) && !acronymFilter.test(raw)) {
+                            if (vowelFilter.test(word)) { // Removed acronym check for Easy mode fetch
                                 if(!EASY_LEXICON[word.length]) EASY_LEXICON[word.length] = new Set();
                                 EASY_LEXICON[word.length].add(word);
                             }
                         }
                     });
                 } catch(e) {
-                    EASY_LEXICON = FULL_LEXICON;
+                    console.error("Easy dictionary fetch failed.");
                 }
 
                 // Fix: Recheck Easy words against Medium/Hard dictionary
@@ -1335,12 +1333,13 @@
                 
                 let pool;
                 if (window.G.difficulty === 'easy') {
-                    pool = EASY_LEXICON[len] || CURATED_TARGETS[len] || CURATED_TARGETS[4];
+                    pool = EASY_LEXICON[len];
                 } else {
-                    pool = FULL_LEXICON[len] || CURATED_TARGETS[len] || CURATED_TARGETS[4];
+                    pool = FULL_LEXICON[len];
                 }
                 
-                let list = Array.from(pool);
+                let list = Array.from(pool || []);
+                if (list.length === 0) list = ["word"]; // Minimal safety if fetch fails
                 window.G.targetWord = list[Math.floor(Math.random()*list.length)];
                 
                 const isHunter = window.G.archetype === 'hunter';
@@ -1561,12 +1560,8 @@
                 const g = gRaw.split("").map(c => c === " " ? "" : c).join("");
                 if(g.length < window.G.targetWord.length) { toast("Incomplete"); return; }
                 
-                let isDict;
-                if (window.G.difficulty === 'easy') {
-                    isDict = EASY_LEXICON[g.length]?.has(g) || CURATED_TARGETS[g.length]?.includes(g);
-                } else {
-                    isDict = FULL_LEXICON[g.length]?.has(g) || CURATED_TARGETS[g.length]?.includes(g);
-                }
+                // Fix: Check master dictionary (FULL_LEXICON) even on Easy mode for guess validation.
+                const isDict = FULL_LEXICON[g.length]?.has(g);
 
                 const isOutcast = window.G.archetype === 'outcast';
                 const statusArr = [];
