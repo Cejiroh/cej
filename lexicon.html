@@ -97,7 +97,7 @@
             flex-shrink: 0;
             width: 95%;
             max-width: 500px;
-            grid-template-columns: 1fr 1.5fr 1fr;
+            grid-template-columns: 0.7fr 2fr 0.8fr;
             gap: 5px;
             padding: 8px 10px 12px 10px;
             background: #2c1e14;
@@ -571,13 +571,13 @@
         <div class="ribbon-btn home" onclick="goHome()">⌂</div>
         <div class="ribbon-btn surrender" id="surrender-ribbon">🏳</div>
         
-        <!-- Left: Floor and Score -->
+        <!-- Left: Floor (2 Lines) -->
         <div class="header-panel">
-            <div id="floor-val-header" class="stat-value" style="font-size: 1.1rem;">Floor I</div>
-            <div id="score-val" style="font-size: 0.75rem; font-weight: bold;">0 Points</div>
+            <div class="stat-label">Floor</div>
+            <div id="floor-val-header" class="stat-value" style="font-size: 1.1rem;">I</div>
         </div>
 
-        <!-- Center: Name and Soul + VIT bar -->
+        <!-- Center: Name and Soul + VIT bar (Expanded) -->
         <div class="header-panel">
             <div id="player-name-val" class="stat-value clickable-label" style="font-size: 0.9rem;" onclick="openNamePopup()">Name</div>
             <div id="soul-name-val" class="stat-label" style="font-size: 0.5rem; letter-spacing: 1px;">SOUL</div>
@@ -585,13 +585,16 @@
                 <div id="hp-bar" class="hp-bar-fill"></div>
                 <div id="hp-val">60 / 60</div>
             </div>
-            <div id="active-relics" style="display:flex; gap:3px; margin-top:4px;"></div>
+            <div id="active-relics" style="display:flex; gap:3px; margin-top:4px; flex-wrap: wrap; justify-content: center; width: 100%;"></div>
         </div>
 
-        <!-- Right: Coins -->
+        <!-- Right: Coins and Points -->
         <div class="header-panel">
-            <div class="stat-label">Coins</div>
-            <div id="coins-subval" class="stat-value">0</div>
+            <div id="score-val" class="stat-value" style="font-size: 0.75rem; margin-bottom: 2px;">0 Points</div>
+            <div style="display: flex; flex-direction: column; align-items: center;">
+                <div class="stat-label">Coins</div>
+                <div id="coins-subval" class="stat-value">0</div>
+            </div>
         </div>
     </div>
 
@@ -1750,7 +1753,7 @@
                 const body = document.getElementById('game-body');
                 document.getElementById('player-name-val').innerText = localStorage.getItem('lexicon_player_name') || "Stranger";
                 document.getElementById('soul-name-val').innerText = (archNames[window.G.archetype] || "Outcast").toUpperCase();
-                document.getElementById('floor-val-header').innerText = `Floor ${romNums[window.G.floor] || window.G.floor}`;
+                document.getElementById('floor-val-header').innerText = romNums[window.G.floor] || window.G.floor;
                 document.getElementById('score-val').innerText = `${window.G.totalScore} Points`;
                 document.getElementById('hp-val').innerText = `${Math.ceil(window.G.hp)} / ${window.G.maxHp}`;
                 document.getElementById('hp-bar').style.width = (window.G.hp/window.G.maxHp*100)+"%";
