@@ -675,7 +675,7 @@
 
     <div id="victory-modal" class="custom-modal">
         <div class="modal-box">
-            <h2 class="title" style="color: var(--yellow);">ARCHIVE COMPLETE</h2>
+            <h2 id="victory-title" class="title" style="color: var(--yellow);">ARCHIVE COMPLETE</h2>
             <p style="margin-bottom: 25px;">Will you retire or descend into the Endless Void?</p>
             <button class="btn" onclick="AudioEngine.playCorrect(); startEndless()" style="background:var(--accent); color:white;">Endless Mode</button>
             <button class="btn" onclick="AudioEngine.playKey(); goHome()">Retire in Glory</button>
@@ -862,11 +862,6 @@
                 "Clock": "Win before the timer reaches zero."
             };
 
-            const CURATED_TARGETS = {
-                4: ["book", "page", "font", "word", "ink", "read", "sign", "tale", "lore", "myth", "bard", "text", "poem", "verb", "writ", "city", "cold", "dark", "data", "fire", "fish", "gold", "hand", "hard", "home", "hope", "kind", "king", "land", "life", "love", "moon", "name", "near", "open", "path", "play", "rain", "real", "road", "rock", "save", "star", "time", "tree", "true", "walk", "wind", "work", "year", "milk", "silk", "cake", "lake", "meal", "boat", "coat", "lamp", "camp", "heal", "meat", "neat", "beat", "feel", "dead", "pest", "test", "west", "east"],
-                12: ["professional", "relationship", "organization", "construction", "introduction", "distribution", "architecture", "intelligence"]
-            };
-
             const ITEMS = {
                 'potion': { emoji: '🧪', name: 'Health Potion', desc: 'Heal 15 Vitality.', cost: 5, type: 'cons', run: () => heal(15) },
                 'nectar': { emoji: '🍯', name: 'Great Nectar', desc: 'Restore 50 Vitality.', cost: 35, type: 'cons', run: () => heal(50) },
@@ -882,7 +877,6 @@
                         return; 
                     }
                     
-                    // Helper to reverse benefits of removed relics
                     const revert = (key) => {
                         if (key === 'heart') { window.G.maxHp -= 20; window.G.hp = Math.min(window.G.hp, window.G.maxHp); }
                         if (key === 'satchel') window.G.consumables.pop();
@@ -895,7 +889,6 @@
                         
                         revert(rKey);
                         
-                        // If it was an empowered relic, remove it from doubledRelics and revert double benefit too
                         const dIdx = window.G.doubledRelics.indexOf(rKey);
                         if (dIdx !== -1) {
                             window.G.doubledRelics.splice(dIdx, 1);
@@ -903,7 +896,6 @@
                         }
                     }
                     
-                    // Find an un-empowered relic to double
                     const candidates = window.G.upgrades.filter(u => !window.G.doubledRelics.includes(u));
                     
                     if (candidates.length > 0) {
@@ -1025,6 +1017,7 @@
                     body.classList.remove('boss-active');
                     document.getElementById('confirm-modal').style.display = 'none';
                     document.getElementById('boss-alert').style.display = 'none';
+                    document.getElementById('victory-modal').style.display = 'none';
                     stopTimer();
                 }
                 
@@ -1106,7 +1099,7 @@
 
             function startTimer() {
                 if (window.G.modifiers.includes("Clock")) {
-                    document.getElementById('timer-display').style.display = 'none'; // User wants timer only in text
+                    document.getElementById('timer-display').style.display = 'none';
                 } else {
                     document.getElementById('timer-display').style.display = 'block';
                 }
@@ -1131,16 +1124,13 @@
 
             async function loadLexicon() {
                 const vowelFilter = /[aeiouy]/;
-                const acronymFilter = /^[A-Z0-9]+$/; // Exclude original strings that are all caps/nums
-
                 try {
                     const r = await fetch('https://raw.githubusercontent.com/benjamincrom/scrabble/master/scrabble/dictionary.json');
                     const data = await r.json();
                     data.forEach(w => { 
                         if(w.length>=4 && w.length<=12) { 
                             const word = w.toLowerCase();
-                            // Fix: Don't use words without vowel and/or y, and exclude acronyms
-                            if (vowelFilter.test(word) && !acronymFilter.test(w)) {
+                            if (vowelFilter.test(word)) {
                                 if(!FULL_LEXICON[w.length]) FULL_LEXICON[w.length] = new Set(); 
                                 FULL_LEXICON[w.length].add(word); 
                             }
@@ -1155,10 +1145,9 @@
                     const text = await r2.text();
                     const words = text.split('\n');
                     words.forEach(w => {
-                        const raw = w.trim();
-                        const word = raw.toLowerCase();
+                        const word = w.trim().toLowerCase();
                         if(word.length >= 4 && word.length <= 12) {
-                            if (vowelFilter.test(word)) { // Removed acronym check for Easy mode fetch
+                            if (vowelFilter.test(word)) {
                                 if(!EASY_LEXICON[word.length]) EASY_LEXICON[word.length] = new Set();
                                 EASY_LEXICON[word.length].add(word);
                             }
@@ -1168,8 +1157,6 @@
                     console.error("Easy dictionary fetch failed.");
                 }
 
-                // Fix: Recheck Easy words against Medium/Hard dictionary
-                // If an easy word is not found in the master dictionary, remove it to ensure difficulty parity.
                 Object.keys(EASY_LEXICON).forEach(len => {
                     const easySet = EASY_LEXICON[len];
                     const fullSet = FULL_LEXICON[len];
@@ -1223,7 +1210,6 @@
             window.deleteSaveAndStart = () => { 
                 const saved = localStorage.getItem('lexicon_run_save');
                 if (saved) {
-                    // Submit score of previous run before deletion
                     const prevG = JSON.parse(saved);
                     const currentG = window.G;
                     window.G = prevG;
@@ -1284,7 +1270,7 @@
                 if(type === 'withered') { window.G.hp = window.G.maxHp = 60; }
                 else if(type === 'tinker') { window.G.hp = window.G.maxHp = 50; window.G.consumables = [null, null, null, null]; }
                 else if(type === 'prodigy') { window.G.hp = window.G.maxHp = 50; }
-                else if(type === 'scholar') { window.G.hp = window.G.maxHp = 60; } // New soul: 60 VIT
+                else if(type === 'scholar') { window.G.hp = window.G.maxHp = 60; }
                 else if(type === 'hunter') { window.G.hp = window.G.maxHp = 100; }
                 else if(type === 'bloodstained') { window.G.hp = window.G.maxHp = 120; }
                 else if(type === 'cursed') { window.G.hp = window.G.maxHp = 110; }
@@ -1313,7 +1299,7 @@
                 window.G.hazardTiles = []; window.G.modifiers = []; window.G.bossActive = null; window.G.hints = {}; window.G.unknownCount = 0;
                 window.G.corruptedKeys = []; window.G.timerSeconds = 180; window.G.taxedLetters = []; window.G.solveFlag = false;
                 window.G.scrambledKeys = {}; window.G.wardActive = false; window.G.suppressedModifier = null; window.G.midFloor = true;
-                window.G.floorCoins = 0; // Reset floor coins tracking
+                window.G.floorCoins = 0;
                 
                 if (window.G.archetype === 'tinker') {
                     window.G.maxHp -= (window.G.tinkerBonus || 0);
@@ -1331,15 +1317,9 @@
                     len = Math.min(Math.floor((window.G.floor - 1) / 2) + 4, 12);
                 }
                 
-                let pool;
-                if (window.G.difficulty === 'easy') {
-                    pool = EASY_LEXICON[len];
-                } else {
-                    pool = FULL_LEXICON[len];
-                }
-                
+                let pool = (window.G.difficulty === 'easy') ? EASY_LEXICON[len] : FULL_LEXICON[len];
                 let list = Array.from(pool || []);
-                if (list.length === 0) list = ["word"]; // Minimal safety if fetch fails
+                if (list.length === 0) list = ["word"];
                 window.G.targetWord = list[Math.floor(Math.random()*list.length)];
                 
                 const isHunter = window.G.archetype === 'hunter';
@@ -1439,26 +1419,18 @@
                                 const char = window.G.guesses[r].word[c];
                                 tile.innerText = char;
                                 let s = window.G.guesses[r].status[c];
-                                
-                                if (isSiren && vowels.includes(char.toLowerCase())) {
-                                    // Siren: Vowels stay neutral
-                                } else {
-                                    // PHANTOM EFFECT: Delayed Feedback
-                                    if (isPhantom && r === lastIdx) {
-                                        s = 'absent';
-                                    }
-
+                                if (isSiren && vowels.includes(char.toLowerCase())) {}
+                                else {
+                                    if (isPhantom && r === lastIdx) s = 'absent';
                                     if (isEffectActive("Illusionist") && s === 'correct') {
                                         if (window.G.guesses[r].word === window.G.targetWord) tile.classList.add('correct');
                                         else tile.classList.add('present');
-                                    }
-                                    else tile.classList.add(s);
+                                    } else tile.classList.add(s);
                                 }
                             }
                         } else if(r === window.G.guesses.length) {
                             if(window.G.currentGuess[c] && window.G.currentGuess[c] !== " ") tile.innerText = window.G.currentGuess[c];
                             else if(window.G.hints[c]) { tile.innerText = window.G.hints[c]; tile.style.opacity = "0.4"; }
-                            
                             tile.onclick = () => {
                                 AudioEngine.playKey();
                                 let arr = window.G.currentGuess.split("");
@@ -1478,7 +1450,6 @@
                 const isIllusionist = isEffectActive("Illusionist");
                 const isSiren = isEffectActive("Siren");
                 const vowels = "aeiou";
-                
                 kbLayout.forEach((row, idx) => {
                     const rowEl = document.getElementById(`kb-${idx+1}`); rowEl.innerHTML = "";
                     row.forEach(k => {
@@ -1486,12 +1457,10 @@
                         const low = k.toLowerCase();
                         if (window.G.scrambledKeys[low]) btn.innerText = window.G.scrambledKeys[low];
                         else btn.innerText = k === "DEL" ? "⌫" : k;
-                        
                         let s = window.G.keyStatus[low];
                         if (s) {
-                            if (isSiren && vowels.includes(low)) {
-                                // Siren: Vowels stay neutral on keyboard
-                            } else {
+                            if (isSiren && vowels.includes(low)) {}
+                            else {
                                 if (isIllusionist && s === 'correct') s = 'present';
                                 btn.classList.add(s);
                             }
@@ -1501,7 +1470,6 @@
                         }
                         if(window.G.corruptedKeys.includes(low) && isEffectActive("Corrupt")) btn.classList.add('corrupted');
                         if(window.G.taxedLetters.includes(low) && isEffectActive("Tax")) btn.classList.add('taxed');
-                        
                         if (k === "DEL") {
                             btn.onmousedown = btn.ontouchstart = (e) => { e.preventDefault(); handleKey("DEL"); delRepeatInterval = setInterval(() => handleKey("DEL"), 150); };
                             btn.onmouseup = btn.ontouchend = btn.onmouseleave = () => clearInterval(delRepeatInterval);
@@ -1535,15 +1503,12 @@
                 }
                 else if(window.G.currentGuess.length < window.G.targetWord.length || window.G.currentGuess.includes(" ")) {
                     const low = k.toLowerCase();
-                    // Fix: Players can now use disabled keys on easy mode
                     if(window.G.forbiddenLetters.has(low) && window.G.difficulty !== 'easy') { toast("Consumed by Void"); return; }
-                    
                     if(window.G.taxedLetters.includes(low) && isEffectActive("Tax")) {
                         if(window.G.difficulty !== 'easy' && window.G.coins < 5) { toast("No Coins"); return; }
                         window.G.coins -= 5; window.G.floorCoins -= 5; updateUI();
                     }
                     if(window.G.corruptedKeys.includes(low) && isEffectActive("Corrupt")) { takeDamage(3); toast("Corrupted!"); }
-                    
                     if(/^[a-z]$/i.test(k)) {
                         let arr = window.G.currentGuess.split("");
                         while(arr.length < window.G.targetWord.length) arr.push(" ");
@@ -1556,13 +1521,9 @@
             }
 
             function submitGuess() {
-                const gRaw = window.G.currentGuess;
-                const g = gRaw.split("").map(c => c === " " ? "" : c).join("");
+                const g = window.G.currentGuess.split("").map(c => c === " " ? "" : c).join("");
                 if(g.length < window.G.targetWord.length) { toast("Incomplete"); return; }
-                
-                // Fix: Check master dictionary (FULL_LEXICON) even on Easy mode for guess validation.
                 const isDict = FULL_LEXICON[g.length]?.has(g);
-
                 const isOutcast = window.G.archetype === 'outcast';
                 const statusArr = [];
                 const mimicLie = (isEffectActive("Glitch")) ? Math.floor(Math.random() * g.length) : -1;
@@ -1585,10 +1546,8 @@
                         let s = 'absent';
                         if(g[i] === window.G.targetWord[i]) { s = 'correct'; if(window.G.keyStatus[g[i]] !== 'correct') newGreens++; }
                         else if(window.G.targetWord.includes(g[i])) s = 'present';
-                        
                         if (i === forceTrue) {}
                         else if (i === mimicLie && s === 'absent') s = (Math.random() > 0.5) ? 'correct' : 'present';
-                        
                         statusArr.push(s);
                         if(s==='absent') absentCount++;
                         if(s==='correct' || !window.G.keyStatus[g[i]]) window.G.keyStatus[g[i]] = s;
@@ -1596,22 +1555,15 @@
                         if(window.G.hazardTiles.some(h=>h.r===window.G.guesses.length && h.c===i) && g[i]!==window.G.targetWord[i]) takeDamage(12);
                     }
                 }
-                if(window.G.upgrades.includes('vamp') && newGreens > 0) {
-                    const healBonus = window.G.doubledRelics?.includes('vamp') ? 6 : 3;
-                    heal(newGreens * healBonus);
-                }
+                if(window.G.upgrades.includes('vamp') && newGreens > 0) heal(newGreens * (window.G.doubledRelics?.includes('vamp') ? 6 : 3));
                 if(window.G.upgrades.includes('ledger')) { 
                     const bonus = window.G.doubledRelics?.includes('ledger') ? 2 : 1;
                     if (window.G.archetype === 'bloodstained') heal(absentCount * bonus);
-                    else {
-                        window.G.coins += absentCount * bonus;
-                        window.G.floorCoins += absentCount * bonus; // Update floor earnings
-                    }
+                    else { window.G.coins += absentCount * bonus; window.G.floorCoins += absentCount * bonus; }
                     updateUI(); 
                 }
-                
                 if(isEffectActive("VoidScramble")) {
-                    const symbols = ["†", "‡", "§", "¶", "∞", " ", "◌", "◙"];
+                    const symbols = ["†", "‡", "§", "¶", "∞", "◌", "◙"];
                     let activeKeys = "abcdefghijklmnopqrstuvwxyz".split("").filter(l => !window.G.forbiddenLetters.has(l));
                     for(let i=0; i<2; i++) {
                         if(activeKeys.length) {
@@ -1622,23 +1574,16 @@
                 }
                 window.G.guesses.push({word: g, status: statusArr});
                 window.G.currentGuess = ""; 
-                
                 if(g === window.G.targetWord) winFloor(); else if(window.G.guesses.length >= window.G.maxGuesses) loseFloor();
                 saveGame(); renderGrid(); renderKeyboard(); updateUI();
             }
 
             function solveWord() { window.G.solveFlag = true; window.G.currentGuess = window.G.targetWord; submitGuess(); }
-            function heal(amt) { 
-                if (window.G.archetype === 'bloodstained') amt = Math.floor(amt * 0.5);
-                window.G.hp = Math.min(window.G.maxHp, window.G.hp + amt); updateUI(); 
-            }
+            function heal(amt) { if (window.G.archetype === 'bloodstained') amt = Math.floor(amt * 0.5); window.G.hp = Math.min(window.G.maxHp, window.G.hp + amt); updateUI(); }
 
             function revealOne() { 
                 const available = [];
-                for(let i=0; i<window.G.targetWord.length; i++) {
-                    const isSolvedAtSlot = window.G.guesses.some(g => g.status[i] === 'correct');
-                    if(!window.G.hints[i] && !isSolvedAtSlot) available.push(i);
-                }
+                for(let i=0; i<window.G.targetWord.length; i++) if(!window.G.hints[i] && !window.G.guesses.some(g => g.status[i] === 'correct')) available.push(i);
                 if(available.length) {
                     const idx = available[Math.floor(Math.random()*available.length)];
                     const char = window.G.targetWord[idx];
@@ -1656,10 +1601,7 @@
 
             function takeDamage(amt) {
                 if (window.G.archetype === 'withered') amt *= 0.5;
-                if(window.G.upgrades.includes('armor')) {
-                    const reduction = window.G.doubledRelics?.includes('armor') ? 10 : 5;
-                    amt = Math.max(0, amt - reduction);
-                }
+                if(window.G.upgrades.includes('armor')) amt = Math.max(0, amt - (window.G.doubledRelics?.includes('armor') ? 10 : 5));
                 if (amt > 0) AudioEngine.playHurt();
                 window.G.hp = Math.max(0, window.G.hp - amt); updateUI();
                 document.getElementById('damage-overlay').classList.add('damage-flash');
@@ -1667,82 +1609,46 @@
                 if(window.G.hp <= 0) {
                     if(window.G.hasPhoenix) {
                         window.G.hasPhoenix = false; window.G.upgrades = window.G.upgrades.filter(u => u !== 'feather');
-                        window.G.hp = Math.floor(window.G.maxHp / 2); 
-                        toast("REVIVED!"); updateUI();
+                        window.G.hp = Math.floor(window.G.maxHp / 2); toast("REVIVED!"); updateUI();
                     } else endRun();
                 }
             }
 
-            function updateHighScores() {
-                const currentFloor = window.G.floor;
-                const highFloor = parseInt(localStorage.getItem('lexicon_high_score') || 0);
-                if (currentFloor > highFloor) localStorage.setItem('lexicon_high_score', currentFloor);
-                
-                const currentScore = window.G.totalScore;
-                const highScoreTotal = parseInt(localStorage.getItem('lexicon_high_score_total') || 0);
-                if (currentScore > highScoreTotal) localStorage.setItem('lexicon_high_score_total', currentScore);
-
-                const archPB = parseInt(localStorage.getItem(`lexicon_high_score_${window.G.archetype}`) || 0);
-                if (currentFloor > archPB) localStorage.setItem(`lexicon_high_score_${window.G.archetype}`, currentFloor);
-            }
-
             function calculateScore() {
-                // Points are based on word length and coins earned on this floor
                 let floorPoints = (window.G.targetWord.length + window.G.floorCoins);
-                
-                // Adjust points based on difficulty or archetype
-                if (window.G.archetype === 'scholar') {
-                    floorPoints = Math.floor(floorPoints * 1.2);
-                }
-                
-                // Ensure score only adds up (cumulative) multiplied by depth
-                const floorBonus = window.G.floor * Math.max(0, floorPoints);
-                window.G.totalScore += floorBonus;
-                
-                // Reset floor coins after calculation to avoid double-counting if calculateScore 
-                // is called again (e.g. during endRun after a floor win)
+                if (window.G.archetype === 'scholar') floorPoints = Math.floor(floorPoints * 1.2);
+                window.G.totalScore += window.G.floor * Math.max(0, floorPoints);
                 window.G.floorCoins = 0;
             }
 
             function winFloor() {
-                stopTimer(); window.G.midFloor = false;
-                AudioEngine.playCorrect();
-                
+                stopTimer(); window.G.midFloor = false; AudioEngine.playCorrect();
                 if (!window.G.solveFlag) {
                     let total = 30 + (window.G.targetWord.length-4)*10 + (window.G.maxGuesses - window.G.guesses.length) * 15;
-                    if(window.G.upgrades.includes('midas')) {
-                        const midasBonus = window.G.doubledRelics?.includes('midas') ? 30 : 15;
-                        total += midasBonus;
-                    }
+                    if(window.G.upgrades.includes('midas')) total += (window.G.doubledRelics?.includes('midas') ? 30 : 15);
                     if(window.G.bossActive) total += 20; 
                     if (window.G.archetype === 'bloodstained') { heal(Math.floor(total / 2)); toast(`Blood Harvest: +${Math.floor(total / 4)} VIT`); }
                     else if (window.G.archetype === 'cursed') {
-                        const multiplier = 1 + (window.G.invalidWordBonus * 0.2);
-                        const amount = Math.floor(total * multiplier);
-                        window.G.coins += amount;
-                        window.G.floorCoins += amount; // Track floor earnings
-                    } else {
-                        const amount = Math.floor(total);
-                        window.G.coins += amount;
-                        window.G.floorCoins += amount; // Track floor earnings
-                    }
+                        const amount = Math.floor(total * (1 + (window.G.invalidWordBonus * 0.2)));
+                        window.G.coins += amount; window.G.floorCoins += amount;
+                    } else { window.G.coins += total; window.G.floorCoins += total; }
                 }
-                
-                if (window.G.bossActive && window.G.archetype === 'slayer') {
-                    window.G.maxHp += 10; window.G.hp += 10; toast("Slayer: +10 Max Vitality");
-                }
-
-                calculateScore(); updateHighScores();
+                if (window.G.bossActive && window.G.archetype === 'slayer') { window.G.maxHp += 10; window.G.hp += 10; toast("Slayer: +10 Max Vitality"); }
+                calculateScore();
+                const highFloor = parseInt(localStorage.getItem('lexicon_high_score') || 0);
+                if (window.G.floor > highFloor) localStorage.setItem('lexicon_high_score', window.G.floor);
+                const highScoreTotal = parseInt(localStorage.getItem('lexicon_high_score_total') || 0);
+                if (window.G.totalScore > highScoreTotal) localStorage.setItem('lexicon_high_score_total', window.G.totalScore);
+                const archPB = parseInt(localStorage.getItem(`lexicon_high_score_${window.G.archetype}`) || 0);
+                if (window.G.floor > archPB) localStorage.setItem(`lexicon_high_score_${window.G.archetype}`, window.G.floor);
 
                 if(!window.G.isEndless && window.G.floor === 20) setTimeout(() => document.getElementById('victory-modal').style.display='flex', 1000);
                 else openRespite();
             }
 
             function loseFloor() { 
-                stopTimer(); toast(`The word was: ${window.G.targetWord.toUpperCase()}`);
-                AudioEngine.playWrong();
-                let dmg = 30; if (window.G.bossActive) dmg = 50;
-                takeDamage(dmg); 
+                stopTimer(); toast(`The word was: ${window.G.targetWord.toUpperCase()}`); AudioEngine.playWrong();
+                takeDamage(window.G.bossActive ? 50 : 30); 
                 if(window.G.hp > 0) {
                     if(window.G.bossActive === "THE CHIMERA") { toast("Re-trial..."); setTimeout(() => initFloor(), 1500); }
                     else { window.G.midFloor = false; openRespite(); }
@@ -1755,54 +1661,32 @@
                 const label = document.getElementById('respite-label');
                 const header = document.getElementById('respite-header');
                 const subtext = document.getElementById('respite-subtext');
-
-                const nextFloorNum = window.G.floor + 1;
+                const nf = window.G.floor + 1;
                 const isHunter = window.G.archetype === 'hunter';
-                const isEveryFourth = nextFloorNum % 4 === 0;
-                const isEndlessBoss = window.G.isEndless && nextFloorNum % 2 === 0;
-                const isChimera = nextFloorNum === 20 && !window.G.isEndless;
-                
+                const isEveryFourth = nf % 4 === 0;
+                const isEndlessBoss = window.G.isEndless && nf % 2 === 0;
+                const isChimera = nf === 20 && !window.G.isEndless;
                 const nextIsBoss = isHunter || isEveryFourth || isEndlessBoss || isChimera;
 
                 if (nextIsBoss) {
-                    box.classList.add('boss-style');
-                    document.body.classList.remove('boss-active'); 
-                    
-                    let bossName = "TRIAL ENCOUNTER";
-                    if (isChimera) bossName = "THE CHIMERA";
-                    else if (window.G.availableBosses.length > 0) {
+                    box.classList.add('boss-style'); document.body.classList.remove('boss-active'); 
+                    let bName = isChimera ? "THE CHIMERA" : "TRIAL ENCOUNTER";
+                    if (!isChimera && window.G.availableBosses.length > 0) {
                         const meta = BOSS_LIST.find(b => b.mod === window.G.availableBosses[0]);
-                        if (meta) bossName = meta.name;
+                        if (meta) bName = meta.name;
                     }
-                    
-                    label.innerText = `Floor ${romNums[nextFloorNum] || nextFloorNum} Trial`;
-                    header.innerText = bossName;
-                    subtext.innerText = `Last Archive: ${lastWord}`;
+                    label.innerText = `Floor ${romNums[nf] || nf} Trial`; header.innerText = bName; subtext.innerText = `Last Archive: ${lastWord}`;
                 } else {
-                    box.classList.remove('boss-style');
-                    document.body.classList.remove('boss-active');
-                    let nextBoss;
-                    if (window.G.isEndless) nextBoss = nextFloorNum + (1 - (nextFloorNum % 2));
-                    else nextBoss = nextFloorNum + (3 - (nextFloorNum % 4));
-                    
-                    const diff = nextBoss - window.G.floor;
-                    const progText = `${diff} floor${diff > 1 ? 's' : ''} to next Trial.`;
-                    
-                    label.innerText = "Last Archive";
-                    header.innerText = lastWord;
-                    subtext.innerText = progText;
+                    box.classList.remove('boss-style'); document.body.classList.remove('boss-active');
+                    let nextB = window.G.isEndless ? nf + (1 - (nf % 2)) : nf + (3 - (nf % 4));
+                    label.innerText = "Last Archive"; header.innerText = lastWord; subtext.innerText = `${nextB - window.G.floor} floor(s) to next Trial.`;
                 }
-                
-                showScreen('screen-respite');
-                saveGame();
+                showScreen('screen-respite'); saveGame();
             };
 
             window.executeRest = () => {
-                const lost = window.G.maxHp - window.G.hp;
-                const amt = Math.max(20, Math.floor(lost * 0.3));
-                heal(amt);
-                toast(`Restored ${amt} Vitality.`);
-                nextFloor();
+                const amt = Math.max(20, Math.floor((window.G.maxHp - window.G.hp) * 0.3));
+                heal(amt); toast(`Restored ${amt} Vitality.`); nextFloor();
             };
 
             function enterShop() {
@@ -1817,12 +1701,10 @@
                 const cont = document.getElementById('shop-items'); cont.innerHTML = "";
                 window.G.currentShopPool.forEach(k => {
                     const it = ITEMS[k];
-                    let cost = it.cost; 
-                    if(window.G.discountActive) cost = Math.floor(cost * 0.5);
+                    let cost = window.G.discountActive ? Math.floor(it.cost * 0.5) : it.cost;
                     const isSold = window.G.floorPurchases.has(k);
                     const div = document.createElement('div'); div.className = "shop-item" + (isSold ? " sold" : "");
-                    let costStr = cost + ' Coins';
-                    if (window.G.archetype === 'bloodstained') costStr = Math.ceil(cost / 2) + ' VIT';
+                    let costStr = (window.G.archetype === 'bloodstained') ? Math.ceil(cost / 2) + ' VIT' : cost + ' Coins';
                     div.innerHTML = `<div class="shop-tag">${it.type === 'cons' ? 'Item' : 'Relic'}</div><div><b>${it.emoji} ${it.name}</b><small>${it.desc}</small></div><button class="btn" style="width:100%; min-width:unset; font-size:0.7rem; padding:8px;" ${isSold ? 'disabled' : ''} onclick="buyItem('${k}')">${isSold ? 'Sold' : costStr}</button>`;
                     cont.appendChild(div);
                 });
@@ -1830,17 +1712,14 @@
 
             window.buyItem = (k) => {
                 const it = ITEMS[k];
-                let cost = it.cost; 
-                if(window.G.discountActive) cost = Math.floor(cost * 0.5);
-                
+                let cost = window.G.discountActive ? Math.floor(it.cost * 0.5) : it.cost;
                 if (window.G.archetype === 'bloodstained') {
                     const hpCost = Math.ceil(cost / 2);
                     if (window.G.hp > hpCost) {
                         takeDamage(hpCost); AudioEngine.playShop();
                         if(it.type === 'cons') { 
                             const idx = window.G.consumables.indexOf(null); 
-                            if(idx!==-1) window.G.consumables[idx]=k; 
-                            else { toast("Bag Full!"); heal(hpCost); return; }
+                            if(idx!==-1) window.G.consumables[idx]=k; else { toast("Bag Full!"); heal(hpCost); return; }
                         } else it.run();
                         window.G.floorPurchases.add(k); window.G.discountActive = false; 
                     } else toast("Vitality too low");
@@ -1849,8 +1728,7 @@
                         window.G.coins -= cost; AudioEngine.playShop();
                         if(it.type === 'cons') { 
                             const idx = window.G.consumables.indexOf(null); 
-                            if(idx!==-1) window.G.consumables[idx]=k; 
-                            else { toast("Bag Full!"); window.G.coins += cost; return; }
+                            if(idx!==-1) window.G.consumables[idx]=k; else { toast("Bag Full!"); window.G.coins += cost; return; }
                         } else it.run();
                         window.G.floorPurchases.add(k); window.G.discountActive = false; 
                     } else toast("Not enough Coins");
@@ -1859,54 +1737,31 @@
             };
 
             function updateUI() {
-                const savedName = localStorage.getItem('lexicon_player_name') || "Stranger";
-                const soulName = (archNames[window.G.archetype] || "Outcast").toUpperCase();
-                
-                document.getElementById('player-name-val').innerText = savedName;
-                document.getElementById('soul-name-val').innerText = soulName;
-                
-                const floorHeader = document.getElementById('floor-val-header');
-                floorHeader.innerText = `Floor ${romNums[window.G.floor] || window.G.floor}`;
-                floorHeader.style.color = window.G.bossActive ? 'var(--hazard)' : '';
-
+                const isGameScreen = document.getElementById('screen-game').classList.contains('active');
+                const body = document.getElementById('game-body');
+                document.getElementById('player-name-val').innerText = localStorage.getItem('lexicon_player_name') || "Stranger";
+                document.getElementById('soul-name-val').innerText = (archNames[window.G.archetype] || "Outcast").toUpperCase();
+                document.getElementById('floor-val-header').innerText = `Floor ${romNums[window.G.floor] || window.G.floor}`;
                 document.getElementById('score-val').innerText = `${window.G.totalScore} Points`;
-                
                 document.getElementById('hp-val').innerText = `${Math.ceil(window.G.hp)} / ${window.G.maxHp}`;
                 document.getElementById('hp-bar').style.width = (window.G.hp/window.G.maxHp*100)+"%";
                 document.getElementById('coins-subval').innerText = window.G.coins;
-
                 const modBar = document.getElementById('modifiers-bar'); modBar.innerHTML = "";
-                const body = document.getElementById('game-body');
-                const isGameScreen = document.getElementById('screen-game').classList.contains('active');
-
                 if(window.G.bossActive && isGameScreen) { 
                     body.classList.add('boss-active');
                     const div = document.createElement('div'); div.className = "boss-info";
                     let desc = window.G.modifiers.map(m => {
                         let text = BOSS_DATA[m] || "";
-                        if (m === "Clock") {
-                            const min = Math.floor(window.G.timerSeconds / 60);
-                            const sec = window.G.timerSeconds % 60;
-                            const timeStr = `${min}:${sec.toString().padStart(2, '0')}`;
-                            text = `Win before the ${timeStr} timer reaches zero.`;
-                        }
-                        
-                        // Fix: Display disabled effects with strikethrough
-                        if (window.G.wardActive && window.G.suppressedModifier === m) {
-                            return `<s style="opacity: 0.6; text-decoration: line-through;">${text}</s>`;
-                        }
+                        if (m === "Clock") text = `Win before the timer reaches zero.`;
+                        if (window.G.wardActive && window.G.suppressedModifier === m) return `<s style="opacity: 0.6; text-decoration: line-through;">${text}</s>`;
                         return text;
                     }).join(" ");
                     div.innerHTML = `<span class="boss-name-ui">${window.G.bossActive}</span><span class="boss-desc-ui">${desc}</span>`;
                     modBar.appendChild(div);
-                } else if (!isGameScreen && !document.getElementById('screen-respite').classList.contains('active')) {
-                    body.classList.remove('boss-active');
-                }
+                } else { body.classList.remove('boss-active'); }
                 const rb = document.getElementById('active-relics'); rb.innerHTML = "";
                 window.G.upgrades.forEach(u => { 
-                    const s = document.createElement('span'); 
-                    s.innerText = ITEMS[u].emoji; 
-                    s.className = "relic-icon" + (window.G.doubledRelics?.includes(u) ? " doubled" : "");
+                    const s = document.createElement('span'); s.innerText = ITEMS[u].emoji; s.className = "relic-icon" + (window.G.doubledRelics?.includes(u) ? " doubled" : "");
                     rb.appendChild(s); 
                 });
                 renderInventory('inventory-game'); renderInventory('inventory-shop');
@@ -1917,26 +1772,15 @@
                 window.G.consumables.forEach((c, i) => {
                     const slot = document.createElement('div'); slot.className = "item-slot" + (c ? "" : " empty");
                     if(c) {
-                        const it = ITEMS[c];
-                        slot.innerText = it.emoji; slot.setAttribute('data-desc', it.desc);
+                        slot.innerText = ITEMS[c].emoji; slot.setAttribute('data-desc', ITEMS[c].desc);
                         slot.onclick = () => {
                             if(isEffectActive("Silence") && id === 'inventory-game') { toast("Silenced!"); return; }
-                            
-                            // Fix: Chimera is not affected by void master key in all difficulty
-                            if (c === 'masterkey' && window.G.bossActive === "THE CHIMERA") {
-                                toast("The Key shatters vs the Chimera!");
-                                window.G.consumables[i] = null; AudioEngine.playWrong(); updateUI(); return;
-                            }
-                            
+                            if (c === 'masterkey' && window.G.bossActive === "THE CHIMERA") { toast("The Key shatters vs the Chimera!"); window.G.consumables[i] = null; AudioEngine.playWrong(); updateUI(); return; }
                             const mod = document.getElementById('confirm-modal');
-                            document.getElementById('confirm-title').innerText = `Use ${it.name}?`;
-                            document.getElementById('confirm-desc').innerText = it.desc;
-                            mod.style.display = 'flex';
+                            document.getElementById('confirm-title').innerText = `Use ${ITEMS[c].name}?`; document.getElementById('confirm-desc').innerText = ITEMS[c].desc; mod.style.display = 'flex';
                             document.getElementById('confirm-yes').onclick = () => {
-                                if (window.G.archetype === 'tinker') {
-                                    window.G.maxHp -= 10; window.G.tinkerBonus -= 10; window.G.hp = Math.min(window.G.hp, window.G.maxHp);
-                                }
-                                it.run(); window.G.consumables[i] = null; AudioEngine.playShop(); calculateScore(); updateUI(); saveGame(); mod.style.display = 'none';
+                                if (window.G.archetype === 'tinker') { window.G.maxHp -= 10; window.G.tinkerBonus -= 10; window.G.hp = Math.min(window.G.hp, window.G.maxHp); }
+                                ITEMS[c].run(); window.G.consumables[i] = null; AudioEngine.playShop(); calculateScore(); updateUI(); saveGame(); mod.style.display = 'none';
                             };
                         };
                     }
@@ -1945,114 +1789,53 @@
             }
 
             window.setLeaderboardDiff = (d, btn) => {
-                AudioEngine.playKey();
-                currentLeaderboardDiff = d;
-                document.querySelectorAll('#leaderboard-diff-filter .diff-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                fetchLeaderboard();
+                AudioEngine.playKey(); currentLeaderboardDiff = d;
+                document.querySelectorAll('#leaderboard-diff-filter .diff-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); fetchLeaderboard();
             };
 
-            window.openLeaderboard = () => {
-                showScreen('screen-leaderboard');
-                fetchLeaderboard();
-            };
+            window.openLeaderboard = () => { showScreen('screen-leaderboard'); fetchLeaderboard(); };
 
             async function fetchLeaderboard() {
                 const container = document.getElementById('leaderboard-content');
                 container.innerHTML = '<div class="loading-leaderboard">Reading the scrolls...</div>';
-
                 try {
                     const response = await fetch(SCRIPT_URL);
                     const data = await response.json();
-                    
                     const uniquePlayers = {};
                     data.forEach(entry => {
-                        const entryDiff = (entry.Difficulty || 'easy').toLowerCase();
-                        if (entry.game_name === "Lexicon" && entryDiff === currentLeaderboardDiff) {
-                            const score = parseInt(entry.high_score) || 0;
-                            const floor = parseInt(entry.Floor || 1);
-                            const charName = entry.Character || "Outcast";
-                            
-                            if (!uniquePlayers[entry.name] || score > uniquePlayers[entry.name].score) {
-                                uniquePlayers[entry.name] = { score: score, floor: floor, character: charName };
+                        const ed = (entry.Difficulty || 'easy').toLowerCase();
+                        if (entry.game_name === "Lexicon" && ed === currentLeaderboardDiff) {
+                            if (!uniquePlayers[entry.name] || (parseInt(entry.high_score) || 0) > uniquePlayers[entry.name].score) {
+                                uniquePlayers[entry.name] = { score: parseInt(entry.high_score) || 0, floor: parseInt(entry.Floor || 1), character: entry.Character || "Outcast" };
                             }
                         }
                     });
-
-                    const sortedArr = Object.entries(uniquePlayers)
-                        .map(([name, obj]) => ({ name, score: obj.score, floor: obj.floor, character: obj.character }))
-                        .sort((a, b) => b.score - a.score)
-                        .slice(0, 10);
-
-                    if (sortedArr.length === 0) {
-                        container.innerHTML = `<div class="loading-leaderboard">The archives for ${currentLeaderboardDiff.toUpperCase()} are empty.</div>`;
-                        return;
-                    }
-
+                    const sortedArr = Object.entries(uniquePlayers).map(([name, obj]) => ({ name, ...obj })).sort((a, b) => b.score - a.score).slice(0, 10);
+                    if (sortedArr.length === 0) { container.innerHTML = `<div class="loading-leaderboard">Archives are empty.</div>`; return; }
                     let html = `<table class="leaderboard-table"><thead><tr><th>Rank</th><th>Name</th><th>Soul</th><th>Floor</th><th>Score</th></tr></thead><tbody>`;
                     sortedArr.forEach((p, i) => {
-                        const floorDisp = romNums[p.floor] || p.floor;
-                        html += `<tr>
-                            <td class="leaderboard-rank">#${i + 1}</td>
-                            <td class="leaderboard-name" title="${p.name}">${p.name}</td>
-                            <td class="leaderboard-char" title="${p.character}">${p.character}</td>
-                            <td class="leaderboard-floor">${floorDisp}</td>
-                            <td class="leaderboard-score">${p.score.toLocaleString()}</td>
-                        </tr>`;
+                        html += `<tr><td class="leaderboard-rank">#${i + 1}</td><td class="leaderboard-name">${p.name}</td><td class="leaderboard-char">${p.character}</td><td class="leaderboard-floor">${romNums[p.floor] || p.floor}</td><td class="leaderboard-score">${p.score.toLocaleString()}</td></tr>`;
                     });
-                    html += '</tbody></table>';
-                    container.innerHTML = html;
-                } catch (error) {
-                    console.error("Leaderboard error:", error);
-                    container.innerHTML = '<div class="loading-leaderboard" style="color: var(--hazard);">Failed to retrieve scrolls.</div>';
-                }
+                    container.innerHTML = html + '</tbody></table>';
+                } catch (error) { container.innerHTML = '<div class="loading-leaderboard" style="color: var(--hazard);">Failed to retrieve scrolls.</div>'; }
             }
-            window.fetchLeaderboard = fetchLeaderboard;
 
             async function submitScore() {
-                const pName = localStorage.getItem('lexicon_player_name') || "Stranger";
-                const soulName = archNames[window.G.archetype] || "Outcast";
-                const diff = window.G.difficulty || 'easy';
                 const currentScore = window.G.totalScore;
-                
-                const cacheKey = `lexicon_best_score_${diff}`;
-                const bestInCache = parseInt(localStorage.getItem(cacheKey) || 0);
-
-                if (currentScore <= bestInCache) return;
-
-                localStorage.setItem(cacheKey, currentScore);
-
-                const scoreData = {
-                    name: pName,
-                    Character: soulName,
-                    high_score: currentScore,
-                    game_name: "Lexicon",
-                    Difficulty: diff,
-                    Floor: window.G.floor
-                };
-
+                if (currentScore <= parseInt(localStorage.getItem(`lexicon_best_score_${window.G.difficulty || 'easy'}`) || 0)) return;
+                localStorage.setItem(`lexicon_best_score_${window.G.difficulty || 'easy'}`, currentScore);
                 try {
                     await fetch(SCRIPT_URL, {
-                        method: 'POST',
-                        mode: 'no-cors', 
-                        cache: 'no-cache',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(scoreData)
+                        method: 'POST', mode: 'no-cors', cache: 'no-cache', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name: localStorage.getItem('lexicon_player_name') || "Stranger", Character: archNames[window.G.archetype] || "Outcast", high_score: currentScore, game_name: "Lexicon", Difficulty: window.G.difficulty || 'easy', Floor: window.G.floor })
                     });
-                } catch (e) {
-                    console.error("Submission failed:", e);
-                }
+                } catch (e) {}
             }
 
             function endRun() { 
-                window.G.isGameOver = true; 
-                calculateScore(); 
-                updateHighScores();
-                submitScore(); 
-                
+                window.G.isGameOver = true; calculateScore(); submitScore();
                 localStorage.removeItem('lexicon_run_save'); 
-                const pName = localStorage.getItem('lexicon_player_name') || "Stranger";
-                document.getElementById('game-summary').innerText = `${pName} reached Floor ${romNums[window.G.floor] || window.G.floor} as ${archNames[window.G.archetype] || 'The Outcast'}.`;
+                document.getElementById('game-summary').innerText = `${localStorage.getItem('lexicon_player_name') || "Stranger"} reached Floor ${romNums[window.G.floor] || window.G.floor}.`;
                 document.getElementById('game-final-score').innerText = `Final Score: ${window.G.totalScore}`;
                 document.getElementById('game-last-word').innerText = `Word: ${window.G.targetWord.toUpperCase()}`; 
                 showScreen('screen-gameover'); 
@@ -2060,52 +1843,34 @@
             
             function nextFloor() { window.G.floor++; initFloor(); showScreen('screen-game'); }
             window.nextFloor = nextFloor;
-
-            window.goHome = () => { if (!window.G.isGameOver) saveGame(); showScreen('screen-start'); };
+            window.goHome = () => { 
+                document.getElementById('victory-modal').style.display = 'none';
+                if (!window.G.isGameOver) { if (window.G.floor >= 20) window.G.isGameOver = true; saveGame(); }
+                showScreen('screen-start'); 
+            };
             window.executeSurrender = () => { document.getElementById('surrender-modal').style.display='none'; loseFloor(); };
             window.closeRules = () => { document.getElementById('rules-modal').style.display='none'; };
-            
-            // Fix missing UI handlers
             window.setDiff = (d, btn) => {
-                window.G.difficulty = d;
-                document.querySelectorAll('.difficulty-selector .diff-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                updateDifficultyInfo();
-            };
-
-            function updateDifficultyInfo() {
+                window.G.difficulty = d; document.querySelectorAll('.difficulty-selector .diff-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active');
                 const desc = document.getElementById('diff-description');
-                if (!desc) return;
-                if (window.G.difficulty === 'easy') desc.innerText = "6 Guesses. Common words. Standard trials.";
-                else if (window.G.difficulty === 'medium') desc.innerText = "5 Guesses. Full dictionary. Standard trials.";
+                if (d === 'easy') desc.innerText = "6 Guesses. Common words. Standard trials.";
+                else if (d === 'medium') desc.innerText = "5 Guesses. Full dictionary. Standard trials.";
                 else desc.innerText = "5 Guesses. Longer words. Frequent hazards.";
-            }
-
+            };
             window.openTutorial = () => { document.getElementById('tutorial-modal').style.display = 'flex'; };
             window.closeTutorial = () => { document.getElementById('tutorial-modal').style.display = 'none'; };
-            
-            window.startEndless = () => {
-                window.G.isEndless = true;
-                document.getElementById('victory-modal').style.display = 'none';
-                nextFloor();
-            };
-
+            window.startEndless = () => { window.G.isEndless = true; document.getElementById('victory-modal').style.display = 'none'; nextFloor(); };
             function saveGame() { 
                 if (window.G.hp <= 0 || window.G.isGameOver) { localStorage.removeItem('lexicon_run_save'); return; }
                 const saveState = {...window.G, forbiddenLetters: Array.from(window.G.forbiddenLetters), floorPurchases: Array.from(window.G.floorPurchases)}; 
                 localStorage.setItem('lexicon_run_save', JSON.stringify(saveState)); 
             }
-            
             function toast(m) { const t=document.getElementById('toast'); t.innerHTML=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 4000); }
-            
             window.addEventListener('keydown', e => { 
                 if(document.getElementById('screen-game').classList.contains('active')) { 
-                    if(e.key==="Enter") handleKey("⏎"); 
-                    else if(e.key==="Backspace") handleKey("DEL"); 
-                    else if(/^[a-z]$/i.test(e.key)) handleKey(e.key.toUpperCase()); 
+                    if(e.key==="Enter") handleKey("⏎"); else if(e.key==="Backspace") handleKey("DEL"); else if(/^[a-z]$/i.test(e.key)) handleKey(e.key.toUpperCase()); 
                 } 
             });
-            
             loadLexicon();
         })();
     </script>
