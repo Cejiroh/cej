@@ -704,8 +704,9 @@
     </div>
 
     <!-- Name Entry Modal -->
-    <div id="name-modal" class="custom-modal">
-        <div class="modal-box">
+    <div id="name-modal" class="custom-modal" onclick="this.style.display='none'">
+        <div class="modal-box" onclick="event.stopPropagation()">
+            <span class="close-x" onclick="document.getElementById('name-modal').style.display='none'">×</span>
             <h2 class="title">What is your name?</h2>
             <p style="margin-bottom: 20px; font-style: italic;">Enter up to 10 characters.</p>
             <input type="text" id="name-entry" class="name-input" maxlength="10" placeholder="Stranger" onkeydown="if(event.key==='Enter') submitName()">
@@ -733,10 +734,15 @@
         </div>
     </div>
 
-    <div id="save-prompt" class="custom-modal">
-        <div class="modal-box">
+    <div id="save-prompt" class="custom-modal" onclick="this.style.display='none'">
+        <div class="modal-box" onclick="event.stopPropagation()">
+            <span class="close-x" onclick="document.getElementById('save-prompt').style.display='none'">×</span>
             <h2 id="save-prompt-title" class="title" style="font-size: 2rem;">Resurrect?</h2>
-            <p style="margin-bottom: 30px; font-style: italic;">A soul remains trapped on Floor <span id="save-floor-val">I</span>.</p>
+            <div style="margin: 15px 0 25px 0;">
+                <p id="save-soul-info" style="font-family: var(--font-title); color: var(--accent); font-size: 0.9rem; margin-bottom: 4px;">THE OUTCAST</p>
+                <p id="save-diff-info" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.7; margin-bottom: 12px;">NORMAL DIFFICULTY</p>
+                <p style="font-style: italic; font-size: 0.85rem;">A soul remains trapped on Floor <span id="save-floor-val">I</span>.</p>
+            </div>
             <button class="btn" onclick="AudioEngine.playKey(); loadGame()">Continue Ascent</button>
             <button class="btn" style="background:var(--hazard); color: white; border-color: black;" onclick="AudioEngine.playHurt(); deleteSaveAndStart()">New Sacrifice</button>
         </div>
@@ -1282,7 +1288,11 @@
                         localStorage.removeItem('lexicon_run_save');
                         if (!savedName) window.openNamePopup(); else window.showScreen('screen-archetype');
                     } else {
-                        document.getElementById('save-floor-val').innerText = data.floor;
+                        document.getElementById('save-floor-val').innerText = romNums[data.floor] || data.floor;
+                        const archName = archNames[data.archetype] || "THE OUTCAST";
+                        document.getElementById('save-soul-info').innerText = archName.toUpperCase();
+                        const diffName = (data.difficulty || "NORMAL").toUpperCase();
+                        document.getElementById('save-diff-info').innerText = `${diffName} DIFFICULTY`;
                         document.getElementById('save-prompt').style.display = 'flex';
                     }
                 } else {
