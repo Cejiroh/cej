@@ -870,8 +870,9 @@
         <h2 class="title" style="margin-bottom: 10px; font-size: 2.2rem;">RESPITE</h2>
         <div id="respite-archive-box" class="modal-box" style="background: rgba(0,0,0,0.05); border: 2px solid var(--accent); width: 100%;">
             <p id="respite-label" style="font-family: var(--font-title); font-size: 0.8rem; color: var(--accent); text-transform: uppercase;">Last Archive</p>
-            <h1 id="respite-header" style="font-family: var(--font-title); margin: 5px 0 15px 0; letter-spacing: 4px; color: var(--green);">WORD</h1>
-            <p id="respite-subtext" style="font-style: italic; font-size: 0.9rem; margin-top: 10px;"></p>
+            <h1 id="respite-header" style="font-family: var(--font-title); margin: 5px 0 10px 0; letter-spacing: 4px; color: var(--green);">WORD</h1>
+            <p id="respite-definition" style="font-style: italic; font-size: 0.8rem; line-height: 1.3; margin: 10px 0; max-height: 100px; overflow-y: auto; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 8px;"></p>
+            <p id="respite-subtext" style="font-style: normal; font-size: 0.9rem; margin-top: 5px; opacity: 0.8;"></p>
         </div>
         
         <div style="margin-top: 30px; display: flex; flex-direction: column; gap: 12px; width: 100%;">
@@ -1080,7 +1081,7 @@
             function createInitialState() {
                 return {
                     playerName: localStorage.getItem('lexicon_player_name') || "",
-                    hp: 60, maxHp: 60, coins: 0, floorCoins: 0, floor: 1, totalScore: 0, targetWord: "", currentGuess: "", guesses: [], maxGuesses: 5, archetype: 'outcast', difficulty: 'easy', upgrades: [], doubledRelics: [], consumables: [null, null, null], keyStatus: {}, forbiddenLetters: new Set(), hazardTiles: [], scrambledKeys: {}, wardActive: false, suppressedModifier: null, isGameOver: false, modifiers: [], bossActive: null, hints: {}, floorPurchases: new Set(), discountActive: false, currentShopPool: [], midFloor: false, hasPhoenix: false, isEndless: false, unknownCount: 0, corruptedKeys: [], timerSeconds: 180, taxedLetters: [], solveFlag: false, availableBosses: [], facedAllBosses: false, invalidWordBonus: 0, currentScreen: 'screen-game', tinkerBonus: 0, hintUsed: false
+                    hp: 60, maxHp: 60, coins: 0, floorCoins: 0, floor: 1, totalScore: 0, targetWord: "", currentGuess: "", guesses: [], maxGuesses: 5, archetype: 'outcast', difficulty: 'easy', upgrades: [], doubledRelics: [], consumables: [null, null, null], keyStatus: {}, forbiddenLetters: new Set(), hazardTiles: [], scrambledKeys: {}, wardActive: false, suppressedModifier: null, isGameOver: false, modifiers: [], bossActive: null, hints: {}, floorPurchases: new Set(), discountActive: false, currentShopPool: [], midFloor: false, hasPhoenix: false, isEndless: false, unknownCount: 0, corruptedKeys: [], timerSeconds: 180, taxedLetters: [], solveFlag: false, availableBosses: [], facedAllBosses: false, invalidWordBonus: 0, currentScreen: 'screen-game', tinkerBonus: 0, hintUsed: false, currentDefinition: "Reading the archives...", rawDefinition: ""
                 };
             }
 
@@ -1384,6 +1385,32 @@
                 }
             };
 
+            async function prefetchDefinition(word) {
+                window.G.currentDefinition = "Reading the archives...";
+                window.G.rawDefinition = "";
+                try {
+                    const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
+                    if (!response.ok) throw new Error();
+                    const data = await response.json();
+                    
+                    let definition = "No definition found in the archives.";
+                    if (data[0]?.meanings[0]?.definitions[0]) {
+                        definition = data[0].meanings[0].definitions[0].definition;
+                    }
+
+                    window.G.rawDefinition = definition;
+                    
+                    // Sanitize for hint use
+                    const mask = "____";
+                    const regex = new RegExp(word, 'gi');
+                    window.G.currentDefinition = definition.replace(regex, mask);
+                } catch (e) {
+                    window.G.currentDefinition = "The archives for this word are obscured by magical interference.";
+                    window.G.rawDefinition = "The archives for this word are obscured by magical interference.";
+                }
+                saveGame();
+            }
+
             function initFloor() {
                 window.G.guesses = []; window.G.currentGuess = ""; window.G.keyStatus = {}; window.G.forbiddenLetters = new Set();
                 window.G.hazardTiles = []; window.G.modifiers = []; window.G.bossActive = null; window.G.hints = {}; window.G.unknownCount = 0;
@@ -1412,6 +1439,8 @@
                 if (list.length === 0) list = ["word"];
                 window.G.targetWord = list[Math.floor(Math.random()*list.length)];
                 
+                prefetchDefinition(window.G.targetWord);
+
                 const isHunter = window.G.archetype === 'hunter';
                 const isEveryFourth = window.G.floor % 4 === 0;
 
@@ -1680,7 +1709,7 @@
                 renderGrid();
             };
 
-            window.fetchHint = async () => {
+            window.fetchHint = () => {
                 if (window.G.difficulty === 'hard') {
                     toast("Hints forbidden in Hard mode.");
                     return;
@@ -1688,29 +1717,10 @@
                 AudioEngine.playKey();
                 const content = document.getElementById('hint-content');
                 const modal = document.getElementById('hint-modal');
-                content.innerText = "Seeking the hidden meaning...";
+                content.innerText = window.G.currentDefinition;
                 modal.style.display = 'flex';
                 window.G.hintUsed = true;
-
-                try {
-                    const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${window.G.targetWord}`);
-                    if (!response.ok) throw new Error();
-                    const data = await response.json();
-                    
-                    let definition = "No definition found in the archives.";
-                    if (data[0]?.meanings[0]?.definitions[0]) {
-                        definition = data[0].meanings[0].definitions[0].definition;
-                    }
-
-                    // Sanitize: remove or mask secret word and its variations
-                    const mask = "____";
-                    const regex = new RegExp(window.G.targetWord, 'gi');
-                    const sanitized = definition.replace(regex, mask);
-                    
-                    content.innerText = sanitized;
-                } catch (e) {
-                    content.innerText = "The archives for this word are obscured by magical interference.";
-                }
+                saveGame();
             };
 
             function solveWord() { window.G.solveFlag = true; window.G.currentGuess = window.G.targetWord; submitGuess(); }
@@ -1805,6 +1815,7 @@
                 const box = document.getElementById('respite-archive-box');
                 const label = document.getElementById('respite-label');
                 const header = document.getElementById('respite-header');
+                const defText = document.getElementById('respite-definition');
                 const subtext = document.getElementById('respite-subtext');
                 const nf = window.G.floor + 1;
                 const isHunter = window.G.archetype === 'hunter';
@@ -1812,6 +1823,8 @@
                 const isEndlessBoss = window.G.isEndless && nf % 2 === 0;
                 const isChimera = nf === 20 && !window.G.isEndless;
                 const nextIsBoss = isHunter || isEveryFourth || isEndlessBoss || isChimera;
+
+                defText.innerText = window.G.rawDefinition || "The definition was lost to the Void.";
 
                 if (nextIsBoss) {
                     box.classList.add('boss-style'); document.body.classList.remove('boss-active'); 
