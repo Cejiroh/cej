@@ -354,6 +354,16 @@
         }
         .btn.small { min-width: 150px; font-size: 0.85rem; padding: 10px; }
 
+        .btn.menacing {
+            animation: heartbeat 2.5s ease-in-out infinite;
+            box-shadow: 0 0 20px var(--hazard);
+            border: 3px double var(--hazard) !important;
+            text-shadow: 0 0 8px #000;
+            background-color: #1a0f0a !important;
+            background-image: radial-gradient(circle at 50% 50%, rgba(76, 0, 0, 0.4) 0%, rgba(0,0,0,0.9) 100%) !important;
+            color: #f00 !important;
+        }
+
         .back-arrow {
             position: absolute;
             top: 20px;
@@ -807,8 +817,8 @@
     <div id="screen-shop" class="screen" style="justify-content: flex-start;">
         <h2 class="title" style="margin: 20px 0;">Library</h2>
         <div id="shop-items" class="shop-grid"></div>
-        <p style="margin: 20px 0; font-family: var(--font-title);">Backpack</p>
-        <div class="consumables-bar" id="inventory-shop"></div>
+        <div class="consumables-bar" id="inventory-shop" style="margin-top: 20px;"></div>
+        <div id="shop-nav-container" style="width: 100%; margin-top: 10px;"></div>
     </div>
 
     <div id="screen-gameover" class="screen">
@@ -1071,15 +1081,15 @@
                 if (id === 'screen-game' || id === 'screen-shop' || id === 'screen-respite') {
                     header.style.display = 'grid';
                     if (id === 'screen-game') {
+                        surrenderBtn.style.display = 'flex';
                         surrenderBtn.innerText = '🏳'; 
                         surrenderBtn.className = 'ribbon-btn surrender';
                         surrenderBtn.onclick = () => document.getElementById('surrender-modal').style.display='flex';
                         setTimeout(() => renderGrid(), 10);
                         if(window.G.modifiers.includes("Clock")) startTimer();
                     } else {
-                        surrenderBtn.innerText = '➔'; 
-                        surrenderBtn.className = 'ribbon-btn descend';
-                        surrenderBtn.onclick = window.nextFloor;
+                        // Remove ribbon navigation on Respite and Shop
+                        surrenderBtn.style.display = 'none';
                     }
                 } else header.style.display = 'none';
 
@@ -1181,6 +1191,8 @@
                     }
                 });
 
+                // Fetch leaderboard early for smooth transitions
+                window.fetchLeaderboard(false);
                 window.showScreen('screen-start');
             }
 
@@ -1720,6 +1732,30 @@
                     div.innerHTML = `<div class="shop-tag">${it.type === 'cons' ? 'Item' : 'Relic'}</div><div><b>${it.emoji} ${it.name}</b><small>${it.desc}</small></div><button class="btn" style="width:100%; min-width:unset; font-size:0.7rem; padding:8px;" ${isSold ? 'disabled' : ''} onclick="buyItem('${k}')">${isSold ? 'Sold' : costStr}</button>`;
                     cont.appendChild(div);
                 });
+
+                // Custom Shop Navigation Button
+                const navContainer = document.getElementById('shop-nav-container');
+                const nextFloor = window.G.floor + 1;
+                const isHunter = window.G.archetype === 'hunter';
+                const isEveryFourth = nextFloor % 4 === 0;
+                const isEndlessBoss = window.G.isEndless && nextFloor % 2 === 0;
+                const isChimera = nextFloor === 20 && !window.G.isEndless;
+                const nextIsBoss = isHunter || isEveryFourth || isEndlessBoss || isChimera;
+                
+                let bName = "THE TRIAL";
+                if (isChimera) bName = "THE CHIMERA";
+                else if (window.G.availableBosses.length > 0) {
+                    const meta = BOSS_LIST.find(b => b.mod === window.G.availableBosses[0]);
+                    if (meta) bName = meta.name;
+                }
+
+                let btnText = nextIsBoss ? `FACE ${bName}` : `Descend into Floor ${romNums[nextFloor] || nextFloor}`;
+                let btnColor = nextIsBoss ? "var(--hazard)" : "var(--green)";
+                let extraClass = nextIsBoss ? " menacing" : "";
+                
+                navContainer.innerHTML = `<button class="btn${extraClass}" style="width:100%; background:${btnColor}; color:white; border-color:black;" onclick="window.nextFloor()">${btnText}</button>`;
+                
+                renderInventory('inventory-shop');
             }
 
             window.buyItem = (k) => {
@@ -1845,11 +1881,15 @@
                 const currentScore = window.G.totalScore;
                 if (currentScore <= parseInt(localStorage.getItem(`lexicon_best_score_${window.G.difficulty || 'easy'}`) || 0)) return;
                 localStorage.setItem(`lexicon_best_score_${window.G.difficulty || 'easy'}`, currentScore);
+                
+                // Fetch fresh leaderboard data immediately after submission
                 try {
                     await fetch(SCRIPT_URL, {
                         method: 'POST', mode: 'no-cors', cache: 'no-cache', headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ name: localStorage.getItem('lexicon_player_name') || "Stranger", Character: archNames[window.G.archetype] || "Outcast", high_score: currentScore, game_name: "Lexicon", Difficulty: window.G.difficulty || 'easy', Floor: window.G.floor })
                     });
+                    // Force refresh cache after submission
+                    window.fetchLeaderboard(true);
                 } catch (e) {}
             }
 
