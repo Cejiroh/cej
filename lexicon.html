@@ -458,7 +458,7 @@
         }
 
         .custom-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 5000; display: none; align-items: center; justify-content: center; padding: 20px; }
-        .modal-box { background: #fdf5e6; border: 6 double var(--ink-black); padding: 30px; border-radius: 15px; text-align: center; max-width: 400px; box-shadow: 0 10px 40px #000; width: 100%; }
+        .modal-box { background: #fdf5e6; border: 6 double var(--ink-black); padding: 30px; border-radius: 15px; text-align: center; max-width: 400px; box-shadow: 0 10px 40px #000; width: 100%; position: relative; }
 
         #respite-archive-box.boss-style, .boss-alert {
             background-color: #1a0f0a !important;
@@ -490,6 +490,7 @@
             line-height: 1;
             color: var(--ink-black);
             opacity: 0.6;
+            z-index: 10;
         }
         .close-x:hover { opacity: 1; }
 
@@ -520,7 +521,14 @@
         .message-toast { position: absolute; top: 15%; left: 50%; transform: translateX(-50%); background: #1c140d; color: #d2b48c; padding: 12px 24px; border: 2px solid #d2b48c; border-radius: 8px; opacity: 0; z-index: 3000; transition: 0.3s; box-shadow: 0 4px 15px #000; font-family: var(--font-title); text-align: center; font-size: 0.9rem; pointer-events: none; }
         .message-toast.show { opacity: 1; transform: translate(-50%, 20px); }
 
-        .boss-alert { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 30px; width: 90%; max-width: 400px; z-index: 4000; text-align: center; display: none; border-radius: 12px; }
+        .boss-alert { 
+            padding: 30px; 
+            width: 90%; 
+            max-width: 400px; 
+            text-align: center; 
+            border-radius: 12px; 
+            position: relative;
+        }
         .boss-alert h1 { font-family: var(--font-title); font-size: 2rem; margin-bottom: 12px; letter-spacing: 2px; }
         .boss-alert .btn { margin: 15px auto 0 auto; display: block; min-width: 150px; }
 
@@ -647,10 +655,9 @@
 
         <!-- Right: Coins and Points -->
         <div class="header-panel">
-            <div id="score-val" class="stat-value" style="font-size: 0.75rem; margin-bottom: 2px;">0 Points</div>
+            <div id="score-val" class="stat-value" style="font-size: 0.75rem; margin-bottom: 2px;">Score: 0</div>
             <div style="display: flex; flex-direction: column; align-items: center;">
-                <div class="stat-label">Coins</div>
-                <div id="coins-subval" class="stat-value">0</div>
+                <div id="coins-subval" class="stat-value" style="font-size: 1.1rem;">🪙 0</div>
             </div>
         </div>
     </div>
@@ -686,8 +693,8 @@
     </div>
 
     <!-- Hint Modal -->
-    <div id="hint-modal" class="custom-modal">
-        <div class="modal-box">
+    <div id="hint-modal" class="custom-modal" onclick="this.style.display='none'">
+        <div class="modal-box" onclick="event.stopPropagation()">
             <h2 class="title" style="color: var(--green);">ARCHIVE CLUE</h2>
             <div id="hint-content" style="margin: 20px 0; font-style: italic; font-size: 0.9rem; line-height: 1.4; max-height: 200px; overflow-y: auto;">
                 Seeking the hidden meaning...
@@ -701,14 +708,14 @@
         <div class="modal-box">
             <h2 class="title">What is your name?</h2>
             <p style="margin-bottom: 20px; font-style: italic;">Enter up to 10 characters.</p>
-            <input type="text" id="name-entry" class="name-input" maxlength="10" placeholder="Stranger">
+            <input type="text" id="name-entry" class="name-input" maxlength="10" placeholder="Stranger" onkeydown="if(event.key==='Enter') submitName()">
             <button class="btn" onclick="submitName()">Confirm Identity</button>
         </div>
     </div>
 
     <!-- New Tutorial Modal -->
-    <div id="tutorial-modal" class="custom-modal">
-        <div class="modal-box">
+    <div id="tutorial-modal" class="custom-modal" onclick="closeTutorial()">
+        <div class="modal-box" onclick="event.stopPropagation()">
             <h2 class="title" style="color: var(--green);">HOW TO PLAY</h2>
             <ul class="tutorial-list">
                 <li><b>Spelling</b>: Guess the hidden word.
@@ -735,8 +742,8 @@
         </div>
     </div>
 
-    <div id="surrender-modal" class="custom-modal">
-        <div class="modal-box">
+    <div id="surrender-modal" class="custom-modal" onclick="this.style.display='none'">
+        <div class="modal-box" onclick="event.stopPropagation()">
             <h2 class="title" style="color: var(--hazard);">ABANDON?</h2>
             <p style="margin-bottom: 25px;">Suffer Vitality loss and skip reward?</p>
             <button class="btn" onclick="executeSurrender()" style="background:var(--hazard); color:white; border-color: black;">Yes, Retreat</button>
@@ -871,8 +878,8 @@
         <div id="respite-archive-box" class="modal-box" style="background: rgba(0,0,0,0.05); border: 2px solid var(--accent); width: 100%;">
             <p id="respite-label" style="font-family: var(--font-title); font-size: 0.8rem; color: var(--accent); text-transform: uppercase;">Last Archive</p>
             <h1 id="respite-header" style="font-family: var(--font-title); margin: 5px 0 10px 0; letter-spacing: 4px; color: var(--green);">WORD</h1>
-            <p id="respite-definition" style="font-style: italic; font-size: 0.8rem; line-height: 1.3; margin: 10px 0; max-height: 100px; overflow-y: auto; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 8px;"></p>
-            <p id="respite-subtext" style="font-style: normal; font-size: 0.9rem; margin-top: 5px; opacity: 0.8;"></p>
+            <p id="respite-subtext" style="font-style: normal; font-size: 0.9rem; margin: 5px 0; opacity: 0.8;"></p>
+            <p id="respite-definition" style="font-style: italic; font-size: 0.8rem; line-height: 1.3; margin: 5px 0 10px 0; max-height: 100px; overflow-y: auto; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 8px;"></p>
         </div>
         
         <div style="margin-top: 30px; display: flex; flex-direction: column; gap: 12px; width: 100%;">
@@ -892,7 +899,8 @@
         <h1 class="title" style="color: var(--hazard); font-size: 4rem;">Consumed</h1>
         <p id="game-summary" style="margin-bottom: 5px; font-style: italic;"></p>
         <p id="game-final-score" style="margin-bottom: 10px; font-weight: bold; font-family: var(--font-title);"></p>
-        <p id="game-last-word" style="font-weight: bold; color: var(--hazard); margin-bottom: 20px;"></p>
+        <p id="game-last-word" style="font-weight: bold; color: var(--hazard); margin-bottom: 5px;"></p>
+        <p id="game-final-definition" style="font-style: italic; font-size: 0.85rem; line-height: 1.3; margin-bottom: 25px; max-width: 80%; opacity: 0.8;"></p>
         <button class="btn" onclick="AudioEngine.playShop(); showScreen('screen-archetype')">Reincarnate</button>
         <button class="btn" onclick="AudioEngine.playShop(); openLeaderboard()">View Leaderboard</button>
     </div>
@@ -915,10 +923,12 @@
         <button class="btn" onclick="window.fetchLeaderboard(true)" style="margin-top: 20px; font-size: 0.8rem; padding: 10px;">Refresh Archives</button>
     </div>
 
-    <div id="boss-alert" class="boss-alert">
-        <h1 id="boss-name">BOSS</h1>
-        <p id="boss-desc" style="font-style: italic; margin-bottom: 25px;"></p>
-        <button class="btn" onclick="AudioEngine.playShop(); hideBossAlert()">Continue</button>
+    <div id="boss-modal" class="custom-modal" onclick="hideBossAlert()">
+        <div id="boss-alert" class="boss-alert box-style" onclick="event.stopPropagation()">
+            <h1 id="boss-name">BOSS</h1>
+            <p id="boss-desc" style="font-style: italic; margin-bottom: 25px;"></p>
+            <button class="btn" onclick="AudioEngine.playShop(); hideBossAlert()">Continue</button>
+        </div>
     </div>
 
     <div id="toast" class="message-toast"></div>
@@ -1106,7 +1116,7 @@
                 if (id !== 'screen-game' && id !== 'screen-respite' && id !== 'screen-leaderboard') {
                     body.classList.remove('boss-active');
                     document.getElementById('confirm-modal').style.display = 'none';
-                    document.getElementById('boss-alert').style.display = 'none';
+                    document.getElementById('boss-modal').style.display = 'none';
                     document.getElementById('victory-modal').style.display = 'none';
                     stopTimer();
                 }
@@ -1500,10 +1510,10 @@
                 
                 document.getElementById('boss-name').innerText = b.name;
                 document.getElementById('boss-desc').innerText = b.desc;
-                document.getElementById('boss-alert').style.display = 'block';
+                document.getElementById('boss-modal').style.display = 'flex';
             }
 
-            window.hideBossAlert = () => { document.getElementById('boss-alert').style.display = 'none'; updateUI(); };
+            window.hideBossAlert = () => { document.getElementById('boss-modal').style.display = 'none'; updateUI(); };
 
             function renderGrid() {
                 const grid = document.getElementById('grid'); 
@@ -1803,7 +1813,11 @@
 
             function loseFloor() { 
                 stopTimer(); toast(`The word was: ${window.G.targetWord.toUpperCase()}`); AudioEngine.playWrong();
-                takeDamage(window.G.bossActive ? 50 : 30); 
+                let damageAmount = window.G.bossActive ? 50 : 30;
+                if (window.G.bossActive === "THE CHIMERA") {
+                    damageAmount += (window.G.modifiers.length * 5);
+                }
+                takeDamage(damageAmount); 
                 if(window.G.hp > 0) {
                     if(window.G.bossActive === "THE CHIMERA") { toast("Re-trial..."); setTimeout(() => initFloor(), 1500); }
                     else { window.G.midFloor = false; openRespite(); }
@@ -1833,11 +1847,12 @@
                         const meta = BOSS_LIST.find(b => b.mod === window.G.availableBosses[0]);
                         if (meta) bName = meta.name;
                     }
-                    label.innerText = `Floor ${romNums[nf] || nf} Trial`; header.innerText = bName; subtext.innerText = `Last Archive: ${lastWord}`;
+                    label.innerText = `Floor ${romNums[nf] || nf} Trial`; header.innerText = bName; 
+                    subtext.innerText = `Last Archive: ${lastWord}`;
                 } else {
                     box.classList.remove('boss-style'); document.body.classList.remove('boss-active');
-                    let nextB = window.G.isEndless ? nf + (1 - (nf % 2)) : nf + (3 - (nf % 4));
-                    label.innerText = "Last Archive"; header.innerText = lastWord; subtext.innerText = `${nextB - window.G.floor} floor(s) to next Trial.`;
+                    label.innerText = "Last Archive"; header.innerText = lastWord; 
+                    subtext.innerText = ""; // Floor countdown removed
                 }
                 window.showScreen('screen-respite'); saveGame();
             };
@@ -1924,10 +1939,10 @@
                 document.getElementById('player-name-val').innerText = localStorage.getItem('lexicon_player_name') || "Stranger";
                 document.getElementById('soul-name-val').innerText = (archNames[window.G.archetype] || "Outcast").toUpperCase();
                 document.getElementById('floor-val-header').innerText = romNums[window.G.floor] || window.G.floor;
-                document.getElementById('score-val').innerText = `${window.G.totalScore} Points`;
+                document.getElementById('score-val').innerText = `Score: ${window.G.totalScore}`;
                 document.getElementById('hp-val').innerText = `${Math.ceil(window.G.hp)} / ${window.G.maxHp}`;
                 document.getElementById('hp-bar').style.width = (window.G.hp/window.G.maxHp*100)+"%";
-                document.getElementById('coins-subval').innerText = window.G.coins;
+                document.getElementById('coins-subval').innerText = `🪙 ${window.G.coins}`;
                 const modBar = document.getElementById('modifiers-bar'); modBar.innerHTML = "";
                 if(window.G.bossActive && isGameScreen) { 
                     body.classList.add('boss-active');
@@ -2020,18 +2035,31 @@
 
             async function submitScore() {
                 const currentScore = window.G.totalScore;
-                if (currentScore <= parseInt(localStorage.getItem(`lexicon_best_score_${window.G.difficulty || 'easy'}`) || 0)) return;
-                localStorage.setItem(`lexicon_best_score_${window.G.difficulty || 'easy'}`, currentScore);
-                
-                // Fetch fresh leaderboard data immediately after submission
-                try {
-                    await fetch(SCRIPT_URL, {
-                        method: 'POST', mode: 'no-cors', cache: 'no-cache', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ name: localStorage.getItem('lexicon_player_name') || "Stranger", Character: archNames[window.G.archetype] || "Outcast", high_score: currentScore, game_name: "Lexicon", Difficulty: window.G.difficulty || 'easy', Floor: window.G.floor })
-                    });
-                    // Force refresh cache after submission
-                    window.fetchLeaderboard(true);
-                } catch (e) {}
+                const diffKey = window.G.difficulty || 'easy';
+                const bestKey = `lexicon_best_score_${diffKey}`;
+                const cachedBest = parseInt(localStorage.getItem(bestKey) || 0);
+
+                // Update leaderboard if we beat our personal best for this specific difficulty
+                if (currentScore > cachedBest) {
+                    localStorage.setItem(bestKey, currentScore);
+                    try {
+                        await fetch(SCRIPT_URL, {
+                            method: 'POST', mode: 'no-cors', cache: 'no-cache', headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ 
+                                name: localStorage.getItem('lexicon_player_name') || "Stranger", 
+                                Character: archNames[window.G.archetype] || "Outcast", 
+                                high_score: currentScore, 
+                                game_name: "Lexicon", 
+                                Difficulty: diffKey, 
+                                Floor: window.G.floor 
+                            })
+                        });
+                        // Clear cache to force a refresh when the user views the leaderboard
+                        leaderboardCache = null;
+                    } catch (e) {
+                        console.error("Score submission failed");
+                    }
+                }
             }
 
             function endRun() { 
@@ -2040,6 +2068,7 @@
                 document.getElementById('game-summary').innerText = `${localStorage.getItem('lexicon_player_name') || "Stranger"} reached Floor ${romNums[window.G.floor] || window.G.floor}.`;
                 document.getElementById('game-final-score').innerText = `Final Score: ${window.G.totalScore}`;
                 document.getElementById('game-last-word').innerText = `Word: ${window.G.targetWord.toUpperCase()}`; 
+                document.getElementById('game-final-definition').innerText = window.G.rawDefinition || "The archives for this word are obscured.";
                 window.showScreen('screen-gameover'); 
             }
             
@@ -2050,7 +2079,7 @@
                 if (!window.G.isGameOver) { 
                     if (window.G.floor >= 20) {
                         window.G.isGameOver = true;
-                        submitScore(); // Ensure leaderboard is updated on victory retirement
+                        submitScore(); 
                     }
                     saveGame(); 
                 }
