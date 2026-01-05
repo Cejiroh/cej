@@ -1384,6 +1384,14 @@
 
                 window.G.availableBosses = BOSS_LIST.map(b => b.mod).filter(m => m !== 'Chimera').sort(() => Math.random() - 0.5);
 
+                // BOSS HUNTER GIFT: Random Relic at Start
+                if (type === 'hunter') {
+                    const relicKeys = Object.keys(ITEMS).filter(k => ITEMS[k].type === 'perm');
+                    const randomRelic = relicKeys[Math.floor(Math.random() * relicKeys.length)];
+                    ITEMS[randomRelic].run();
+                    setTimeout(() => toast(`Soul Gift: ${ITEMS[randomRelic].name}`), 1000);
+                }
+
                 const high = parseInt(localStorage.getItem('lexicon_high_score') || 0);
                 if (type === 'outcast' && high < 8) {
                     initFloor();
