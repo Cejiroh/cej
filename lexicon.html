@@ -1308,14 +1308,14 @@
                 }
             };
 
-            window.deleteSaveAndStart = () => { 
+            window.deleteSaveAndStart = async () => { 
                 const saved = localStorage.getItem('lexicon_run_save');
                 if (saved) {
                     const prevG = JSON.parse(saved);
-                    const currentG = window.G;
+                    const currentG = {...window.G};
                     window.G = prevG;
                     calculateScore();
-                    submitScore();
+                    await submitScore(); 
                     window.G = currentG;
                 }
                 localStorage.removeItem('lexicon_run_save'); 
@@ -2039,7 +2039,6 @@
                 const bestKey = `lexicon_best_score_${diffKey}`;
                 const cachedBest = parseInt(localStorage.getItem(bestKey) || 0);
 
-                // Update leaderboard if we beat our personal best for this specific difficulty
                 if (currentScore > cachedBest) {
                     localStorage.setItem(bestKey, currentScore);
                     try {
@@ -2054,8 +2053,7 @@
                                 Floor: window.G.floor 
                             })
                         });
-                        // Clear cache to force a refresh when the user views the leaderboard
-                        leaderboardCache = null;
+                        leaderboardCache = null; 
                     } catch (e) {
                         console.error("Score submission failed");
                     }
