@@ -1171,7 +1171,6 @@
                         setTimeout(() => renderGrid(), 10);
                         if(window.G.modifiers.includes("Clock")) startTimer();
                     } else {
-                        // Remove ribbon navigation on Respite and Shop
                         surrenderBtn.style.display = 'none';
                     }
                 } else header.style.display = 'none';
@@ -1204,9 +1203,9 @@
 
             function startTimer() {
                 if (window.G.modifiers.includes("Clock")) {
-                    document.getElementById('timer-display').style.display = 'none';
-                } else {
                     document.getElementById('timer-display').style.display = 'block';
+                } else {
+                    document.getElementById('timer-display').style.display = 'none';
                 }
                 stopTimer();
                 timerInterval = setInterval(() => {
@@ -1223,7 +1222,18 @@
             function updateTimerUI() {
                 const m = Math.floor(window.G.timerSeconds / 60);
                 const s = window.G.timerSeconds % 60;
-                document.getElementById('timer-display').innerText = `${m}:${s.toString().padStart(2, '0')}`;
+                const tStr = `${m}:${s.toString().padStart(2, '0')}`;
+                document.getElementById('timer-display').innerText = tStr;
+                
+                // Keep the boss alert modal dynamic if it's the Clockmaker
+                const bModal = document.getElementById('boss-modal');
+                if (bModal && bModal.style.display === 'flex' && window.G.modifiers.includes("Clock")) {
+                    const bName = document.getElementById('boss-name').innerText;
+                    if (bName === "THE CLOCKMAKER") {
+                        document.getElementById('boss-desc').innerText = `Win before ${tStr} reaches zero.`;
+                    }
+                }
+                
                 updateUI();
             }
 
@@ -1274,7 +1284,6 @@
                     }
                 });
 
-                // Fetch leaderboard early for smooth transitions
                 window.fetchLeaderboard(false);
                 window.showScreen('screen-start');
             }
@@ -1394,7 +1403,6 @@
 
                 window.G.availableBosses = BOSS_LIST.map(b => b.mod).filter(m => m !== 'Chimera').sort(() => Math.random() - 0.5);
 
-                // BOSS HUNTER GIFT: Random Relic at Start
                 if (type === 'hunter') {
                     const relicKeys = Object.keys(ITEMS).filter(k => ITEMS[k].type === 'perm');
                     const randomRelic = relicKeys[Math.floor(Math.random() * relicKeys.length)];
@@ -1427,8 +1435,6 @@
                     }
 
                     window.G.rawDefinition = definition;
-                    
-                    // Sanitize for hint use
                     const mask = "____";
                     const regex = new RegExp(word, 'gi');
                     window.G.currentDefinition = definition.replace(regex, mask);
@@ -1870,7 +1876,7 @@
                 } else {
                     box.classList.remove('boss-style'); document.body.classList.remove('boss-active');
                     label.innerText = "Last Archive"; header.innerText = lastWord; 
-                    subtext.innerText = ""; // Floor countdown removed
+                    subtext.innerText = "";
                 }
                 window.showScreen('screen-respite'); saveGame();
             };
@@ -1900,7 +1906,6 @@
                     cont.appendChild(div);
                 });
 
-                // Custom Shop Navigation Button
                 const navContainer = document.getElementById('shop-nav-container');
                 const nextFloor = window.G.floor + 1;
                 const isHunter = window.G.archetype === 'hunter';
@@ -1967,7 +1972,11 @@
                     const div = document.createElement('div'); div.className = "boss-info";
                     let desc = window.G.modifiers.map(m => {
                         let text = BOSS_DATA[m] || "";
-                        if (m === "Clock") text = `Win before the timer reaches zero.`;
+                        if (m === "Clock") {
+                            const mm = Math.floor(window.G.timerSeconds / 60);
+                            const ss = (window.G.timerSeconds % 60).toString().padStart(2, '0');
+                            text = `Win before ${mm}:${ss} reaches zero.`;
+                        }
                         if (window.G.wardActive && window.G.suppressedModifier === m) return `<s style="opacity: 0.6; text-decoration: line-through;">${text}</s>`;
                         return text;
                     }).join(" ");
@@ -2020,7 +2029,6 @@
 
             window.fetchLeaderboard = async function(force = false) {
                 const container = document.getElementById('leaderboard-content');
-                
                 if (!leaderboardCache || force) {
                     container.innerHTML = '<div class="loading-leaderboard">Reading the scrolls...</div>';
                     try {
@@ -2031,7 +2039,6 @@
                         return;
                     }
                 }
-                
                 const data = leaderboardCache;
                 const uniquePlayers = {};
                 data.forEach(entry => {
@@ -2056,7 +2063,6 @@
                 const diffKey = window.G.difficulty || 'easy';
                 const bestKey = `lexicon_best_score_${diffKey}`;
                 const cachedBest = parseInt(localStorage.getItem(bestKey) || 0);
-
                 if (currentScore > cachedBest) {
                     localStorage.setItem(bestKey, currentScore);
                     try {
