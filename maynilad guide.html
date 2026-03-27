@@ -1,0 +1,2152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maynilad</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#f1f5f9;color:#111827;font-size:14px;min-height:100vh}
+
+/* NAV */
+nav{background:#2563eb;color:#fff;padding:0 20px;height:48px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:300;box-shadow:0 2px 10px rgba(37,99,235,.4)}
+.nav-brand{font-weight:700;font-size:1em;text-decoration:none;color:#fff;letter-spacing:-.01em}
+.nav-qc-btn{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.3);border-radius:8px;padding:5px 14px;cursor:pointer;color:#fff;font-size:.8em;font-weight:600;transition:all .2s;position:relative}
+.nav-qc-btn:hover{background:rgba(255,255,255,.25)}
+.nav-qc-icon{font-size:1em}
+.nav-score-pill{background:#fbbf24;color:#1e3a8a;font-size:.68em;font-weight:700;padding:1px 7px;border-radius:9999px;font-family:monospace}
+
+/* LAYOUT */
+.layout{display:flex;gap:0;min-height:calc(100vh - 48px)}
+.main-col{flex:1;padding:24px;overflow-y:auto;min-width:0;max-width:860px;margin:0 auto}
+
+/* STICKY QC POPUP */
+.qc-popup{position:fixed;bottom:20px;right:20px;width:310px;background:#fff;border:1.5px solid #bfdbfe;border-radius:12px;box-shadow:0 8px 32px rgba(37,99,235,.18);z-index:400;display:flex;flex-direction:column;max-height:480px;transition:max-height .25s ease,opacity .2s ease;overflow:hidden;user-select:none}
+.qc-popup.minimized{max-height:44px}
+.qc-popup.minimized .qc-popup-body{display:none}
+.qc-popup.minimized .qc-popup-footer{display:none}
+
+/* CARD */
+.card{background:#fff;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,.1);position:relative;margin-bottom:20px;overflow:hidden}
+.card-header{padding:24px 28px 16px;border-bottom:1px solid #f1f5f9}
+.card-header h1{font-size:1.6em;font-weight:700;color:#111827}
+.card-header p{color:#6b7280;margin-top:2px;font-size:.85em}
+.card-header .warn{color:#dc2626;font-weight:700;font-size:.85em;margin-top:4px}
+
+/* SECTION HEADER */
+.section-head{background:#eff6ff;padding:10px 14px;border-radius:8px;margin:0 16px 12px;border-left:4px solid #3b82f6}
+.section-head h2{font-size:1em;font-weight:800;color:#1e40af;text-transform:uppercase;letter-spacing:.02em}
+.section-head p{font-size:.75em;color:#6b7280;margin-top:2px}
+.section-body{padding:0 16px 16px}
+
+/* QUESTION BLOCK */
+.q-block{padding:14px 0;border-bottom:1px solid #e5e7eb}
+.q-block:last-child{border-bottom:none}
+.q-text{font-size:.9em;font-weight:600;color:#111827;margin-bottom:10px;line-height:1.5}
+.req{color:#ef4444;margin-left:3px}
+
+/* GRID FIELDS */
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:14px;margin-top:6px}
+.grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:14px;margin-top:6px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:14px;margin-top:6px}
+.field{display:flex;flex-direction:column;gap:3px}
+.field label{font-size:.75em;font-weight:500;color:#374151}
+input[type=text],input[type=number],input[type=tel],input[type=email],select,textarea{width:100%;padding:7px 9px;border:1px solid #d1d5db;border-radius:6px;font-family:inherit;font-size:.85em;color:#111827;background:#fff;outline:none;transition:border-color .15s,box-shadow .15s}
+input:focus,select:focus,textarea:focus{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.15)}
+input[type=date]{
+  appearance:none;
+  -webkit-appearance:none;
+  -moz-appearance:none;
+  width:100%;
+  padding:7px 9px;
+  border:1px solid #d1d5db;
+  border-radius:6px;
+  font-family:inherit;
+  font-size:.85em;
+  color:#111827;
+  background:#fff;
+  position:relative;
+}
+input[type=date]::-webkit-calendar-picker-indicator{
+  cursor:pointer;
+  opacity:.7;
+  position:absolute;
+  right:8px;
+}
+input.ok{border-color:#16a34a;background:#f0fdf4}
+input.warn{border-color:#f59e0b;background:#fffbeb}
+input.err{border-color:#ef4444;background:#fff5f5}
+select.ok{border-color:#16a34a;background:#f0fdf4}
+select.warn{border-color:#f59e0b;background:#fffbeb}
+select.err{border-color:#ef4444;background:#fff5f5}
+textarea{resize:vertical;min-height:60px}
+
+/* RADIO & CHECKBOX */
+.radio-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
+.radio-col{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.r-opt{display:flex;align-items:center;gap:7px;cursor:pointer;font-size:.85em;color:#374151}
+.r-opt input[type=radio],.r-opt input[type=checkbox]{accent-color:#2563eb;width:15px;height:15px;flex-shrink:0;cursor:pointer}
+.cb-opt{display:flex;align-items:flex-start;gap:7px;cursor:pointer;font-size:.85em;color:#374151;padding:1px 0}
+.cb-opt input[type=checkbox]{accent-color:#2563eb;width:14px;height:14px;flex-shrink:0;margin-top:1px;cursor:pointer}
+
+/* TABLES */
+.tbl{width:100%;border-collapse:collapse;font-size:.8em;margin-top:10px;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.tbl th{background:#dbeafe;padding:8px 10px;text-align:center;border:1px solid #bfdbfe;color:#1e40af;font-size:.75em;font-weight:700;text-transform:uppercase}
+.tbl th:first-child{text-align:left}
+.tbl td{padding:7px 8px;border:1px solid #e5e7eb;text-align:center;vertical-align:middle}
+.tbl td:first-child{text-align:left;font-weight:500;font-size:.82em}
+.tbl tr:nth-child(even) td{background:#f9fafb}
+.tbl input[type=radio],.tbl input[type=checkbox]{accent-color:#2563eb;width:15px;height:15px;cursor:pointer}
+.tbl select{padding:4px 6px;font-size:.82em;border:1px solid #d1d5db;border-radius:4px}
+.tbl input[type=number],.tbl input[type=text]{padding:4px 6px;font-size:.82em}
+
+/* TOTAL DISPLAY */
+.totals{display:flex;gap:20px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;padding:8px 12px;margin-top:8px;font-size:.78em;font-family:monospace}
+.tot-item{display:flex;flex-direction:column;gap:2px}
+.tot-lbl{color:#6b7280}
+.tot-val{font-weight:700;font-size:1.1em}
+.tot-val.match{color:#16a34a}
+.tot-val.mismatch{color:#ef4444}
+
+/* VALIDATION MESSAGES */
+.v-msg{font-size:.72em;padding:3px 8px;border-radius:4px;margin-top:3px;display:none;align-items:center;gap:4px;line-height:1.4}
+.v-msg.show{display:flex}
+.v-msg.err{background:#fff5f5;color:#991b1b;border-left:3px solid #ef4444}
+.v-msg.warn{background:#fffbeb;color:#92400e;border-left:3px solid #f59e0b}
+.v-msg.ok{background:#f0fdf4;color:#166534;border-left:3px solid #16a34a}
+
+/* TIP BOX */
+.tip-btn{background:#dbeafe;border:1.5px solid #93c5fd;border-radius:50%;width:18px;height:18px;font-size:.68em;color:#2563eb;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-weight:700;margin-left:5px;vertical-align:middle;transition:all .15s;flex-shrink:0}
+.tip-btn:hover{background:#2563eb;color:#fff}
+.tip-box{background:#eff6ff;border:1.5px solid #93c5fd;border-radius:6px;padding:10px 12px;font-size:.78em;line-height:1.6;color:#1e40af;margin-top:8px;display:block}
+.tip-box.hidden{display:none}
+.tip-box strong{color:#1e3a8a}
+.tip-box ul{padding-left:16px;margin-top:4px}
+.tip-box li{margin-bottom:3px}
+
+/* CHECKBOX */
+.check-row{margin-top:8px;display:flex;align-items:center;gap:8px;font-size:.82em;cursor:pointer;color:#374151}
+.check-row input[type=checkbox]{accent-color:#2563eb;width:14px;height:14px}
+
+/* REMARKS */
+.remarks-field{margin-top:10px}
+.remarks-field label{font-size:.75em;font-weight:500;color:#6b7280;display:block;margin-bottom:3px}
+
+/* SUBMIT AREA */
+.submit-area{text-align:center;padding:24px}
+.btn-submit{padding:14px 40px;background:#1d4ed8;color:#fff;font-size:1em;font-weight:700;border:none;border-radius:10px;cursor:pointer;transition:all .2s;box-shadow:0 4px 12px rgba(29,78,216,.3)}
+.btn-submit:hover{background:#1e40af;transform:translateY(-1px);box-shadow:0 6px 16px rgba(29,78,216,.4)}
+
+/* GOOD SHEET BANNER */
+.good-banner{background:linear-gradient(135deg,#16a34a,#15803d);color:#fff;border-radius:10px;padding:14px 20px;margin-bottom:20px;display:none;align-items:center;gap:12px;font-weight:700;box-shadow:0 4px 12px rgba(22,163,74,.3)}
+.good-banner.show{display:flex}
+.good-banner .icon{font-size:2em}
+
+/* QC POPUP INTERNALS */
+.qc-popup-header{background:#2563eb;color:#fff;padding:10px 12px;font-weight:700;font-size:.82em;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;cursor:move;border-radius:10px 10px 0 0}
+.qc-popup-header .qc-title{display:flex;align-items:center;gap:7px}
+.qc-popup-header .qc-badges{display:flex;gap:4px;align-items:center}
+.qc-badge{font-size:.68em;font-weight:700;padding:1px 7px;border-radius:9999px;font-family:monospace}
+.qc-badge.err{background:#ef4444;color:#fff}
+.qc-badge.warn{background:#f59e0b;color:#fff}
+.qc-badge.ok{background:#16a34a;color:#fff}
+.qc-min-btn{background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:5px;width:22px;height:22px;cursor:pointer;font-size:.9em;display:flex;align-items:center;justify-content:center;transition:background .15s;flex-shrink:0}
+.qc-min-btn:hover{background:rgba(255,255,255,.35)}
+.qc-popup-tabs{display:flex;gap:4px;padding:8px 10px;border-bottom:1px solid #e5e7eb;background:#f9fafb;flex-shrink:0}
+.sp-type-btn{flex:1;padding:5px;border:1.5px solid #e5e7eb;border-radius:6px;cursor:pointer;font-size:.72em;font-weight:600;background:#fff;color:#6b7280;text-align:center;transition:all .15s}
+.sp-type-btn.active{background:#2563eb;color:#fff;border-color:#2563eb}
+.qc-popup-body{flex:1;overflow-y:auto;padding:8px;max-height:320px}
+.finding-item{padding:7px 10px;border-radius:6px;margin-bottom:5px;font-size:.73em;line-height:1.5;border-left:3px solid;cursor:pointer;transition:opacity .1s,transform .1s}
+.finding-item:hover{opacity:.85;transform:translateX(-2px)}
+.finding-item:hover::before{content:'↩ ';font-size:.85em;opacity:.5}
+.finding-item.err{background:#fff5f5;border-color:#ef4444;color:#7f1d1d}
+.finding-item.warn{background:#fffbeb;border-color:#f59e0b;color:#78350f}
+.finding-item.ok{background:#f0fdf4;border-color:#16a34a;color:#14532d}
+.fi-q{font-weight:700;font-family:monospace;font-size:.88em;margin-right:4px}
+.fi-action{display:block;font-size:.87em;color:#1d4ed8;margin-top:2px;font-style:italic}
+.qc-popup-footer{padding:8px 12px;border-top:1px solid #e5e7eb;background:#f9fafb;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;border-radius:0 0 10px 10px}
+.score{font-family:monospace;font-weight:700;font-size:1em}
+.score.perfect{color:#16a34a}
+.score.good{color:#2563eb}
+.score.poor{color:#ef4444}
+.btn-reset{padding:5px 12px;font-size:.72em;font-weight:600;border-radius:5px;border:none;cursor:pointer;background:#e5e7eb;color:#374151;transition:all .15s}
+.btn-reset:hover{background:#d1d5db}
+#nav-search::placeholder{color:rgba(255,255,255,.75);}
+#nav-search::-webkit-input-placeholder{color:rgba(255,255,255,.75);}
+#nav-search:-ms-input-placeholder{color:rgba(255,255,255,.75);}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="#" tabindex="-1">Maynilad</a>
+  <div style="display:flex;align-items:center;gap:8px;flex:1;max-width:220px;margin:0 16px">
+    <div style="position:relative;width:100%">
+      <!-- FIX: z-index:2 so icon renders above input backdrop-filter -->
+      <span style="position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:.85em;opacity:.9;pointer-events:none;z-index:2;color:#fff">🔍</span>
+      <input type="text" id="nav-search" placeholder="Jump to Q8, Q15…" oninput="navSearch(this.value)"
+        style="width:100%;padding:6px 10px 6px 30px;border-radius:8px;border:1.5px solid rgba(255,255,255,.35);background:rgba(255,255,255,.18);color:#fff;font-size:.8em;font-family:inherit;outline:none"
+        onfocus="this.style.background='rgba(255,255,255,.28)';this.style.borderColor='rgba(255,255,255,.6)'" onblur="this.style.background='rgba(255,255,255,.15)'">
+      <div id="nav-search-results" style="display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;background:#fff;border-radius:10px;box-shadow:0 10px 28px rgba(0,0,0,.2);z-index:500;overflow:hidden;font-size:.82em;border:1px solid #e5e7eb"></div>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <span id="nav-err-count" style="display:none;background:#ef4444;color:#fff;font-size:.68em;font-weight:700;padding:2px 8px;border-radius:9999px;font-family:monospace"></span>
+    <span class="nav-score-pill" id="header-score">—</span>
+    <span style="font-size:.78em;opacity:.7;font-weight:500">QC Score</span>
+  </div>
+</nav>
+
+<!-- STICKY QC POPUP -->
+<div class="qc-popup" id="qc-popup">
+  <div class="qc-popup-header" id="qc-drag-handle">
+    <div class="qc-title">
+      <span>🔍</span>
+      <span>QC Findings <span style="font-weight:400;opacity:.8;font-size:.9em">(RES)</span></span>
+    </div>
+    <div class="qc-badges">
+      <span class="qc-badge err" id="badge-err" style="display:none"></span>
+      <span class="qc-badge warn" id="badge-warn" style="display:none"></span>
+      <button class="qc-min-btn" id="qc-min-btn" onclick="toggleMinimize()" title="Minimize/Expand">—</button>
+    </div>
+  </div>
+  <div class="qc-popup-tabs">
+    <button class="sp-type-btn active" id="btn-res" onclick="setSheetType('RES')">🏠 Residential</button>
+    <button class="sp-type-btn" id="btn-semi" onclick="setSheetType('SEMI')">🏪 Semi-Business</button>
+  </div>
+  <div class="qc-popup-body" id="findings-list">
+    <div style="text-align:center;color:#9ca3af;padding:20px 10px;font-size:.76em">Fill in the form to see QC findings here.</div>
+  </div>
+  <div class="qc-popup-footer">
+    <div>
+      <div style="font-size:.65em;color:#9ca3af;text-transform:uppercase;font-weight:600;margin-bottom:1px">Sheet Score</div>
+      <div class="score" id="score-display">—</div>
+    </div>
+    <button class="btn-reset" onclick="resetForm()">🔄 Reset</button>
+  </div>
+</div>
+
+<div class="layout">
+<div class="main-col">
+
+  <div class="good-banner" id="good-banner">
+    <div class="icon">✅</div>
+    <div>
+      <div>GOOD SHEET — All checks passed!</div>
+      <div style="font-size:.8em;font-weight:400;opacity:.9;margin-top:2px;">All required fields are filled correctly. Proceed to submit.</div>
+    </div>
+  </div>
+
+  <!-- ══════════════ INTERVIEW INFO CARD ══════════════ -->
+  <div class="card">
+    <div class="card-header">
+      <div style="background:#fee2e2;border:1.5px solid #ef4444;color:#7f1d1d;padding:10px 14px;border-radius:8px;margin-bottom:10px;font-size:.8em;font-weight:600">
+        ⚠️ REMINDER: If any required question is missing from your sheet. Ask the enumerator first and tag the sheet as <strong>BAD SHEET</strong>.
+      </div>
+      <h1>Maynilad Consumer Questionnaire</h1>
+      <p>Residential/Semi Business Connected</p>
+      <div class="warn">Ensure that you are encoding the right Questionnaire/QCN.</div>
+    </div>
+    <div style="padding:16px">
+
+      <!-- Interview Info Grid — 4 columns, 2 rows aligned:
+           Row 1: QCN | FI Date | Time Started | Time Ended
+           Row 2: (spacer) | Date Completed | Time Started | Time Ended -->
+      <div class="grid-4" style="margin-top:0">
+        <div class="field">
+          <label>QCN <span class="req">*</span></label>
+          <select id="info_qcn" onchange="runValidation()"><option value="">— Select —</option></select>
+          <div class="v-msg" id="msg-info_qcn"></div>
+        </div>
+        <div class="field">
+          <label>First Interview Date <span class="req">*</span></label>
+          <input type="date" id="info_fi_date" tabindex="-1" oninput="runValidation()" onchange="runValidation()" style="cursor:pointer">
+          <div class="v-msg" id="msg-info_fi_date"></div>
+        </div>
+        <div class="field">
+          <label>Time Started <span class="req">*</span>
+            <button class="tip-btn" tabindex="-1" onclick="toggleTip('tip-time')">?</button>
+          </label>
+          <input type="text" id="time_start" placeholder="HH:mm AM" maxlength="8" oninput="timeMask(this);syncAutoFill(this);runValidation()" class="time-input">
+          <div class="v-msg" id="msg-time_start"></div>
+        </div>
+        <div class="field">
+          <label>Time Ended <span class="req">*</span></label>
+          <input type="text" id="time_end" placeholder="HH:mm AM" maxlength="8" oninput="timeMask(this);syncAutoFill(this);runValidation()" class="time-input">
+          <div class="v-msg" id="msg-time_end"></div>
+        </div>
+        <!-- spacer so row 2 starts under First Interview Date -->
+        <div></div>
+        <div class="field">
+          <label>Date Completed <span class="req">*</span></label>
+          <input type="date" id="info_dc_date" tabindex="-1" oninput="runValidation()" onchange="syncAutoFill(this);runValidation()" style="cursor:pointer">
+        </div>
+        <div class="field">
+          <label>Time Started <span class="req">*</span></label>
+          <input type="text" id="info_dc_ts" placeholder="HH:mm AM" maxlength="8" oninput="timeMask(this);runValidation()" class="time-input">
+        </div>
+        <div class="field">
+          <label>Time Ended <span class="req">*</span></label>
+          <input type="text" id="info_dc_te" placeholder="HH:mm AM" maxlength="8" oninput="timeMask(this);runValidation()" class="time-input">
+        </div>
+      </div>
+      <div class="tip-box" id="tip-time" style="margin-top:10px">
+        Type the time like this: <strong>09:30 AM</strong> or <strong>02:15 PM</strong>.<br>
+        If the interview took <strong>more than 1 hour</strong>, ask the enumerator to double-check — most interviews finish within an hour.
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════ PART I ══════════════ -->
+  <div class="card">
+    <div style="padding:16px 16px 0">
+      <div class="section-head">
+        <h2>PART I: RESPONDENT IDENTIFICATION</h2>
+        <p>Note: Bilugan ang kahon para sa sagot sa mga katanungan.</p>
+      </div>
+    </div>
+    <div class="section-body">
+
+      <div class="q-block">
+        <div class="grid-3" style="opacity:.6;pointer-events:none">
+          <div class="field"><label>Local Government Unit <span class="req">*</span></label><input type="text" disabled placeholder="Pre-filled"></div>
+          <div class="field"><label>Barangay <span class="req">*</span></label><input type="text" disabled placeholder="Pre-filled"></div>
+          <div class="field"><label>Business Area <span class="req">*</span></label><input type="text" disabled placeholder="Pre-filled"></div>
+          <div class="field"><label>DMA <span class="req">*</span></label><input type="text" disabled placeholder="Pre-filled"></div>
+          <div class="field"><label>Hydraulic System <span class="req">*</span></label><input type="text" disabled placeholder="Pre-filled"></div>
+        </div>
+        <div style="font-size:.72em;color:#6b7280;margin-top:6px">These fields are automatically filled in based on the QCN assignment.</div>
+      </div>
+
+      <!-- Q1 -->
+      <div class="q-block" id="block-q1">
+        <div class="q-text">1. Name of Respondent:
+          <button class="tip-btn" tabindex="-1" onclick="toggleTip('tip-q1')">?</button>
+        </div>
+        <div class="tip-box" id="tip-q1">
+          <strong>Middle Initial (MI):</strong>
+          <ul>
+            <li>If the middle initial is missing, you should confirm it to the enumerator why it was left out.</li>
+            <li>If you're reviewing several sheets and <strong>none of them</strong> have a middle initial, ask the enumerator to fill it out.</li>
+            <li>This can be done by sending a picture of all front page of the sheets or by sending the whole bundle to the enumerator.</li>
+          </ul>
+        </div>
+        <div class="grid-3">
+          <div class="field"><label>Last Name <span class="req">*</span></label><input type="text" id="q1_last" placeholder="DELA CRUZ" oninput="runValidation()"><div class="v-msg" id="msg-q1_last"></div></div>
+          <div class="field"><label>First Name <span class="req">*</span></label><input type="text" id="q1_first" placeholder="JUAN" oninput="runValidation()"><div class="v-msg" id="msg-q1_first"></div></div>
+          <div class="field"><label>MI</label><input type="text" id="q1_mi" maxlength="1" placeholder="S" oninput="runValidation()"><div class="v-msg" id="msg-q1_mi"></div></div>
+        </div>
+      </div>
+
+      <!-- Q2 -->
+      <div class="q-block" id="qblock-q2">
+        <div class="q-text">2. Gender: <span class="req">*</span></div>
+        <div class="radio-row">
+          <label class="r-opt"><input type="radio" name="q2_gender" value="Male" onchange="runValidation()"> Male</label>
+          <label class="r-opt"><input type="radio" name="q2_gender" value="Female" onchange="runValidation()"> Female</label>
+        </div>
+        <div class="v-msg" id="msg-q2"></div>
+      </div>
+
+      <!-- Q3 -->
+      <div class="q-block" id="block-q3">
+        <div class="q-text">3. Contact Details:
+          <button class="tip-btn" tabindex="-1" onclick="toggleTip('tip-q3')">?</button>
+        </div>
+        <div class="tip-box" id="tip-q3">
+          The respondent must have at least one contact — a phone number or an email.
+          <ul>
+            <li>If <strong>both are missing</strong>, write the reason in the <strong>Remarks</strong> box.</li>
+            <li>Cellphone numbers should start with <strong>09</strong> and have 11 digits. Landlines have 7–8 digits.</li>
+          </ul>
+        </div>
+        <div class="grid-3">
+          <div class="field"><label>Cellphone/Landline <span class="req">*</span></label><input type="tel" id="q3_phone" placeholder="09XX-XXX-XXXX" oninput="runValidation()"><div class="v-msg" id="msg-q3_phone"></div></div>
+          <div class="field"><label>Email <span class="req">*</span></label><input type="email" id="q3_email" placeholder="example@gmail.com" oninput="runValidation()"><div class="v-msg" id="msg-q3_email"></div></div>
+          <div class="field"><label>Remarks</label><input type="text" id="q3_remarks" placeholder="Reason if no contact..." oninput="runValidation()"><div class="v-msg" id="msg-q3_remarks"></div></div>
+        </div>
+      </div>
+
+      <!-- Q4 -->
+      <div class="q-block" id="block-q4">
+        <div class="q-text">4. Address:
+          <button class="tip-btn" tabindex="-1" onclick="toggleTip('tip-q4')">?</button>
+        </div>
+        <div class="tip-box" id="tip-q4">
+          The respondent must have complete address.
+          <ul>
+            <li>Ensure that the <strong>barangay</strong> and <strong>city</strong> match the prefilled data above.</li>
+            <li>Verify that all other details (LGU, DMA and Hydraulic System) align with the information provided in the sheet.</li>
+            <li>If any details do not match, please contact Iza.</li>
+          </ul>
+        </div>
+        <div class="grid-3">
+          <div class="field"><label>Street <span class="req">*</span></label><input type="text" id="q4_street" placeholder="123 Sampaguita St." oninput="runValidation()"><div class="v-msg" id="msg-q4_street"></div></div>
+          <div class="field"><label>Barangay <span class="req">*</span></label><input type="text" id="q4_barangay" placeholder="Brgy. Bagumbayan" oninput="runValidation()"><div class="v-msg" id="msg-q4_barangay"></div></div>
+          <div class="field"><label>City <span class="req">*</span></label><input type="text" id="q4_city" placeholder="Las Piñas City" oninput="runValidation()"><div class="v-msg" id="msg-q4_city"></div></div>
+        </div>
+      </div>
+
+      <!-- Q5 -->
+      <div class="q-block" id="qblock-q5">
+        <div class="q-text">5. Rate Code:
+          <button class="tip-btn" tabindex="-1" onclick="toggleTip('tip-q5')">?</button></div>
+        <div class="tip-box" id="tip-q5">
+          If the sheet is Semi-business:
+          <ul>
+            <li>Ensure that the <strong>CAN</strong> is listed on <a href="https://kalasag-ds.com/check-installation-type" tabindex="-1">https://kalasag-ds.com/check-installation-type</a>.</li>
+            <li>Confirm that the installation type matches the result from the <a href="https://kalasag-ds.com/check-installation-type" tabindex="-1">check installation type page</a>.</li>
+            <li>If installation type do not match, please follow the result from the <a href="https://kalasag-ds.com/check-installation-type" tabindex="-1">check installation type page</a>.</li>
+          </ul>
+        </div>
+        <div class="radio-row">
+          <label class="r-opt"><input type="radio" name="q5_rate" value="Residential" onchange="runValidation()"> Residential</label>
+          <label class="r-opt"><input type="radio" name="q5_rate" value="Semi-business" onchange="runValidation()"> Semi-business</label>
+        </div>
+        <div class="v-msg" id="msg-q5"></div>
+
+        <!-- Q5.1 -->
+        <div class="q-block" id="block-q5-1" style="display:none">
+          <div class="grid-2">
+            <div class="field"><label>Installation-type <span class="req">*</span></label><input type="text" id="q5_1_php" placeholder="Sari Sari Store" oninput="runValidation()"><div class="v-msg" id="msg-q5_1_php"></div></div>
+            <div class="field"><label>Cluster Code</label><input type="text" id="q5_1_remarks" placeholder="" oninput="runValidation()"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════ PART II ══════════════ -->
+  <div class="card">
+    <div style="padding:16px 16px 0">
+      <div class="section-head">
+        <h2>PART II: CONNECTION TO THE CONCESSIONAIRE SYSTEM</h2>
+        <p>Quality of Concessionaire's Water Service</p>
+      </div>
+    </div>
+    <div class="section-body">
+
+      <!-- Q6 -->
+      <div class="q-block" id="qblock-q6">
+        <div class="q-text">6. Ito ba ay bahagi ng isang bulk account? (Submeter ba ito?) <span class="req">*</span></div>
+        <div class="radio-row">
+          <label class="r-opt"><input type="radio" name="q6_sub" value="Oo" onchange="runValidation()"> Oo</label>
+          <label class="r-opt"><input type="radio" name="q6_sub" value="Hindi" onchange="runValidation()"> Hindi</label>
+        </div>
+        <div class="v-msg" id="msg-q6"></div>
+      </div>
+
+      <!-- Q6.1 -->
+      <div class="q-block" id="block-q6-1" style="display:none">
+        <div class="q-text">6.1 KUNG ANG SAGOT AY OO: Magkano ang binayaran ninyo sa nangangasiwa ng inyong tubig?
+          <button class="tip-btn" tabindex="-1" onclick="toggleTip('tip-q61')">?</button></div>
+        <div class="tip-box" id="tip-q61">
+          <ul>
+            <li>Ensure that the <strong>amount</strong> is less than the amount in Q7</li>
+            <li>If the <strong>amount</strong> is more than Q7, you should ask the enumerator for the clarification.</li>
+            <li><strong>Php Amount</strong> — peso amount on the bill. Cannot be 0.</li>
+          </ul>
+        </div>
+        <div class="grid-3">
+          <div class="field"><label>Php Amount <span class="req">*</span></label><input type="number" id="q6_1_php" min="0" placeholder="0" oninput="runValidation()"></div>
+          <div class="field"><label>Cubic Meter <span class="req">*</span></label><input type="number" min="0" id="q6_1_cm" step="any" placeholder="0" oninput="runValidation()"></div>
+          <div class="field"><label>Remarks</label><input type="text" id="q6_1_remarks" placeholder="Remarks..." oninput="runValidation()"></div>
+        </div>
+      </div>
+
+      <!-- Q7 -->
+      <div class="q-block" id="block-q7">
+        <div class="q-text">7. Magkano ang binayaran ninyo sa tubig noong nakaraang buwan sa Maynilad Water:
+          <button class="tip-btn" tabindex="-1" onclick="toggleTip('tip-q7')">?</button>
+        </div>
+        <div class="tip-box" id="tip-q7">
+          All fields below must be completed based on the physical Maynilad bill.
+          <ul>
+            <li><strong>Php Amount</strong> — the peso amount indicated on the bill (must not be <strong>0</strong>), you should clarify it to the enumerator.</li>
+            <li>If the <strong>Cubic Meter</strong> is <strong>0</strong>, you should clarify it to the enumerator.</li>
+            <li>If the <strong>Buwan ng Bill</strong> is older than 3 months, the sheet must include an <strong>RA signature</strong> or <strong>RA approval stamp</strong>.</li>
+            <li><strong>Contract Account Number (CAN)</strong> — this should be 8-digit number.</li>
+            <li><strong>Meter Number</strong> — optional; may be left blank.</li>
+          </ul>
+          If any required field (except Meter Number) is missing, the sheet must have an <strong>RA signature</strong> or <strong>RA approval stamp</strong>.<br>
+          Indicate <strong>"RA approved"</strong> in the remarks if an <strong>RA signature</strong> or <strong>RA approval stamp</strong> is present.
+          <br><br><strong>RA approval online instruction:</strong>
+          <ul>
+            <li>Ask for enumerator's RA Name</li>
+            <li>Message RA for approval</li>
+            <li>If the sheet is approved, please write this in the sheet beside the concern question</li>
+            <li>What you will write is:
+              <ul>
+                <ol>RA Name</ol>
+                <ol>Messenger</ol>
+                <ol>Date of approval</ol>
+                <ol>Time of approval</ol>
+              </ul>
+            </li>
+          </ul>
+        </div>
+        <div class="grid-3" style="margin-bottom:10px">
+          <div class="field"><label>Php Amount <span class="req">*</span></label><input type="number" id="q7_php" min="0" placeholder="0" oninput="runValidation()"><div class="v-msg" id="msg-q7_php"></div></div>
+          <div class="field"><label>Cubic Meter <span class="req">*</span></label><input type="number" min="0" id="q7_cm" step="any" placeholder="0" oninput="runValidation()"><div class="v-msg" id="msg-q7_cm"></div></div>
+          <div class="field"><label>Buwan ng Bill <span class="req">*</span></label><select id="q7_month" onchange="runValidation()"><option value="">— Pumili —</option><option>January</option><option>February</option><option>March</option><option>April</option><option>May</option><option>June</option><option>July</option><option>August</option><option>September</option><option>October</option><option>November</option><option>December</option></select><div class="v-msg" id="msg-q7_month"></div></div>
+        </div>
+        <div class="q-text" style="margin-top:10px;margin-bottom:6px;font-size:.82em">Account Details:</div>
+        <div class="grid-3">
+          <div class="field"><label>Contract Account Number (CAN) <span class="req">*</span></label><input type="text" id="q7_can" placeholder="12345678" maxlength="10" oninput="runValidation()"><div class="v-msg" id="msg-q7_can"></div></div>
+          <div class="field"><label>Meter Number <span class="req">*</span></label><input type="text" id="q7_meter" placeholder="ABC-12-34-567890" oninput="runValidation()"></div>
+          <div class="field"><label>Account Name <span class="req">*</span></label><input type="text" id="q7_accname" placeholder="DELA CRUZ JUAN" oninput="runValidation()"><div class="v-msg" id="msg-q7_accname"></div></div>
+        </div>
+        <div class="remarks-field"><label>7. Remarks <span style="font-size:.72em;color:#6b7280">(If RA approved, write "RA approved" here — fills with RA Name, Messenger, Date, Time)</span></label><input type="text" id="q7_remarks" placeholder='e.g. "RA approved — Juan dela Cruz, Messenger, 03/26/2025, 10:30 AM"' oninput="runValidation()"></div>
+      </div>
+
+      <!-- Q8 -->
+      <div class="q-block" id="block-q8">
+        <div class="q-text">8. Ilang oras sa isang araw kayo karaniwang may suplay ng tubig mula sa Maynilad Water? (Hindi hihigit sa 24 ang sagot.) <span class="req">*</span>
+          <button class="tip-btn" tabindex="-1" onclick="toggleTip('tip-q8')">?</button>
+        </div>
+        <div class="tip-box" id="tip-q8">
+          The expected answer is <strong>24 hours</strong>.<br><br>
+          If the answer is <strong>less than 24</strong>, ask the enumerator to confirm with the respondent — the area may have a scheduled water supply.<br><br>
+          Common mistake: Some respondents give the hours when water pressure is strong, not the total hours water is available.
+        </div>
+        <div style="max-width:180px;margin-top:8px">
+          <input type="number" id="q8_hours" min="0" max="24" step="1" placeholder="24" oninput="runValidation()">
+          <div class="v-msg" id="msg-q8_hours"></div>
+        </div>
+      </div>
+
+      <!-- Q9 -->
+      <div class="q-block" id="qblock-q9">
+        <div class="q-text">9. Gumagamit ba kayo ng booster pump? <span class="req">*</span></div>
+        <div class="radio-row">
+          <label class="r-opt"><input type="radio" name="q9_bp" value="Oo" onchange="runValidation()"> Oo</label>
+          <label class="r-opt"><input type="radio" name="q9_bp" value="Hindi" onchange="runValidation()"> Hindi</label>
+        </div>
+        <div class="v-msg" id="msg-q9"></div>
+      </div>
+
+      <!-- Q10 -->
+      <div class="q-block" id="block-q10">
+        <div class="q-text">10. Kung hindi ginagamit ang booster pump kung sakaling meron man, gaano kalakas ang normal na daloy ng inyong tubig? (Rating: Malakas, Katamtaman, Mahina, Wala, Hindi alam)
+          <button class="tip-btn" tabindex="-1" onclick="toggleTip('tip-q10')">?</button>
+        </div>
+        <div class="tip-box" id="tip-q10">
+          Rate the water flow for each time period. All 4 rows must be answered.<br><br>
+          If the respondent answers <strong>"Wala"</strong>, Q8 should not be 24, you should ask the enumerator for clarification.<br><br>
+          If the respondent answers <strong>"Hindi Alam"</strong> check the bundle of the same enumerator, if the entire or most of the sheet is "Hindi Alam". Ask the enumerator to verify the answers directly with the respondent.
+        </div>
+        <table class="tbl">
+          <thead>
+            <tr><th></th><th>Malakas</th><th>Katamtaman</th><th>Mahina</th><th>Wala</th><th>Hindi alam</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Daytime Pressure, mula 6 am – 12 noon? <span class="req">*</span></td><td><input type="radio" name="q10_day1" value="Malakas" onchange="runValidation()"></td><td><input type="radio" name="q10_day1" value="Katamtaman" onchange="runValidation()"></td><td><input type="radio" name="q10_day1" value="Mahina" onchange="runValidation()"></td><td><input type="radio" name="q10_day1" value="Wala" onchange="runValidation()"></td><td><input type="radio" name="q10_day1" value="Hindi alam" onchange="runValidation()"></td></tr>
+            <tr><td>mula 12 noon – 6 pm? <span class="req">*</span></td><td><input type="radio" name="q10_day2" value="Malakas" onchange="runValidation()"></td><td><input type="radio" name="q10_day2" value="Katamtaman" onchange="runValidation()"></td><td><input type="radio" name="q10_day2" value="Mahina" onchange="runValidation()"></td><td><input type="radio" name="q10_day2" value="Wala" onchange="runValidation()"></td><td><input type="radio" name="q10_day2" value="Hindi alam" onchange="runValidation()"></td></tr>
+            <tr><td>Nighttime Pressure, mula 6 pm – 12 midnight <span class="req">*</span></td><td><input type="radio" name="q10_night1" value="Malakas" onchange="runValidation()"></td><td><input type="radio" name="q10_night1" value="Katamtaman" onchange="runValidation()"></td><td><input type="radio" name="q10_night1" value="Mahina" onchange="runValidation()"></td><td><input type="radio" name="q10_night1" value="Wala" onchange="runValidation()"></td><td><input type="radio" name="q10_night1" value="Hindi alam" onchange="runValidation()"></td></tr>
+            <tr><td>mula 12 am – 6 am? <span class="req">*</span></td><td><input type="radio" name="q10_night2" value="Malakas" onchange="runValidation()"></td><td><input type="radio" name="q10_night2" value="Katamtaman" onchange="runValidation()"></td><td><input type="radio" name="q10_night2" value="Mahina" onchange="runValidation()"></td><td><input type="radio" name="q10_night2" value="Wala" onchange="runValidation()"></td><td><input type="radio" name="q10_night2" value="Hindi alam" onchange="runValidation()"></td></tr>
+          </tbody>
+        </table>
+        <div class="v-msg" id="msg-q10"></div>
+        <div class="remarks-field"><label>10. Remarks</label><input type="text" id="q10_remarks" placeholder="Remarks..."></div>
+      </div>
+
+      <!-- Q11 -->
+      <div class="q-block" id="qblock-q11">
+        <div class="q-text">11. Nag-iimbak ba kayo ng tubig? <span class="req">*</span><button class="tip-btn" tabindex="-1" onclick="toggleTip('tip-q11')">?</button></div>
+          <div class="tip-box" id="tip-q11">
+			The storage here is for <strong>non-immediate use</strong> and only water coming from <strong>Maynilad</strong>.
+          </div>
+        <div class="radio-row">
+          <label class="r-opt"><input type="radio" name="q11_store" value="Oo" onchange="runValidation()"> Oo</label>
+          <label class="r-opt"><input type="radio" name="q11_store" value="Hindi" onchange="runValidation()"> Hindi</label>
+        </div>
+        <div class="v-msg" id="msg-q11"></div>
+        <div id="q11_sub" style="display:none;margin-top:12px;padding-top:12px;border-top:1px dashed #e5e7eb">
+          <div class="tip-box" id="tip-q11">
+            Ensure that <strong>11.1, 11.2, 11.3</strong> are answered.
+          </div>
+          <div class="q-text" style="font-size:.82em">11.1 KUNG ANG SAGOT AY OO: Ano ang ginagamit ninyo sa pag-iimbak ng tubig? [Bilugan ang lahat ng angkop na kasagutan.] <span class="req">*</span></div>
+          <div class="radio-col" style="flex-direction:row;flex-wrap:wrap;gap:12px;margin-top:6px">
+            <label class="cb-opt"><input type="checkbox" name="q11_1" value="galon" onchange="runValidation()"> Galon</label>
+            <label class="cb-opt"><input type="checkbox" name="q11_1" value="drum" onchange="runValidation()"> Drum</label>
+            <label class="cb-opt"><input type="checkbox" name="q11_1" value="timba" onchange="runValidation()"> Timba</label>
+            <label class="cb-opt"><input type="checkbox" name="q11_1" value="iba" onchange="runValidation()"> Iba pa</label>
+          </div>
+          <div class="v-msg" id="msg-q11_1"></div>
+
+          <div class="q-text" style="font-size:.82em;margin-top:12px">11.2 Anong araw kayo nag-iimbak ng tubig? [Bilugan ang lahat ng angkop na kasagutan.] <span class="req">*</span></div>
+          <div class="tip-box" id="tip-q11b">
+            If all 7 days are checked, ask the enumerator: <strong>Is this regular storage, or is water used immediately (agarang paggamit)?</strong> Regular storage is the intended answer for Q11 — if it is agarang paggamit, the answer to Q11 should be Hindi.<br><br>
+            <strong>Floater exception:</strong> If the respondent uses a floater (automatic float valve), it is acceptable to leave the storage days and time blank — but the checkoder must write the reason in the 11. Remarks field to explain why these fields are unanswered.
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:6px">
+            <label class="cb-opt"><input type="checkbox" name="q11_2" value="lunes" onchange="runValidation()"> Lunes</label>
+            <label class="cb-opt"><input type="checkbox" name="q11_2" value="martes" onchange="runValidation()"> Martes</label>
+            <label class="cb-opt"><input type="checkbox" name="q11_2" value="miyerkules" onchange="runValidation()"> Miyerkules</label>
+            <label class="cb-opt"><input type="checkbox" name="q11_2" value="huwebes" onchange="runValidation()"> Huwebes</label>
+            <label class="cb-opt"><input type="checkbox" name="q11_2" value="biyernes" onchange="runValidation()"> Biyernes</label>
+            <label class="cb-opt"><input type="checkbox" name="q11_2" value="sabado" onchange="runValidation()"> Sabado</label>
+            <label class="cb-opt"><input type="checkbox" name="q11_2" value="linggo" onchange="runValidation()"> Linggo</label>
+          </div>
+          <div class="v-msg" id="msg-q11_2"></div>
+
+          <div class="q-text" style="font-size:.82em;margin-top:12px">11.3 Anong oras kayo kalimitang nag-iimbak ng tubig? <span class="req">*</span></div>
+          <div style="max-width:200px;margin-top:6px"><input type="text" id="q11_3_time" placeholder="HH:mm AM" maxlength="8" oninput="timeMask(this);runValidation()" class="time-input"><div class="v-msg" id="msg-q11_3"></div></div>
+        </div>
+        <div class="remarks-field"><label>11. Remarks</label><input type="text" id="q11_remarks" oninput="runValidation()" placeholder="Remarks..."></div>
+      </div>
+
+      <!-- Q12 -->
+      <div class="q-block" id="qblock-q12">
+        <div class="q-text">12. May mga pamamaraan ba kayong isinasagawa upang makatipid ng tubig? <span class="req">*</span></div>
+        <div class="radio-row">
+          <label class="r-opt"><input type="radio" name="q12_conserve" value="Meron" onchange="runValidation()"> Meron</label>
+          <label class="r-opt"><input type="radio" name="q12_conserve" value="Wala" onchange="runValidation()"> Wala</label>
+        </div>
+        <div class="v-msg" id="msg-q12"></div>
+        <div id="q12_sub" data-anchor="q12_1" style="display:none;margin-top:10px;padding-top:10px;border-top:1px dashed #e5e7eb">
+          <div class="q-text" style="font-size:.82em">12.1 KUNG ANG SAGOT AY MERON (Anu-ano ang mga pamamaraan na ito? BILUGAN ANG LAHAT NG ANGKOP NA KASAGUTAN) <span class="req">*</span></div>
+          <div class="radio-col" style="margin-top:6px">
+            <label class="cb-opt"><input type="checkbox" name="q12_1" value="nagrecycle" onchange="runValidation()"> Nagre-cycle ng tubig</label>
+            <label class="cb-opt"><input type="checkbox" name="q12_1" value="nagpakabit" onchange="runValidation()"> Nagpakabit ng mga pasilidad o fixtures na nakakatipid sa gamit ng tubig (hal. waterless urinals)</label>
+            <label class="cb-opt"><input type="checkbox" name="q12_1" value="bumibili" onchange="runValidation()"> Bumibili ng mas murang tubig sa iba para sa ibang gamit</label>
+            <label class="cb-opt"><input type="checkbox" name="q12_1" value="iba" onchange="runValidation()"> Iba pa</label>
+          </div>
+          <div class="v-msg" id="msg-q12_1"></div>
+        </div>
+      </div>
+
+      <!-- Q13 -->
+      <div class="q-block" id="qblock-q13">
+        <div class="q-text">13. Sa kabuuan, ano ang masasabi ninyo tungkol sa serbisyo ng tubig na ibinibigay sa inyo ng Maynilad Water? <span class="req">*</span></div>
+        <div class="radio-col">
+          <label class="r-opt"><input type="radio" name="q13" value="Talagang nasisiyahan" onchange="runValidation()"> Talagang nasisiyahan</label>
+          <label class="r-opt"><input type="radio" name="q13" value="Nasisiyahan" onchange="runValidation()"> Nasisiyahan</label>
+          <label class="r-opt"><input type="radio" name="q13" value="Hindi nasisiyahan" onchange="runValidation()"> Hindi nasisiyahan</label>
+          <label class="r-opt"><input type="radio" name="q13" value="Talagang hindi nasisiyahan" onchange="runValidation()"> Talagang hindi nasisiyahan</label>
+        </div>
+        <div class="v-msg" id="msg-q13"></div>
+      </div>
+
+      <!-- Q14 -->
+      <div class="q-block" id="qblock-q14">
+        <div class="q-text">14. Upang laging mapanatili o mapaganda ang inyong serbisyo ng tubig, kayo po ba ay pumapayag na magbayad ng karagdagang halaga sa inyong buwanang singil sa tubig? <span class="req">*</span></div>
+        <div class="radio-row">
+          <label class="r-opt"><input type="radio" name="q14_wtp" value="Oo" onchange="runValidation()"> Oo</label>
+          <label class="r-opt"><input type="radio" name="q14_wtp" value="Hindi" onchange="runValidation()"> Hindi</label>
+        </div>
+        <div class="v-msg" id="msg-q14"></div>
+        <div id="q14_sub" style="display:none;margin-top:10px;padding-top:10px;border-top:1px dashed #e5e7eb">
+          <div class="q-text" style="font-size:.82em">14.1 KUNG ANG SAGOT AY OO: Magkano ang nais ninyong ibayad na karagdagang halaga? (Kailangan na espisipikong numero, bawal ang range o porsyento.) <span class="req">*</span></div>
+          <div style="max-width:200px;margin-top:6px"><input type="number" min="0" id="q14_1_amount" step="any" placeholder="0" oninput="runValidation()"><div class="v-msg" id="msg-q14_1"></div></div>
+        </div>
+        <div class="remarks-field"><label>14. Remarks</label><input type="text" id="q14_remarks" placeholder="Remarks..."></div>
+      </div>
+
+      <!-- Q15 -->
+      <div class="q-block" id="block-q15">
+        <div class="q-text">15. Maliban sa direktang koneksyon sa Maynilad Water, anu-ano pa ang mga pinagkukuhanan ninyo ng tubig?
+          <button class="tip-btn" tabindex="-1" onclick="toggleTip('tip-q15')">?</button>
+        </div>
+        <div class="tip-box" id="tip-q15">
+          If answered Yes, the field <strong>must be answered in liters</strong>. It cannot be 0.<br><br>
+          The answer should be the usage for the entire month.
+        </div>
+        <table class="tbl">
+          <thead><tr><th></th><th>Yes/No <span class="req">*</span></th><th>Dami ng Tubig na Gamit Kada Buwan (IN LITERS)</th><th>Buwanang Gastos</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Kompanya o organisasyon na nagsusuplay ng tubig sa ilalim ng pangangasiwa ng LGU, barangay o water district</td>
+              <td><select id="q15_komp_sel" onchange="runValidation()"><option value="">—</option><option>Yes</option><option>No</option></select></td>
+              <td><input type="number" id="q15_komp_liters" min="0" step="any" placeholder="0" oninput="runValidation()"></td>
+              <td><input type="number" id="q15_komp_cost" min="0" step="any" placeholder="0" oninput="runValidation()"></td>
+            </tr>
+            <tr>
+              <td>Deep well – untreated water (poso (artesian well), balon, atbp)</td>
+              <td><select id="q15_dw_sel" onchange="runValidation()"><option value="">—</option><option>Yes</option><option>No</option></select></td>
+              <td><input type="number" id="q15_dw_liters" min="0" step="any" placeholder="0" oninput="runValidation()"></td>
+              <td><input type="number" id="q15_dw_cost" min="0" step="any" placeholder="0" oninput="runValidation()"></td>
+            </tr>
+            <tr>
+              <td>Pribadong refill station, water store o delivery</td>
+              <td><select id="q15_ref_sel" onchange="runValidation()"><option value="">—</option><option>Yes</option><option>No</option></select></td>
+              <td><input type="number" id="q15_ref_liters" min="0" step="any" placeholder="0" oninput="runValidation()"></td>
+              <td><input type="number" id="q15_ref_cost" min="0" step="any" placeholder="0" oninput="runValidation()"></td>
+            </tr>
+            <tr>
+              <td>Wala ng iba pang pinagkukunan, Maynilad Water lang</td>
+              <td><select id="q15_wala_sel" onchange="handleQ15Wala(this);runValidation()"><option value="">—</option><option>Yes</option><option>No</option></select></td>
+              <td></td><td></td>
+            </tr>
+            <tr>
+              <!-- Q15 Iba pa: text input enabled when Yes is selected -->
+              <td>
+                Iba pa
+                <input type="text" id="q15_other_text" disabled placeholder="Specify..." oninput="runValidation()"
+                  style="margin-top:4px;font-size:.8em;padding:3px 6px;border:1px solid #d1d5db;border-radius:4px;width:100%;display:block;cursor:not-allowed;opacity:0.38;background:#f3f4f6">
+              </td>
+              <td><select id="q15_other_sel" onchange="runValidation()"><option value="">—</option><option>Yes</option><option>No</option></select></td>
+              <td><input type="number" id="q15_other_liters" min="0" step="any" placeholder="0" oninput="runValidation()"></td>
+              <td><input type="number" id="q15_other_cost" min="0" step="any" placeholder="0" oninput="runValidation()"></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="v-msg" id="msg-q15_dw"></div>
+        <div class="v-msg" id="msg-q15_ref"></div>
+        <div class="remarks-field"><label>15. Remarks</label><input type="text" id="q15_remarks" placeholder="Remarks..."></div>
+      </div>
+
+      <!-- Q16 -->
+      <div class="q-block" id="qblock-q16">
+        <div class="q-text">16. Ano ang inyong dahilan kung bakit kayo kumukuha ng tubig mula sa iba pang mapagkukunan? (BILUGAN ANG LAHAT NG ANGKOP NA KASAGUTAN.) <span class="req">*</span></div>
+        <div class="radio-col" style="margin-top:6px">
+          <label class="cb-opt"><input type="checkbox" name="q16" value="hindi_tuloy"> Hindi tuluy-tuloy na suplay ng tubig ng Maynilad Water</label>
+          <label class="cb-opt"><input type="checkbox" name="q16" value="mas_maganda"> Mas maganda ang kalidad ng tubig</label>
+          <label class="cb-opt"><input type="checkbox" name="q16" value="mas_mura"> Mas mura ang tubig</label>
+          <label class="cb-opt"><input type="checkbox" name="q16" value="piniling_inumin"> Mas piniling inumin ang tubig mula sa ibang mapagkukunan</label>
+          <label class="cb-opt"><input type="checkbox" name="q16" value="iba"> Iba pa</label>
+        </div>
+      </div>
+
+      <!-- Q17 -->
+      <div class="q-block" id="qblock-q17">
+        <div class="q-text">17. Number and Size of Households:
+          <button class="tip-btn" tabindex="-1" onclick="toggleTip('tip-q17')">?</button>
+        </div>
+        <div class="tip-box" id="tip-q17">
+          A household is defined not just by people living under the same roof, but by whether they share food and expenses together.<br />
+          If everyone in the house shares meals and has <strong>one food budget</strong>, that counts as one household.<br />
+          If groups of people in the same house buy, cook, and <strong>eat separately</strong>, then each group is considered a separate household.<br /><br />
+          <strong>Reminder:</strong>
+          <ul>
+            <li>All residential should have at least 1 household.</li>
+            <li>All Semi-business should have at least 1 business.</li>
+            <li>Not all residential have 0 business.</li>
+            <li>Semi-business can have 0 household.</li>
+            <li>If any of the field is blank, ask the enumerator for confirmation.</li>
+          </ul>
+        </div>
+        <div class="grid-3">
+          <div class="field"><label>Bilang ng pamamahay <span class="req">*</span></label><input type="number" min="0" id="q17_hh" step="1" placeholder="1" oninput="runValidation()"><div class="v-msg" id="msg-q17"></div></div>
+          <div class="field"><label>Bilang ng Negosyo <span class="req">*</span></label><input type="number" min="0" id="q17_biz" step="1" placeholder="0" oninput="runValidation()"></div>
+          <div class="field"><label>Remarks</label><input type="text" id="q17_remarks" placeholder="Remarks..."></div>
+        </div>
+      </div>
+
+      <!-- Q18 -->
+      <div class="q-block" id="qblock-q18">
+        <div class="q-text">18. Ilan tao lahat ang karaniwang gumagamit ng tubig mula sa inyong metro sa nagdaang buwan? <span class="req">*</span>
+          <button class="tip-btn" tabindex="-1" onclick="toggleTip('tip-q18')">?</button>
+        </div>
+        <div class="tip-box" id="tip-q18">
+          This is the <strong>total count</strong> of everyone who used water from this meter last month.<br><br>
+          Q18 should be equal to total of Q18a<br><br>
+		  <strong>Exceptions:</strong>
+		  Q18 will not be equal to Q18a if the respondent know the count of other household connected to the same meter but doesnt know the number of household for Q18d.<br><br>
+		  
+        </div>
+        <div style="max-width:180px;margin-top:8px"><input type="number" min="0" id="q18_total" step="1" placeholder="0" oninput="runValidation()"><div class="v-msg" id="msg-q18"></div></div>
+        <div style="display:none" id="tot18a">0</div>
+        <div style="display:none" id="tot18">—</div>
+        <div style="display:none" id="tot18-status">—</div>
+        <div class="remarks-field"><label>18. Remarks</label><input type="text" id="q18_remarks" placeholder="Remarks..."></div>
+      </div>
+
+      <!-- Q18a -->
+      <div class="q-block" id="qblock-q18a">
+        <div class="q-text">18a. Ilan ang pangkaraniwang naninirahan o natutulog sa mga kabahayang nakakonekta sa metro?
+          <button class="tip-btn" tabindex="-1" onclick="toggleTip('tip-q18a')">?</button>
+        </div>
+        <div class="tip-box" id="tip-q18a">
+          <strong>Nangungupahan</strong> = renters or boarders. <strong>Residente</strong> = permanent household members (usually the owner and family).<br><br>
+          If Residente is 0 but the respondent is renter, the respondent should be counted under Residente since they are the main resident.<br><br>
+          <strong>Reminder:</strong><ul>
+            <li>If both resident and renters are in the same property, Q17 (number of households) should be more than 1.</li>
+            <li>Select No if the value is 0.</li>
+            <li>If the fields are left blank, ask the enumerator for clarification.</li>
+          </ul><br />
+          Only for <strong>Residential</strong>:
+          <ul><li>The total of 18a should not be 0.</li></ul>
+        </div>
+        <table class="tbl">
+          <thead><tr><th></th><th>Yes/No <span class="req">*</span></th><th>Bilang</th></tr></thead>
+          <tbody>
+            <tr><td>Nangungupahan o nakikitira (na wala ng ibang itinuturing na permanenteng tirahan)</td><td><select id="q18a_ng_np_sel" onchange="runValidation()"><option value="">—</option><option>Yes</option><option>No</option></select></td><td><input type="number" id="q18a_ng_np" min="0" step="1" placeholder="0" oninput="runValidation()"></td></tr>
+            <tr><td>Nangungupahan o nakikitira subalit may ibang permanenteng tahanan na regular nilang binabalikan</td><td><select id="q18a_ng_wp_sel" onchange="runValidation()"><option value="">—</option><option>Yes</option><option>No</option></select></td><td><input type="number" id="q18a_ng_wp" min="0" step="1" placeholder="0" oninput="runValidation()"></td></tr>
+            <tr><td>Stay-in kasambahay / empleyado</td><td><select id="q18a_si_sel" onchange="runValidation()"><option value="">—</option><option>Yes</option><option>No</option></select></td><td><input type="number" id="q18a_si" min="0" step="1" placeholder="0" oninput="runValidation()"></td></tr>
+            <tr><td><strong>Residente</strong></td><td><select id="q18a_res_sel" onchange="runValidation()"><option value="">—</option><option>Yes</option><option>No</option></select></td><td><input type="number" id="q18a_res" min="0" step="1" placeholder="0" oninput="runValidation()"></td></tr>
+            <tr><td>Iba pa</td><td><select id="q18a_other_sel" onchange="runValidation()"><option value="">—</option><option>Yes</option><option>No</option></select></td><td><input type="number" id="q18a_other" min="0" step="1" placeholder="0" oninput="runValidation()"></td></tr>
+          </tbody>
+        </table>
+        <div class="v-msg" id="msg-q18a"></div>
+        <div class="remarks-field"><label>18a. Remarks</label><input type="text" id="q18a_remarks" placeholder="Remarks..."></div>
+      </div>
+
+      <!-- Q18b -->
+      <div class="q-block" id="qblock-q18b">
+        <div class="q-text">18b. Ilang tao ang gumagamit ng tubig sa oras ng kanilang trabaho pero hindi natutulog sa inyong mga tahanan?
+          <button class="tip-btn" tabindex="-1" onclick="toggleTip('tip-q18b')">?</button>
+        </div>
+        <div class="tip-box" id="tip-q18b">
+          These are people who use water at the property but do NOT sleep there (e.g., stay-out kasambahay, daily water fetchers).
+        </div>
+        <table class="tbl">
+          <thead><tr><th></th><th>Yes/No <span class="req">*</span></th><th>Bilang</th></tr></thead>
+          <tbody>
+            <tr><td>Stay-out kasambahay / empleyado</td><td><select id="q18b_so_sel" onchange="runValidation()"><option value="">—</option><option>Yes</option><option>No</option></select></td><td><input type="number" id="q18b_so" min="0" step="1" placeholder="0" oninput="runValidation()"></td></tr>
+            <tr><td>Nakiki-igib lang araw-araw</td><td><select id="q18b_igib_sel" onchange="runValidation()"><option value="">—</option><option>Yes</option><option>No</option></select></td><td><input type="number" id="q18b_igib" min="0" step="1" placeholder="0" oninput="runValidation()"></td></tr>
+            <tr><td>Iba pa</td><td><select id="q18b_other_sel" onchange="runValidation()"><option value="">—</option><option>Yes</option><option>No</option></select></td><td><input type="number" id="q18b_other" min="0" step="1" placeholder="0" oninput="runValidation()"></td></tr>
+          </tbody>
+        </table>
+        <div class="remarks-field"><label>18b. Remarks</label><input type="text" id="q18b_remarks" placeholder="Remarks..."></div>
+      </div>
+
+      <!-- Q18c -->
+      <div class="q-block" id="qblock-q18c">
+        <div class="q-text">18c. Ilan naman ang mga myembro ng inyong sambahayan ang hindi kasama sa bilang sa taas pero inaasahang magbabalik.
+          <button class="tip-btn" tabindex="-1" onclick="toggleTip('tip-q18c')">?</button>
+        </div>
+        <div class="tip-box" id="tip-q18c">
+          These are household members temporarily away but expected to return:
+          <ul>
+            <li>Students renting a dorm or board near school</li>
+            <li>Employees renting elsewhere for work</li>
+            <li>OFWs expected to return within 5 years</li>
+          </ul>
+        </div>
+        <table class="tbl">
+          <thead><tr><th></th><th>Yes/No <span class="req">*</span></th><th>Bilang</th></tr></thead>
+          <tbody>
+            <tr><td>Estudyante na nagdodorm/nagboboard para mag-aral o mag-review sa board exam</td><td><select id="q18c_stu_sel" onchange="runValidation()"><option value="">—</option><option>Yes</option><option>No</option></select></td><td><input type="number" id="q18c_stu" min="0" step="1" placeholder="0" oninput="runValidation()"></td></tr>
+            <tr><td>Empleyadong nangungupahan</td><td><select id="q18c_emp_sel" onchange="runValidation()"><option value="">—</option><option>Yes</option><option>No</option></select></td><td><input type="number" id="q18c_emp" min="0" step="1" placeholder="0" oninput="runValidation()"></td></tr>
+            <tr><td>OFW na inaasahang magbalik hanggang 5 taon mula sa simula ng kontrata</td><td><select id="q18c_ofw_sel" onchange="runValidation()"><option value="">—</option><option>Yes</option><option>No</option></select></td><td><input type="number" id="q18c_ofw" min="0" step="1" placeholder="0" oninput="runValidation()"></td></tr>
+            <tr><td>Iba pa</td><td><select id="q18c_other_sel" onchange="runValidation()"><option value="">—</option><option>Yes</option><option>No</option></select></td><td><input type="number" id="q18c_other" min="0" step="1" placeholder="0" oninput="runValidation()"></td></tr>
+          </tbody>
+        </table>
+        <div class="remarks-field"><label>18c. Remarks</label><input type="text" id="q18c_remarks" placeholder="Remarks..."></div>
+      </div>
+
+      <!-- Q18d -->
+      <div class="q-block" id="qblock-q18d">
+        <div class="q-text">18d. Sa nakalipas na limang (5) taon, may pagbabago po ba sa karaniwang bilang ng tao ng gumagamit ng tubig mula sa inyong metro?
+          <button class="tip-btn" tabindex="-1" onclick="toggleTip('tip-q18d')">?</button>
+        </div>
+        <div class="tip-box" id="tip-q18d">
+          The <strong>2025 count should match the Q18a total</strong> above.<br><br>
+          Only for <strong>Residential</strong>:
+          <ul>
+            <li>The total of 18a should be equal to 18d 2025.</li>
+            <li><strong>Exceptions</strong>: If the respondent does not know the number of other households, it is acceptable to list only the respondent's own household here.</li>
+          </ul><br>
+          For the <strong>Reason</strong> column:
+          <ul>
+            <li>If the number <strong>changed</strong> — write the reason why. Do not write N/A.</li>
+            <li>If the number <strong>did not change</strong> — just write N/A.</li>
+          </ul>
+        </div>
+        <table class="tbl">
+          <thead><tr><th>Taon</th><th>Bilang ng Gumagamit <span class="req">*</span></th><th>Dahilan <span class="req">*</span></th></tr></thead>
+          <tbody>
+            <tr><td>2025</td><td><input type="number" id="q18d_2025" min="0" step="1" placeholder="0" oninput="runValidation()"></td><td><input type="text" id="q18d_r2025" placeholder="N/A" oninput="runValidation()"></td></tr>
+            <tr><td>2024</td><td><input type="number" id="q18d_2024" min="0" step="1" placeholder="0" oninput="runValidation()"></td><td><input type="text" id="q18d_r2024" placeholder="N/A" oninput="runValidation()"></td></tr>
+            <tr><td>2023</td><td><input type="number" id="q18d_2023" min="0" step="1" placeholder="0" oninput="runValidation()"></td><td><input type="text" id="q18d_r2023" placeholder="N/A" oninput="runValidation()"></td></tr>
+            <tr><td>2022</td><td><input type="number" id="q18d_2022" min="0" step="1" placeholder="0" oninput="runValidation()"></td><td><input type="text" id="q18d_r2022" placeholder="N/A" oninput="runValidation()"></td></tr>
+            <tr><td>2021</td><td><input type="number" id="q18d_2021" min="0" step="1" placeholder="0" oninput="runValidation()"></td><td><input type="text" id="q18d_r2021" placeholder="N/A" oninput="runValidation()"></td></tr>
+          </tbody>
+        </table>
+        <div class="v-msg" id="msg-q18d"></div>
+      </div>
+
+      <!-- Q19 -->
+      <div class="q-block" id="qblock-q19">
+        <div class="q-text">19. Meron po ba kayong septic tank o poso negro? <span class="req">*</span></div>
+        <div class="radio-row">
+          <label class="r-opt"><input type="radio" name="q19_septic" value="Meron" onchange="runValidation()"> Meron</label>
+          <label class="r-opt"><input type="radio" name="q19_septic" value="Wala" onchange="runValidation()"> Wala</label>
+          <label class="r-opt"><input type="radio" name="q19_septic" value="Hindi alam" onchange="runValidation()"> Hindi alam</label>
+        </div>
+        <div class="v-msg" id="msg-q19"></div>
+        <div class="remarks-field"><label>19. Remarks</label><input type="text" id="q19_remarks" placeholder="Remarks..."></div>
+      </div>
+
+      <!-- Q20 -->
+      <div class="q-block" id="qblock-q20">
+        <div class="q-text">20. Ano ang inyong pangunahing pinagkukuhanan ng pera? <span class="req">*</span></div>
+        <div class="radio-col" style="margin-top:6px">
+          <label class="r-opt"><input type="radio" name="q20" value="Suweldo sa trabaho" onchange="runValidation()"> Suweldo sa trabaho</label>
+          <label class="r-opt"><input type="radio" name="q20" value="Komisyon at mga bonus" onchange="runValidation()"> Komisyon at mga bonus</label>
+          <label class="r-opt"><input type="radio" name="q20" value="Kita mula sa pagiging self-employed" onchange="runValidation()"> Kita mula sa pagiging self-employed</label>
+          <label class="r-opt"><input type="radio" name="q20" value="Tubo mula sa negosyo" onchange="runValidation()"> Tubo mula sa negosyo</label>
+          <label class="r-opt"><input type="radio" name="q20" value="Mga incentives (hal. 4Ps)" onchange="runValidation()"> Mga incentives (hal. 4Ps)</label>
+          <label class="r-opt"><input type="radio" name="q20" value="Padala (Remittance)" onchange="runValidation()"> Padala (Remittance)</label>
+          <label class="r-opt"><input type="radio" name="q20" value="Kita mula sa paupahan" onchange="runValidation()"> Kita mula sa paupahan</label>
+          <label class="r-opt"><input type="radio" name="q20" value="Stocks" onchange="runValidation()"> Stocks</label>
+          <label class="r-opt"><input type="radio" name="q20" value="Iba pa" onchange="runValidation()"> Iba pa</label>
+        </div>
+        <div class="v-msg" id="msg-q20"></div>
+        <div class="remarks-field"><label>20. Remarks</label><input type="text" id="q20_remarks" placeholder="Remarks..."></div>
+      </div>
+
+      <!-- Q21 -->
+      <div class="q-block" id="qblock-q21">
+        <div class="q-text">21. Alin po sa mga pangungusap na ito ang pinaka-naglalarawan sa iyong pangunahing pinagkukuhanan ng pera? <span class="req">*</span></div>
+        <div class="radio-col" style="margin-top:6px">
+          <label class="r-opt"><input type="radio" name="q21" value="15th30th" onchange="runValidation()"> Ang aking cashflow ay karaniwang natatanggap tuwing ika-15 at ika-30 ng bawat buwan.</label>
+          <label class="r-opt"><input type="radio" name="q21" value="10th25th" onchange="runValidation()"> Ang aking cashflow ay karaniwang natatanggap tuwing ika-10 at ika-25 ng bawat buwan.</label>
+          <label class="r-opt"><input type="radio" name="q21" value="arawAraw" onchange="runValidation()"> Ang aking cashflow ay karaniwang natatanggap sa araw-araw na batayan.</label>
+          <label class="r-opt"><input type="radio" name="q21" value="linggulinggo" onchange="runValidation()"> Ang aking cashflow ay karaniwang natatanggap linggu-linggo.</label>
+          <label class="r-opt"><input type="radio" name="q21" value="buwan" onchange="runValidation()"> Ang aking cashflow ay karaniwang natatanggap buwan-buwan.</label>
+          <label class="r-opt"><input type="radio" name="q21" value="komisyon" onchange="runValidation()"> Ang aking cashflow ay dumarating lamang kapag nagkaroon ako ng komisyon.</label>
+          <label class="r-opt"><input type="radio" name="q21" value="benta" onchange="runValidation()"> Ang aking cashflow ay dumarating lamang kapag may benta ako o kapag nakapagbigay ng serbisyo.</label>
+          <label class="r-opt"><input type="radio" name="q21" value="iba" onchange="runValidation()"> Iba pa</label>
+        </div>
+        <div class="v-msg" id="msg-q21"></div>
+        <div class="remarks-field"><label>21. Remarks</label><input type="text" id="q21_remarks" placeholder="Remarks..."></div>
+      </div>
+
+      <!-- Q22 -->
+      <div class="q-block" id="qblock-q22">
+        <div class="q-text">22. Alin sa mga ito ang mayroon kayo dito sa inyong bahay sa kasalukuyan? Kapag nagbabayad po kayo ng mga utility bills, paki-rank po ang mga sumusunod base sa inyong priority sa pagbabayad.
+          <button class="tip-btn" tabindex="-1" onclick="toggleTip('tip-q22')">?</button>
+        </div>
+        <div class="tip-box" id="tip-q22">Each utility the respondent has must be given a <strong>different rank number</strong>.<br/>Two items cannot share the same rank.</div>
+        <table class="tbl">
+          <thead><tr><th></th><th>Yes/No <span class="req">*</span></th><th>Rank</th></tr></thead>
+          <tbody>
+            <tr><td>Tubig</td><td><select id="q22_tubig_sel" onchange="runValidation()"><option value="">—</option><option>Yes</option><option>No</option></select></td><td><select id="q22_tubig" onchange="runValidation()"><option value="">—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></td></tr>
+            <tr><td>Kuryente</td><td><select id="q22_kuryente_sel" onchange="runValidation()"><option value="">—</option><option>Yes</option><option>No</option></select></td><td><select id="q22_kuryente" onchange="runValidation()"><option value="">—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></td></tr>
+            <tr><td>Load sa Cellphone</td><td><select id="q22_load_sel" onchange="runValidation()"><option value="">—</option><option>Yes</option><option>No</option></select></td><td><select id="q22_load" onchange="runValidation()"><option value="">—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></td></tr>
+            <tr><td>Internet</td><td><select id="q22_internet_sel" onchange="runValidation()"><option value="">—</option><option>Yes</option><option>No</option></select></td><td><select id="q22_internet" onchange="runValidation()"><option value="">—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></td></tr>
+            <tr><td>Cable</td><td><select id="q22_cable_sel" onchange="runValidation()"><option value="">—</option><option>Yes</option><option>No</option></select></td><td><select id="q22_cable" onchange="runValidation()"><option value="">—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></td></tr>
+          </tbody>
+        </table>
+        <div class="v-msg" id="msg-q22"></div>
+        <div class="remarks-field"><label>22. Remarks</label><input type="text" id="q22_remarks" placeholder="Remarks..."></div>
+      </div>
+
+      <!-- Q23 -->
+      <div class="q-block" id="qblock-q23">
+        <div class="q-text">23. Alin po sa mga pangungusap na ito ang pinaka-naglalarawan sa iyong pangunahing pinagkukuhanan ng pera? <span class="req">*</span></div>
+        <div class="radio-col" style="margin-top:6px">
+          <label class="r-opt"><input type="radio" name="q23" value="bago_due" onchange="runValidation()"> Binabayaran ko ng buo ang aking buwanang billing statement bago o sa mismong araw ng due date</label>
+          <label class="r-opt"><input type="radio" name="q23" value="pagkatapos_due" onchange="runValidation()"> Binabayaran ko ng buo ang aking buwanang billing statement pagkatapos ng due date pero sa kaparehas na buwan.</label>
+          <label class="r-opt"><input type="radio" name="q23" value="pay1leave1" onchange="runValidation()"> Pay 1, Leave 1.</label>
+          <label class="r-opt"><input type="radio" name="q23" value="pay1leave2" onchange="runValidation()"> Pay 1, Leave 2.</label>
+          <label class="r-opt"><input type="radio" name="q23" value="disconnection" onchange="runValidation()"> Binabayaran ko lang ang billing statement kapag may disconnection notice.</label>
+        </div>
+        <div class="v-msg" id="msg-q23"></div>
+        <div class="remarks-field"><label>23. Remarks</label><input type="text" id="q23_remarks" placeholder="Remarks..."></div>
+      </div>
+
+      <!-- Q24 -->
+      <div class="q-block" id="qblock-q24">
+        <div class="q-text">24. Ano ang mga nagiging hadlang upang hindi mabayaran ang billing statement bago o sa mismong araw ng due date? <span class="req">*</span></div>
+        <div style="margin-top:8px"><input type="text" id="q24_barrier" placeholder="Isulat ang dahilan..." oninput="runValidation()"><div class="v-msg" id="msg-q24"></div></div>
+      </div>
+
+      <!-- Q25 -->
+      <div class="q-block" id="qblock-q25">
+        <div class="q-text">25. Paano ninyo natatanggap ang inyong bill? <span class="req">*</span></div>
+        <div class="radio-col" style="flex-direction:row;flex-wrap:wrap;gap:16px;margin-top:8px">
+          <label class="cb-opt"><input type="checkbox" name="q25" value="printed" onchange="runValidation()"> Printed</label>
+          <label class="cb-opt"><input type="checkbox" name="q25" value="sms" onchange="runValidation()"> SMS</label>
+          <label class="cb-opt"><input type="checkbox" name="q25" value="email" onchange="runValidation()"> Email</label>
+        </div>
+        <div class="v-msg" id="msg-q25"></div>
+        <div class="remarks-field"><label>25. Remarks</label><input type="text" id="q25_remarks" placeholder="Remarks..."></div>
+      </div>
+
+      <!-- Q26 -->
+      <div class="q-block" id="qblock-q26">
+        <div class="q-text">26. Sa kabuuan, ano ang masasabi ninyo tungkol sa disenyo at nilalaman ng inyong Maynilad Water bill? <span class="req">*</span>
+          <button class="tip-btn" tabindex="-1" onclick="toggleTip('tip-q26')">?</button>
+        </div>
+        <div class="tip-box" id="tip-q26">This field should still have an answer even if they have no physical receipt.</div>
+        <div class="radio-col" style="margin-top:6px">
+          <label class="r-opt"><input type="radio" name="q26" value="Talagang hindi nasisiyahan" onchange="runValidation()"> Talagang hindi nasisiyahan</label>
+          <label class="r-opt"><input type="radio" name="q26" value="Hindi nasisiyahan" onchange="runValidation()"> Hindi nasisiyahan</label>
+          <label class="r-opt"><input type="radio" name="q26" value="Nasisiyahan" onchange="runValidation()"> Nasisiyahan</label>
+          <label class="r-opt"><input type="radio" name="q26" value="Talagang nasisiyahan" onchange="runValidation()"> Talagang nasisiyahan</label>
+        </div>
+        <div class="v-msg" id="msg-q26"></div>
+        <div class="remarks-field"><label>26. Remarks</label><input type="text" id="q26_remarks" placeholder="Remarks..."></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════ PART III ══════════════ -->
+  <div class="card">
+    <div style="padding:16px 16px 0">
+      <div class="section-head">
+        <h2>PART III: RECOVERING FROM THE PANDEMIC</h2>
+      </div>
+    </div>
+    <div class="section-body">
+
+      <!-- Q28 -->
+      <div class="q-block" id="qblock-q28">
+        <div class="q-text">28. Sa inyong tantya, Ilang porsyento ang itinaas/ibinaba ng inyong konsumo ng tubig mula nang matapos ang pandemya?
+          <button class="tip-btn" tabindex="-1" onclick="toggleTip('tip-q28')">?</button>
+        </div>
+        <div class="tip-box" id="tip-q28">
+          This is not only for Maynilad as a water source. It includes <strong>all sources of water.</strong><br /><br/>
+          <strong>Ask the enumerator to clarify if:</strong><ul>
+            <li>If Q28 says usage went <strong>down</strong> but all Q29 activities show it went <strong>up</strong></li>
+            <li>If Q28 says usage went <strong>up</strong> but all Q29 activities show it went <strong>down</strong></li>
+            <li>If Q28 says usage went <strong>Hindi Nagbago</strong> but Q29 activities show changes</li>
+          </ul>
+        </div>
+        <div class="grid-3">
+          <div class="field"><label>Porsyento <span class="req">*</span></label><input type="number" min="0" id="q28_pct" step="any" placeholder="0" oninput="runValidation()"><div class="v-msg" id="msg-q28_pct"></div></div>
+          <div class="field"><label>Pagbabago <span class="req">*</span></label><select id="q28_dir" onchange="runValidation()"><option value="">— Pumili —</option><option>Tumaas</option><option>Bumaba</option><option>Walang Pagbabago</option></select><div class="v-msg" id="msg-q28_dir"></div></div>
+          <div class="field"><label>Remarks</label><input type="text" id="q28_remarks" placeholder="Remarks..."></div>
+        </div>
+        <div class="v-msg" id="msg-q28"></div>
+      </div>
+
+      <!-- Q29 -->
+      <div class="q-block" id="qblock-q29">
+        <div class="q-text">29. Aling paggamit ng tubig ang tumaas/bumaba mula nang matapos ang pandemya? (1-Pinakamababa, 5-Pinakamalaking pagbabago)
+          <button class="tip-btn" tabindex="-1" onclick="toggleTip('tip-q29')">?</button>
+        </div>
+        <div class="tip-box" id="tip-q29">
+          For <strong>Residential</strong>: All rows must be answered. N/A is not applicable.<br /><br />
+          For <strong>Semi-Business</strong>: N/A is possible if the usage doesn't apply to that business.<br /><br />
+          <strong>Common mistake:</strong> Some enumerators fill in Q29 like a ranking — writing 1, 2, 3, 4, 5. Check the entire bundle.
+        </div>
+        <table class="tbl">
+          <thead><tr><th>Paggamit</th><th>N/A</th><th>Tumaas</th><th>Bumaba</th><th>Walang Pagbabago</th><th>Antas ng Pagbabago (1-5)</th></tr></thead>
+          <tbody>
+            <tr><td>Pang-inom</td><td><input type="radio" name="q29_inom" value="N/A" onchange="updateQ29Antas('q29_inom','q29_inom_lvl');runValidation()"></td><td><input type="radio" name="q29_inom" value="Tumaas" onchange="updateQ29Antas('q29_inom','q29_inom_lvl');runValidation()"></td><td><input type="radio" name="q29_inom" value="Bumaba" onchange="updateQ29Antas('q29_inom','q29_inom_lvl');runValidation()"></td><td><input type="radio" name="q29_inom" value="Walang Pagbabago" onchange="updateQ29Antas('q29_inom','q29_inom_lvl');runValidation()"></td><td><select id="q29_inom_lvl" onchange="runValidation()"><option value="">—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></td></tr>
+            <tr><td>Paglilinis</td><td><input type="radio" name="q29_linis" value="N/A" onchange="updateQ29Antas('q29_linis','q29_linis_lvl');runValidation()"></td><td><input type="radio" name="q29_linis" value="Tumaas" onchange="updateQ29Antas('q29_linis','q29_linis_lvl');runValidation()"></td><td><input type="radio" name="q29_linis" value="Bumaba" onchange="updateQ29Antas('q29_linis','q29_linis_lvl');runValidation()"></td><td><input type="radio" name="q29_linis" value="Walang Pagbabago" onchange="updateQ29Antas('q29_linis','q29_linis_lvl');runValidation()"></td><td><select id="q29_linis_lvl" onchange="runValidation()"><option value="">—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></td></tr>
+            <tr><td>Pagluluto</td><td><input type="radio" name="q29_luto" value="N/A" onchange="updateQ29Antas('q29_luto','q29_luto_lvl');runValidation()"></td><td><input type="radio" name="q29_luto" value="Tumaas" onchange="updateQ29Antas('q29_luto','q29_luto_lvl');runValidation()"></td><td><input type="radio" name="q29_luto" value="Bumaba" onchange="updateQ29Antas('q29_luto','q29_luto_lvl');runValidation()"></td><td><input type="radio" name="q29_luto" value="Walang Pagbabago" onchange="updateQ29Antas('q29_luto','q29_luto_lvl');runValidation()"></td><td><select id="q29_luto_lvl" onchange="runValidation()"><option value="">—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></td></tr>
+            <tr><td>Paglalaba</td><td><input type="radio" name="q29_laba" value="N/A" onchange="updateQ29Antas('q29_laba','q29_laba_lvl');runValidation()"></td><td><input type="radio" name="q29_laba" value="Tumaas" onchange="updateQ29Antas('q29_laba','q29_laba_lvl');runValidation()"></td><td><input type="radio" name="q29_laba" value="Bumaba" onchange="updateQ29Antas('q29_laba','q29_laba_lvl');runValidation()"></td><td><input type="radio" name="q29_laba" value="Walang Pagbabago" onchange="updateQ29Antas('q29_laba','q29_laba_lvl');runValidation()"></td><td><select id="q29_laba_lvl" onchange="runValidation()"><option value="">—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></td></tr>
+            <tr><td>Paliligo</td><td><input type="radio" name="q29_ligo" value="N/A" onchange="updateQ29Antas('q29_ligo','q29_ligo_lvl');runValidation()"></td><td><input type="radio" name="q29_ligo" value="Tumaas" onchange="updateQ29Antas('q29_ligo','q29_ligo_lvl');runValidation()"></td><td><input type="radio" name="q29_ligo" value="Bumaba" onchange="updateQ29Antas('q29_ligo','q29_ligo_lvl');runValidation()"></td><td><input type="radio" name="q29_ligo" value="Walang Pagbabago" onchange="updateQ29Antas('q29_ligo','q29_ligo_lvl');runValidation()"></td><td><select id="q29_ligo_lvl" onchange="runValidation()"><option value="">—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></td></tr>
+            <tr><td>Pag-Ihi</td><td><input type="radio" name="q29_ihi" value="N/A" onchange="updateQ29Antas('q29_ihi','q29_ihi_lvl');runValidation()"></td><td><input type="radio" name="q29_ihi" value="Tumaas" onchange="updateQ29Antas('q29_ihi','q29_ihi_lvl');runValidation()"></td><td><input type="radio" name="q29_ihi" value="Bumaba" onchange="updateQ29Antas('q29_ihi','q29_ihi_lvl');runValidation()"></td><td><input type="radio" name="q29_ihi" value="Walang Pagbabago" onchange="updateQ29Antas('q29_ihi','q29_ihi_lvl');runValidation()"></td><td><select id="q29_ihi_lvl" onchange="runValidation()"><option value="">—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></td></tr>
+            <tr><td><input type="text" id="q29_other1" placeholder="Iba pang paggamit" oninput="runValidation()"></td><td><input type="radio" name="q29_other1_dir" value="N/A" onchange="runValidation()"></td><td><input type="radio" name="q29_other1_dir" value="Tumaas" onchange="runValidation()"></td><td><input type="radio" name="q29_other1_dir" value="Bumaba" onchange="runValidation()"></td><td><input type="radio" name="q29_other1_dir" value="Walang Pagbabago" onchange="runValidation()"></td><td><select id="q29_other1_lvl" onchange="runValidation()"><option value="">—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></td></tr>
+          </tbody>
+        </table>
+        <div class="v-msg" id="msg-q29"></div>
+      </div>
+
+      <!-- Q30 -->
+      <div class="q-block" id="qblock-q30">
+        <div class="q-text">30. Dito ba sa inyong bahay kayo pangkaraniwang naglalaba? <span class="req">*</span></div>
+        <div class="radio-col" style="margin-top:6px">
+          <label class="r-opt"><input type="radio" name="q30" value="Oo, dito sa bahay naglalaba" onchange="runValidation()"> Oo, dito sa bahay naglalaba</label>
+          <label class="r-opt"><input type="radio" name="q30" value="Hindi, nagpapalaba sa laundry shop" onchange="runValidation()"> Hindi, nagpapalaba sa laundry shop</label>
+          <label class="r-opt"><input type="radio" name="q30" value="Hindi, nagpapalaba sa labandera" onchange="runValidation()"> Hindi, nagpapalaba sa labandera</label>
+          <label class="r-opt"><input type="radio" name="q30" value="Iba pa" onchange="runValidation()"> Iba pa</label>
+        </div>
+        <div class="v-msg" id="msg-q30"></div>
+        <div class="remarks-field"><label>30. Remarks</label><input type="text" id="q30_remarks" placeholder="Remarks..."></div>
+      </div>
+
+      <!-- Q31 -->
+      <div class="q-block" id="qblock-q31">
+        <div class="q-text">31. Sa inyong palagay, nagbalik ba ang inyong konsumo ng tubig sa dati ninyong konsumo bago nagpandemya? <span class="req">*</span>
+          <button class="tip-btn" tabindex="-1" onclick="toggleTip('tip-q31')">?</button></div>
+        <div class="tip-box" id="tip-q31">This is an independent question and may not match to Q28.</div>
+        <div class="radio-row">
+          <label class="r-opt"><input type="radio" name="q31" value="Oo" onchange="runValidation()"> Oo</label>
+          <label class="r-opt"><input type="radio" name="q31" value="Hindi" onchange="runValidation()"> Hindi</label>
+          <label class="r-opt"><input type="radio" name="q31" value="Hindi naman nagbago kahit noong pandemya" onchange="runValidation()"> Hindi naman nagbago kahit noong pandemya</label>
+        </div>
+        <div class="v-msg" id="msg-q31"></div>
+        <div id="q31_sub" style="display:none;margin-top:10px;padding-top:10px;border-top:1px dashed #e5e7eb">
+          <div class="q-text" style="font-size:.82em">31.1 Bakit kaya bumalik? <span class="req">*</span></div>
+          <textarea id="q31_1_reason" rows="3" placeholder="Isulat ang dahilan..." oninput="runValidation()" style="margin-top:6px"></textarea>
+          <div class="v-msg" id="msg-q31_1"></div>
+        </div>
+        <div class="remarks-field"><label>31. Remarks</label><input type="text" id="q31_remarks" placeholder="Remarks..."></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════ PART IV ══════════════ -->
+  <div class="card">
+    <div style="padding:16px 16px 0">
+      <div class="section-head">
+        <h2>PART IV: HOUSEHOLD SOCIO-ECONOMIC PROFILE</h2>
+      </div>
+    </div>
+    <div class="section-body">
+
+      <!-- Q32 -->
+      <div class="q-block" id="qblock-q32">
+        <div class="q-text">32. Sino ang nagdedesisyon para sa maintenance, mga kailangang ayusin, at mga pangangailangan dito sa bahay? <span class="req">*</span></div>
+        <div class="radio-col" style="margin-top:6px">
+          <label class="r-opt"><input type="radio" name="q32" value="Ang respondent mismo" onchange="runValidation()"> Ang respondent mismo</label>
+          <label class="r-opt"><input type="radio" name="q32" value="Ang respondent at iba pang miyembro ng pamamahay" onchange="runValidation()"> Ang respondent at iba pang miyembro ng pamamahay</label>
+          <label class="r-opt"><input type="radio" name="q32" value="Ibang miyembro ng pamamahay" onchange="runValidation()"> Ibang miyembro ng pamamahay</label>
+          <label class="r-opt"><input type="radio" name="q32" value="Iba pa" onchange="runValidation()"> Iba pa</label>
+        </div>
+        <div class="v-msg" id="msg-q32"></div>
+        <div class="remarks-field"><label>32. Remarks</label><input type="text" id="q32_remarks" placeholder="Remarks..."></div>
+      </div>
+
+      <!-- Q33 -->
+      <div class="q-block" id="qblock-q33">
+        <div class="q-text">33. Sino ang nagdedesisyon sa inyong tahanan pagdating sa mga water-related concerns? <span class="req">*</span></div>
+        <div class="radio-col" style="margin-top:6px">
+          <label class="r-opt"><input type="radio" name="q33" value="Ang respondent mismo" onchange="runValidation()"> Ang respondent mismo</label>
+          <label class="r-opt"><input type="radio" name="q33" value="Ang respondent at iba pang miyembro ng pamamahay" onchange="runValidation()"> Ang respondent at iba pang miyembro ng pamamahay</label>
+          <label class="r-opt"><input type="radio" name="q33" value="Ibang miyembro ng pamamahay" onchange="runValidation()"> Ibang miyembro ng pamamahay</label>
+          <label class="r-opt"><input type="radio" name="q33" value="Iba pa" onchange="runValidation()"> Iba pa</label>
+        </div>
+        <div class="v-msg" id="msg-q33"></div>
+        <div class="remarks-field"><label>33. Remarks</label><input type="text" id="q33_remarks" placeholder="Remarks..."></div>
+      </div>
+
+      <!-- Q34 -->
+      <div class="q-block" id="qblock-q34">
+        <div class="q-text">34. Magkano ang kabuuang gastusin ng inyong pamamahay kada buwan? <span class="req">*</span>
+          <button class="tip-btn" tabindex="-1" onclick="toggleTip('tip-q34')">?</button>
+        </div>
+        <div class="tip-box" id="tip-q34">
+          This is the household's <strong>total monthly spending</strong> — food, water, electricity, rent, transport, and all other regular expenses combined.
+        </div>
+        <div style="max-width:220px;margin-top:8px"><input type="number" id="q34_exp" min="0" step="any" placeholder="0" oninput="runValidation()"><div class="v-msg" id="msg-q34"></div></div>
+        <div class="remarks-field"><label>34. Remarks</label><input type="text" id="q34_remarks" placeholder="Remarks..."></div>
+      </div>
+
+      <!-- Q35 -->
+      <div class="q-block" id="qblock-q35">
+        <div class="q-text">35. Magkano po ang inilalaan ninyo kada buwan para sa pagbabayad ng tubig? <span class="req">*</span>
+          <button class="tip-btn" tabindex="-1" onclick="toggleTip('tip-q35')">?</button></div>
+        <div class="tip-box" id="tip-q35">This is an independent question and may not match to the amount being paid.</div>
+        <div style="max-width:220px;margin-top:8px"><input type="number" id="q35_exp" min="0" step="any" placeholder="0" oninput="runValidation()"><div class="v-msg" id="msg-q35"></div></div>
+        <div class="remarks-field"><label>35. Remarks</label><input type="text" id="q35_remarks" placeholder="Remarks..."></div>
+      </div>
+
+      <!-- Q36 -->
+      <div class="q-block" id="qblock-q36">
+        <div class="q-text">36. Type of Dwelling: <span class="req">*</span></div>
+        <div class="radio-col" style="margin-top:6px">
+          <label class="r-opt"><input type="radio" name="q36" value="ABC1" onchange="runValidation()"> ABC1. Well-constructed homes made of top-quality materials...</label>
+          <label class="r-opt"><input type="radio" name="q36" value="C2" onchange="runValidation()"> C2. Well-constructed structures with a mix of good-quality light and heavy materials...</label>
+          <label class="r-opt"><input type="radio" name="q36" value="D" onchange="runValidation()"> D. Adequate structure of mixed light and heavy materials...</label>
+          <label class="r-opt"><input type="radio" name="q36" value="E" onchange="runValidation()"> E. Temporary structure, barong-barong type...</label>
+        </div>
+        <div class="v-msg" id="msg-q36"></div>
+      </div>
+
+      <!-- Q37 -->
+      <div class="q-block" id="qblock-q37">
+        <div class="q-text">House Details:</div>
+        <div class="grid-3">
+          <div class="field"><label>House is... <span class="req">*</span></label><select id="q37_type" onchange="runValidation()"><option value="">— Pumili —</option><option>Owned / Sarili</option><option>Rented / Naupahan</option><option>Shared / Free of Charge</option><option>Iba pa</option></select><div class="v-msg" id="msg-q37_type"></div></div>
+          <div class="field"><label>...located in <span class="req">*</span></label><select id="q37_loc" onchange="runValidation()"><option value="">— Pumili —</option><option>Residential area</option><option>Commercial area</option><option>Mixed use area</option><option>Informal settlement</option><option>Iba pa</option></select><div class="v-msg" id="msg-q37_loc"></div></div>
+          <div class="field"><label>Type of Ownership <span class="req">*</span></label><select id="q37_own" onchange="runValidation()"><option value="">— Pumili —</option><option>Sariling lupa at bahay</option><option>Rented lot, owned structure</option><option>Rented lot and structure</option><option>Iba pa</option></select><div class="v-msg" id="msg-q37_own"></div></div>
+        </div>
+      </div>
+
+      <!-- Q38 -->
+      <div class="q-block" id="qblock-q38">
+        <div class="q-text">38. Presence of Water "Appliances"
+          <button class="tip-btn" tabindex="-1" onclick="toggleTip('tip-q38')">?</button>
+        </div>
+        <div class="tip-box" id="tip-q38">
+          <strong>All Appliances are included</strong> even if they are unused or broken.<br><br>
+          <strong>Garden:</strong> Count as 1 even with many pots.<br><br>
+          <strong>Pets:</strong> For fish, count the number of <strong>aquariums/tanks</strong> and should be placed on <strong>Iba pa</strong>.<br><br>
+          <strong>Motorcycle</strong> and <strong>E-bike</strong> count as Vehicle.
+        </div>
+        <table class="tbl">
+          <thead><tr><th>Appliance</th><th>Yes/No <span class="req">*</span></th><th>How many?</th></tr></thead>
+          <tbody>
+            <tr><td>Bidet</td><td><select id="q38_bidet_yn" onchange="runValidation()"><option value="">—</option><option>Yes</option><option>No</option></select></td><td><input type="number" id="q38_bidet_n" min="0" step="1" placeholder="0" oninput="runValidation()"></td></tr>
+            <tr><td>Car/Vehicle</td><td><select id="q38_car_yn" onchange="runValidation()"><option value="">—</option><option>Yes</option><option>No</option></select></td><td><input type="number" id="q38_car_n" min="0" step="1" placeholder="0" oninput="runValidation()"></td></tr>
+            <tr><td>Flush toilet</td><td><select id="q38_toilet_yn" onchange="runValidation()"><option value="">—</option><option>Yes</option><option>No</option></select></td><td><input type="number" id="q38_toilet_n" min="0" step="1" placeholder="0" oninput="runValidation()"></td></tr>
+            <tr><td>Garden</td><td><select id="q38_garden_yn" onchange="runValidation()"><option value="">—</option><option>Yes</option><option>No</option></select></td><td><input type="number" id="q38_garden_n" min="0" step="1" placeholder="0" oninput="runValidation()"></td></tr>
+            <tr><td>Pets</td><td><select id="q38_pets_yn" onchange="runValidation()"><option value="">—</option><option>Yes</option><option>No</option></select></td><td><input type="number" id="q38_pets_n" min="0" step="1" placeholder="0" oninput="runValidation()"></td></tr>
+            <tr><td>Shower</td><td><select id="q38_shower_yn" onchange="runValidation()"><option value="">—</option><option>Yes</option><option>No</option></select></td><td><input type="number" id="q38_shower_n" min="0" step="1" placeholder="0" oninput="runValidation()"></td></tr>
+            <tr><td>Swimming Pool</td><td><select id="q38_pool_yn" onchange="runValidation()"><option value="">—</option><option>Yes</option><option>No</option></select></td><td><input type="number" id="q38_pool_n" min="0" step="1" placeholder="0" oninput="runValidation()"></td></tr>
+            <tr><td>Washing Machine</td><td><select id="q38_wm_yn" onchange="runValidation()"><option value="">—</option><option>Yes</option><option>No</option></select></td><td><input type="number" id="q38_wm_n" min="0" step="1" placeholder="0" oninput="runValidation()"></td></tr>
+            <tr><td>Water dispenser</td><td><select id="q38_disp_yn" onchange="runValidation()"><option value="">—</option><option>Yes</option><option>No</option></select></td><td><input type="number" id="q38_disp_n" min="0" step="1" placeholder="0" oninput="runValidation()"></td></tr>
+            <tr><td>Iba pa</td><td><select id="q38_other_yn" onchange="runValidation()"><option value="">—</option><option>Yes</option><option>No</option></select></td><td><input type="number" id="q38_other_n" min="0" step="1" placeholder="0" oninput="runValidation()"></td></tr>
+          </tbody>
+        </table>
+        <div class="v-msg" id="msg-q38"></div>
+        <div class="remarks-field"><label>38. Remarks</label><input type="text" id="q38_remarks" placeholder="Remarks..."></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SUBMIT -->
+  <div class="submit-area">
+    <button class="btn-submit" type="button" onclick="submitForm()">Submit Questionnaire</button>
+  </div>
+
+</div><!-- /main-col -->
+</div><!-- /layout -->
+
+<script>
+// ─── STATE ──────────────────────────────────────────────────────────────────
+let sheetType = 'RES';
+let findings = [];
+let totalChecks = 0;
+let passedChecks = 0;
+const dirty = new Set();
+
+// ─── FIELD MAP: finding key → specific DOM field ID ─────────────────────────
+const FIELD_MAP = {
+  'Time':     msg => msg.includes('Started') ? 'time_start' : 'time_end',
+  'Q1':       msg => msg.includes('Last')    ? 'q1_last'
+                   : msg.includes('First')   ? 'q1_first'
+                   : msg.includes('Middle')  ? 'q1_mi'    : 'q1_last',
+  'Q2':       'q2_gender_Male',
+  'Q3':       msg => msg.includes('Phone')   ? 'q3_phone'
+                   : msg.includes('Email')   ? 'q3_email' : 'q3_remarks',
+  'Q4':       msg => msg.includes('street')  ? 'q4_street'
+                   : msg.includes('barangay')? 'q4_barangay'
+                   : msg.includes('city')    ? 'q4_city' : 'q4_street',
+  'Q5':       'q5_1_php',
+  'Q6':       null,
+  'Q6.1':     msg => msg.includes('cubic')   ? 'q6_1_cm'  : 'q6_1_php',
+  'Q7':       msg => msg.includes('PHP')      ? 'q7_php'
+                   : msg.includes('Cubic')    ? 'q7_cm'
+                   : msg.includes('Month')    ? 'q7_month'
+                   : msg.includes('CAN')      ? 'q7_can'
+                   : msg.includes('Account Name') ? 'q7_accname'
+                   : 'q7_remarks',
+  'Q8':       'q8_hours',
+  'Q9':       null,
+  'Q10':      null,
+  'Q11':      null,
+  'Q11.1':    null,
+  'Q11.2':    null,
+  'Q11.3':    'q11_3_time',
+  'Q12':      null,
+  'Q12.1':    null,
+  'Q13':      null,
+  'Q14':      null,
+  'Q14.1':    'q14_1_amount',
+  'Q15':      msg => msg.includes('Deep well') ? 'q15_dw_liters'
+                   : msg.includes('Refill') && msg.includes('liters') ? 'q15_ref_liters'
+                   : msg.includes('Refill') && msg.includes('cost')   ? 'q15_ref_cost'
+                   : 'q15_dw_sel',
+  'Q16':      null,
+  'Q17':      msg => msg.includes('business') ? 'q17_biz' : 'q17_hh',
+  'Q18':      'q18_total',
+  'Q18a':     msg => msg.includes('Residente') ? 'q18a_res' : null,
+  'Q18b':     null,
+  'Q18c':     null,
+  'Q18d':     'q18d_2025',
+  'Q19':      null,
+  'Q20':      null,
+  'Q21':      null,
+  'Q22':      null,
+  'Q23':      null,
+  'Q24':      'q24_barrier',
+  'Q25':      null,
+  'Q26':      null,
+  'Q28':      msg => msg.includes('Percentage') ? 'q28_pct' : 'q28_dir',
+  'Q28/Q29':  'q28_dir',
+  'Q29':      null,
+  'Q30':      null,
+  'Q31':      null,
+  'Q31.1':    'q31_1_reason',
+  'Q32':      null,
+  'Q33':      null,
+  'Q34':      'q34_exp',
+  'Q35':      'q35_exp',
+  'Q36':      null,
+  'Q37':      msg => msg.includes('type') ? 'q37_type'
+                   : msg.includes('loc')  ? 'q37_loc'
+                   : msg.includes('own')  ? 'q37_own' : 'q37_type',
+  'Q38':      null,
+};
+
+// ─── TIP ACTIONS ─────────────────────────────────────────────────────────────
+const TIP_ACTIONS = {
+  'Time':   'Format: HH:MM AM or PM. If >1 hour, confirm with enumerator.',
+  'Q1':     'Check front page for full name including middle initial.',
+  'Q3':     'At least one contact required. If none, write reason in Remarks.',
+  'Q4':     'Address must match the pre-filled LGU/Barangay data.',
+  'Q5':     'Check CAN at kalasag-ds.com/check-installation-type to confirm rate code.',
+  'Q7':     'All bill fields must come from the physical Maynilad bill. If missing, write "RA approved" in Remarks.',
+  'Q8':     'Expected 24 hours. If less, confirm with enumerator.',
+  'Q10':    'All 4 time periods must be rated.',
+  'Q11':    'Sub-fields (11.1, 11.2, 11.3) required when Oo. If floater, write in Remarks.',
+  'Q12.1':  'At least one conservation method must be selected.',
+  'Q14':    'Specific peso amount required if willing to pay.',
+  'Q15':    'If a source is marked Yes, liters per month is required (cannot be 0).',
+  'Q17':    'Residential: at least 1 household. Semi-business: at least 1 business.',
+  'Q18':    'Total must not be lower than Q18a breakdown total.',
+  'Q18a':   'Count everyone sleeping in the property.',
+  'Q18b':   'People who use water but do NOT sleep at the property.',
+  'Q18c':   'Temporarily absent members expected to return.',
+  'Q18d':   '2025 count must match Q18a total. If count changed, write reason — not N/A.',
+  'Q22':    'Every utility the respondent has must be ranked with a unique number.',
+  'Q26':    'Must be answered even without a physical bill.',
+  'Q28':    'Check Q28 vs Q29 for contradictions.',
+  'Q29':    'All rows must have a direction for Residential. Antas (1-5) required when Tumaas or Bumaba.',
+  'Q34':    'Total household monthly spending — food, water, electricity, rent, transport, etc.',
+  'Q35':    'Amount budgeted for water, independent of what was actually paid.',
+  'Q38':    'All appliances even if unused or broken.',
+};
+
+// ─── DIRTY TRACKING ──────────────────────────────────────────────────────────
+function qKey(el) {
+  const id = (el.id || el.name || '');
+  const m = id.match(/^(q\d+[a-z]?|time|info)/i);
+  return m ? m[1].toLowerCase() : null;
+}
+document.addEventListener('input',  e => { const k=qKey(e.target); if(k) dirty.add(k); }, true);
+document.addEventListener('change', e => { const k=qKey(e.target); if(k) dirty.add(k); }, true);
+const d = key => dirty.has(key) || (key==='q18a' && dirty.has('q18d'));
+
+// ─── AUTO-FILL SYNC ──────────────────────────────────────────────────────────
+function syncAutoFill(el) {
+  const map = {
+    'time_start':   'info_dc_ts',
+    'time_end':     'info_dc_te',
+    'info_dc_date': 'info_fi_date'
+  };
+  const tid = map[el.id];
+  if (tid) {
+    const t = document.getElementById(tid);
+    if (t) t.value = el.value;
+  }
+}
+
+// ─── TIME MASK ───────────────────────────────────────────────────────────────
+function timeMask(el) {
+  let v = el.value.replace(/[^0-9apmAPM:\s]/g, '');
+  if (/^\d{2}$/.test(v) && (el._lastLen || 0) < v.length) v = v + ':';
+  if (/^\d{1,2}:\d{2}$/.test(v) && (el._lastLen || 0) < v.length) v = v + ' ';
+  el._lastLen = v.length;
+  el.value = v;
+}
+
+// ─── NAV SEARCH ──────────────────────────────────────────────────────────────
+const Q_ANCHOR_MAP = {
+  'Time':'time_start','Q1':'block-q1','Q2':'qblock-q2','Q3':'block-q3','Q4':'block-q4',
+  'Q5':'qblock-q5','Q6':'qblock-q6','Q7':'block-q7','Q8':'block-q8',
+  'Q9':'qblock-q9','Q10':'block-q10','Q11':'qblock-q11','Q12':'qblock-q12',
+  'Q12.1':'qblock-q12',
+  'Q13':'qblock-q13','Q14':'qblock-q14','Q15':'block-q15','Q16':'qblock-q16',
+  'Q17':'qblock-q17','Q18':'qblock-q18','Q18a':'qblock-q18a','Q18b':'qblock-q18b',
+  'Q18c':'qblock-q18c','Q18d':'qblock-q18d','Q19':'qblock-q19','Q20':'qblock-q20',
+  'Q21':'qblock-q21','Q22':'qblock-q22','Q23':'qblock-q23','Q24':'qblock-q24',
+  'Q25':'qblock-q25','Q26':'qblock-q26','Q28':'qblock-q28','Q29':'qblock-q29',
+  'Q30':'qblock-q30','Q31':'qblock-q31','Q32':'qblock-q32','Q33':'qblock-q33',
+  'Q34':'qblock-q34','Q35':'qblock-q35','Q36':'qblock-q36','Q37':'qblock-q37','Q38':'qblock-q38',
+};
+const Q_LABELS = {
+  'Q1':'Respondent Name','Q2':'Gender','Q3':'Contact Details','Q4':'Address',
+  'Q5':'Rate Code','Q6':'Sub-meter','Q7':'Bill Details','Q8':'Supply Hours',
+  'Q9':'Booster Pump','Q10':'Water Pressure','Q11':'Water Storage',
+  'Q12':'Conservation Methods','Q12.1':'Conservation Methods (detail)',
+  'Q13':'Service Rating','Q14':'Willingness to Pay',
+  'Q15':'Other Water Sources','Q16':'Source Reasons','Q17':'Households/Businesses',
+  'Q18':'Total Water Users','Q18a':'Residents Breakdown','Q18b':'Stay-out Workers',
+  'Q18c':'Absent Members','Q18d':'Annual User Count','Q19':'Septic Tank',
+  'Q20':'Income Source','Q21':'Cashflow Pattern','Q22':'Utility Rankings',
+  'Q23':'Payment Behavior','Q24':'Payment Barrier','Q25':'Bill Receipt Method',
+  'Q26':'Bill Design Rating','Q28':'Pandemic Water Change %','Q29':'Usage Direction',
+  'Q30':'Laundry Location','Q31':'Return to Normal','Q32':'Maintenance Decision',
+  'Q33':'Water Decisions','Q34':'Monthly Expenses','Q35':'Water Budget',
+  'Q36':'Dwelling Type','Q37':'House Details','Q38':'Water Appliances',
+};
+
+function navSearch(val) {
+  const box = document.getElementById('nav-search-results');
+  val = val.trim().toUpperCase().replace(/^Q/,'');
+  if (!val) { box.style.display='none'; return; }
+  const matches = Object.entries(Q_LABELS).filter(([k]) => {
+    const num = k.replace('Q','');
+    return num.startsWith(val) || num === val;
+  }).slice(0,6);
+  if (!matches.length) { box.style.display='none'; return; }
+  box.innerHTML = matches.map(([k,label]) =>
+    `<div onclick="jumpToQ('${k}')" style="padding:8px 12px;cursor:pointer;border-bottom:1px solid #f1f5f9;color:#111827;transition:background .1s"
+      onmouseover="this.style.background='#eff6ff'" onmouseout="this.style.background=''">`+
+    `<span style="font-weight:700;font-family:monospace;color:#2563eb;margin-right:6px">${k}</span>`+
+    `<span style="font-size:.9em">${label}</span></div>`
+  ).join('');
+  box.style.display = 'block';
+}
+function jumpToQ(q) {
+  document.getElementById('nav-search').value = '';
+  document.getElementById('nav-search-results').style.display = 'none';
+  scrollToQuestion(q);
+}
+document.addEventListener('click', e => {
+  const box = document.getElementById('nav-search-results');
+  if (!document.getElementById('nav-search').contains(e.target)) box.style.display = 'none';
+});
+
+// ─── YES/NO CONTROL ──────────────────────────────────────────────────────────
+const YN_PAIRS = [
+  ['q15_komp_sel','q15_komp_liters','q15_komp_cost'],
+  ['q15_dw_sel','q15_dw_liters','q15_dw_cost'],
+  ['q15_ref_sel','q15_ref_liters','q15_ref_cost'],
+  ['q15_other_sel','q15_other_text','q15_other_liters','q15_other_cost'],
+  ['q18a_ng_np_sel','q18a_ng_np'],['q18a_ng_wp_sel','q18a_ng_wp'],
+  ['q18a_si_sel','q18a_si'],['q18a_res_sel','q18a_res'],['q18a_other_sel','q18a_other'],
+  ['q18b_so_sel','q18b_so'],['q18b_igib_sel','q18b_igib'],['q18b_other_sel','q18b_other'],
+  ['q18c_stu_sel','q18c_stu'],['q18c_emp_sel','q18c_emp'],
+  ['q18c_ofw_sel','q18c_ofw'],['q18c_other_sel','q18c_other'],
+  ['q22_tubig_sel','q22_tubig'],['q22_kuryente_sel','q22_kuryente'],
+  ['q22_load_sel','q22_load'],['q22_internet_sel','q22_internet'],['q22_cable_sel','q22_cable'],
+  ['q38_bidet_yn','q38_bidet_n'],['q38_car_yn','q38_car_n'],['q38_toilet_yn','q38_toilet_n'],
+  ['q38_garden_yn','q38_garden_n'],['q38_pets_yn','q38_pets_n'],['q38_shower_yn','q38_shower_n'],
+  ['q38_pool_yn','q38_pool_n'],['q38_wm_yn','q38_wm_n'],['q38_disp_yn','q38_disp_n'],
+  ['q38_fish_yn','q38_fish_n'],['q38_other_yn','q38_other_n'],
+];
+function applyYesNo(ynId, countIds) {
+  const sel = document.getElementById(ynId);
+  if (!sel) return;
+  const isYes = sel.value === 'Yes';
+  countIds.forEach(cid => {
+    const el = document.getElementById(cid);
+    if (!el) return;
+    el.disabled = !isYes;
+    if (!isYes) { el.value=''; el.classList.remove('ok','warn','err'); }
+    el.style.opacity    = isYes ? '' : '0.38';
+    el.style.cursor     = isYes ? '' : 'not-allowed';
+    el.style.background = isYes ? '' : '#f3f4f6';
+  });
+}
+function initYesNoControl() {
+  YN_PAIRS.forEach(([ynId,...countIds]) => {
+    applyYesNo(ynId, countIds);
+    const sel = document.getElementById(ynId);
+    if (sel) sel.addEventListener('change', () => applyYesNo(ynId, countIds));
+  });
+}
+function handleQ15Wala(sel) {
+  if (sel.value !== 'Yes') return;
+  [['q15_komp_sel','q15_komp_liters','q15_komp_cost'],
+   ['q15_dw_sel','q15_dw_liters','q15_dw_cost'],
+   ['q15_ref_sel','q15_ref_liters','q15_ref_cost'],
+   ['q15_other_sel','q15_other_text','q15_other_liters','q15_other_cost']].forEach(([yn,...cs]) => {
+    const el = document.getElementById(yn);
+    if (el) el.value = 'No';
+    applyYesNo(yn, cs);
+  });
+}
+function updateQ29Antas(rname, lvlid) {
+  const checked = document.querySelector(`input[name="${rname}"]:checked`);
+  const lvl = document.getElementById(lvlid);
+  if (!lvl) return;
+  const needs = checked && (checked.value==='Tumaas' || checked.value==='Bumaba');
+  lvl.disabled = !needs;
+  lvl.style.opacity    = needs ? '' : '0.38';
+  lvl.style.cursor     = needs ? '' : 'not-allowed';
+  lvl.style.background = needs ? '' : '#f3f4f6';
+  if (!needs) { lvl.value=''; lvl.classList.remove('ok','warn','err'); }
+}
+function initQ29Antas() {
+  [['q29_inom','q29_inom_lvl'],['q29_linis','q29_linis_lvl'],['q29_luto','q29_luto_lvl'],
+   ['q29_laba','q29_laba_lvl'],['q29_ligo','q29_ligo_lvl'],['q29_ihi','q29_ihi_lvl']]
+  .forEach(([rn,li]) => updateQ29Antas(rn,li));
+}
+
+// ─── POPUP ───────────────────────────────────────────────────────────────────
+let popupMinimized = false;
+function toggleMinimize() {
+  popupMinimized = !popupMinimized;
+  document.getElementById('qc-popup').classList.toggle('minimized', popupMinimized);
+  document.getElementById('qc-min-btn').textContent = popupMinimized ? '+' : '—';
+}
+(function(){
+  let dragging=false, startX, startY, origRight, origBottom;
+  const handle=document.getElementById('qc-drag-handle');
+  const popup =document.getElementById('qc-popup');
+  handle.addEventListener('mousedown', e=>{
+    if(e.target.closest('button')) return;
+    dragging=true; startX=e.clientX; startY=e.clientY;
+    const r=popup.getBoundingClientRect();
+    origRight=window.innerWidth-r.right; origBottom=window.innerHeight-r.bottom;
+    popup.style.transition='none'; document.body.style.userSelect='none';
+  });
+  document.addEventListener('mousemove', e=>{
+    if(!dragging) return;
+    let nr=origRight-(e.clientX-startX), nb=origBottom-(e.clientY-startY);
+    nr=Math.max(8,Math.min(window.innerWidth-200,nr));
+    nb=Math.max(8,Math.min(window.innerHeight-44,nb));
+    popup.style.right=nr+'px'; popup.style.bottom=nb+'px';
+  });
+  document.addEventListener('mouseup',()=>{ dragging=false; popup.style.transition=''; document.body.style.userSelect=''; });
+})();
+
+function setSheetType(t) {
+  sheetType=t;
+  document.getElementById('btn-res').classList.toggle('active',t==='RES');
+  document.getElementById('btn-semi').classList.toggle('active',t==='SEMI');
+  const lbl=document.querySelector('.qc-title span:last-child');
+  if(lbl) lbl.innerHTML=`QC Findings <span style="font-weight:400;opacity:.8;font-size:.9em">(${t})</span>`;
+  runValidation();
+}
+function toggleTip(id){ document.getElementById(id).classList.toggle('hidden'); }
+function showHide(id,show){ document.getElementById(id).style.display=show?'block':'none'; }
+
+// ─── UTILS ───────────────────────────────────────────────────────────────────
+const getVal   = id=>{ const el=document.getElementById(id); return el?el.value.trim():''; };
+const getNum   = id=>{ const v=parseFloat(getVal(id)); return isNaN(v)?0:v; };
+const getRadio = name=>{ const r=document.querySelector(`input[name="${name}"]:checked`); return r?r.value:''; };
+const getCBs   = name=>[...document.querySelectorAll(`input[name="${name}"]:checked`)].map(x=>x.value);
+
+const setMsg=(id,type,text)=>{
+  const el=document.getElementById(`msg-${id}`);
+  if(!el) return;
+  if(type&&text){el.className=`v-msg ${type} show`;el.innerHTML=text;}
+  else{el.className='v-msg';el.innerHTML='';}
+};
+const setClass=(id,cls)=>{
+  const el=document.getElementById(id);
+  if(!el||el.disabled) return;
+  if(el.tagName==='INPUT'||el.tagName==='SELECT'){el.classList.remove('ok','warn','err');if(cls)el.classList.add(cls);}
+};
+
+function addFinding(q,type,message,action,fieldId) {
+  const act = action || (type!=='ok' ? TIP_ACTIONS[q] : undefined);
+  findings.push({q,type,message,action:act,fieldId});
+  totalChecks++;
+  if(type==='ok') passedChecks++;
+}
+
+function isValidPhone(num) {
+  if(!num) return false;
+  return num.split('/').map(n=>n.trim()).filter(Boolean).every(n=>{
+    const c=n.replace(/[^0-9]/g,'');
+    return (c.startsWith('09')&&c.length===11)||(c.startsWith('63')&&c.length===12)||c.length===8||c.length===7;
+  });
+}
+function isValidEmail(e){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
+function parseTime(ts) {
+  if(!ts) return null;
+  const m=ts.trim().toLowerCase().replace(/\s+/g,'').match(/^(\d{1,2}):(\d{2})(am|pm)$/);
+  if(!m) return null;
+  let h=parseInt(m[1]),mn=parseInt(m[2]);
+  if(m[3]==='pm'&&h!==12) h+=12;
+  if(m[3]==='am'&&h===12) h=0;
+  const dd=new Date(); dd.setHours(h,mn,0,0); return dd;
+}
+
+// ─── NEGATIVE VALUE CHECK ────────────────────────────────────────────────────
+function checkNegative(id,label,q) {
+  const v=parseFloat(getVal(id));
+  if(!isNaN(v)&&v<0){
+    setMsg(id,'err',`⛔ ${label} cannot be negative`);
+    setClass(id,'err');
+    addFinding(q,'err',`${label} has a negative value — must be 0 or more`,undefined,id);
+    return true;
+  }
+  return false;
+}
+
+// ─── SUBMIT ──────────────────────────────────────────────────────────────────
+function submitForm() {
+  ['time','info','q1','q2','q3','q4','q5','q6','q7','q8','q9','q10',
+   'q11','q12','q13','q14','q15','q16','q17','q18','q18a','q18b','q18c','q18d',
+   'q19','q20','q21','q22','q23','q24','q25','q26','q28','q29','q30','q31',
+   'q32','q33','q34','q35','q36','q37','q38'].forEach(k=>dirty.add(k));
+  runValidation();
+  const firstErr=findings.find(f=>f.type==='err');
+  if(firstErr){ scrollToQuestion(firstErr.q); highlightField(firstErr); }
+  else if(!findings.length||findings.every(f=>f.type==='ok'))
+    alert('All checks passed! Sheet looks good.');
+}
+
+// ─── MAIN VALIDATION ─────────────────────────────────────────────────────────
+function runValidation() {
+  findings=[]; totalChecks=0; passedChecks=0;
+  document.querySelectorAll('.v-msg').forEach(el=>{el.className='v-msg';el.innerHTML='';});
+  document.querySelectorAll('input:not([disabled]),select:not([disabled])').forEach(el=>{
+    el.classList.remove('ok','warn','err');
+  });
+
+  // TIME
+  if(d('time')||d('info')){
+    const ts=getVal('time_start'),te=getVal('time_end');
+    if(!ts){setMsg('time_start','err','⛔ Required');setClass('time_start','err');addFinding('Time','err','Time Started is required',undefined,'time_start');}
+    else{const s=parseTime(ts);if(!s){setMsg('time_start','err','Invalid format — use HH:MM AM or PM');setClass('time_start','err');addFinding('Time','err','Invalid start time format',undefined,'time_start');}else{setClass('time_start','ok');passedChecks++;totalChecks++;}}
+    if(!te){setMsg('time_end','err','⛔ Required');setClass('time_end','err');addFinding('Time','err','Time Ended is required',undefined,'time_end');}
+    else{const s=parseTime(ts),e=parseTime(te);if(!e){setMsg('time_end','err','Invalid format — use HH:MM AM or PM');setClass('time_end','err');addFinding('Time','err','Invalid end time format',undefined,'time_end');}
+    else if(s&&e){const diff=(e-s)/60000;if(diff>60){setMsg('time_end','warn',`⚠ Interview took ${Math.round(diff)} min`);setClass('time_end','warn');addFinding('Time','warn',`Interview took ${Math.round(diff)} minutes`,undefined,'time_end');}else{setClass('time_end','ok');passedChecks++;totalChecks++;}}}
+  }
+
+  // Q1
+  if(d('q1')){
+    const last=getVal('q1_last'),first=getVal('q1_first'),mi=getVal('q1_mi');
+    if(!last){setMsg('q1_last','err','⛔ Required');setClass('q1_last','err');addFinding('Q1','err','Last Name is required',undefined,'q1_last');}
+    else{setClass('q1_last','ok');passedChecks++;totalChecks++;}
+    if(!first){setMsg('q1_first','err','⛔ Required');setClass('q1_first','err');addFinding('Q1','err','First Name is required',undefined,'q1_first');}
+    else{setClass('q1_first','ok');passedChecks++;totalChecks++;}
+    if(!mi){setClass('q1_mi','warn');setMsg('q1_mi','warn','No middle initial — confirm with enumerator');totalChecks++;}
+    else if(/\d/.test(mi)){setMsg('q1_mi','err','Middle initial must be a letter');setClass('q1_mi','err');addFinding('Q1','err','Middle Initial contains a number',undefined,'q1_mi');totalChecks++;}
+    else{setClass('q1_mi','ok');passedChecks++;totalChecks++;}
+  }
+
+  // Q2
+  if(d('q2')){
+    if(!getRadio('q2_gender')){addFinding('Q2','err','Gender is required');setMsg('q2','err','⛔ Required');}
+    else{passedChecks++;totalChecks++;}
+  }
+
+  // Q3
+  if(d('q3')){
+    const phone=getVal('q3_phone'),email=getVal('q3_email'),remarks=getVal('q3_remarks');
+    if(!phone&&!email){
+      setMsg('q3_remarks','err','⛔ At least a phone or email is required.');setClass('q3_remarks','err');
+      if(!remarks)addFinding('Q3','err','No contact information and no remarks',undefined,'q3_remarks');
+      else{addFinding('Q3','warn',`No contact info — reason: "${remarks}"`);passedChecks++;totalChecks++;}
+    } else {
+      if(phone){if(!isValidPhone(phone)){setMsg('q3_phone','err','Phone format not valid');setClass('q3_phone','err');addFinding('Q3','err',`Phone "${phone}" format not valid`,undefined,'q3_phone');}else{setClass('q3_phone','ok');passedChecks++;totalChecks++;}}
+      if(email){if(!isValidEmail(email)){setMsg('q3_email','err','Email format not valid');setClass('q3_email','err');addFinding('Q3','err',`Email "${email}" format not valid`,undefined,'q3_email');}
+      else{const dom=email.toLowerCase().split('@')[1]||'';const com=['gmail.com','yahoo.com','hotmail.com','outlook.com','icloud.com'];let typo=null;for(const c of com){if(dom!==c){const diff=[...c].filter((ch,i)=>ch!==(dom[i]||'')).length+Math.abs(dom.length-c.length);if(diff>0&&diff<=2){typo=c;break;}}}
+      if(typo){setMsg('q3_email','warn',`Did you mean @${typo}?`);setClass('q3_email','warn');addFinding('Q3','warn',`Email domain might be a typo: "${dom}"`,undefined,'q3_email');}else{setClass('q3_email','ok');passedChecks++;totalChecks++;}}}
+    }
+  }
+
+  // Q4
+  if(d('q4')){
+    ['q4_street','q4_barangay','q4_city'].forEach(id=>{
+      if(!getVal(id)){setMsg(id,'err','⛔ Required');setClass(id,'err');addFinding('Q4','err',`Q4: ${id.replace('q4_','')} is required`,undefined,id);}
+      else{setClass(id,'ok');passedChecks++;totalChecks++;}
+    });
+  }
+
+  // Q5
+  if(d('q5')){
+    if(!getRadio('q5_rate')){addFinding('Q5','err','Q5 (rate code) is required');setMsg('q5','err','⛔ Required');}
+    else{
+      passedChecks++;totalChecks++;
+      if(getRadio('q5_rate')==='Semi-business'){
+        if(!getVal('q5_1_php')){
+          setClass('q5_1_php','err');
+          setMsg('q5_1_php','err','⛔ Required for Semi-business');
+          addFinding('Q5','err','Q5.1: Installation type is required for Semi-business',undefined,'q5_1_php');
+        } else {
+          setClass('q5_1_php','ok');
+          passedChecks++;totalChecks++;
+        }
+      }
+    }
+  }
+
+  // Q6
+  if(d('q6')){
+    if(!getRadio('q6_sub')){addFinding('Q6','err','Q6 (sub-meter) is required');setMsg('q6','err','⛔ Required');}
+    else{
+      passedChecks++;totalChecks++;
+      if(getRadio('q6_sub')==='Oo'){
+        const q61php=getNum('q6_1_php'),q61cm=getNum('q6_1_cm'),q7p=getNum('q7_php');
+        if(checkNegative('q6_1_php','Q6.1 PHP Amount','Q6.1')){}
+        else if(!getVal('q6_1_php')||q61php===0){setClass('q6_1_php','err');addFinding('Q6.1','err','Q6.1: PHP amount is missing or 0',undefined,'q6_1_php');}
+        else if(q7p>0&&q61php>q7p){setClass('q6_1_php','warn');addFinding('Q6.1','warn',`Q6.1 (₱${q61php}) exceeds Q7 bill (₱${q7p})`,undefined,'q6_1_php');}
+        else{setClass('q6_1_php','ok');}
+        if(checkNegative('q6_1_cm','Q6.1 Cubic Meter','Q6.1')){}
+        else if(!getVal('q6_1_cm')){setClass('q6_1_cm','err');addFinding('Q6.1','err','Q6.1: Cubic meter is required',undefined,'q6_1_cm');}
+        else{setClass('q6_1_cm','ok');}
+      }
+    }
+  }
+
+  // Q7 — remarks with any text = bypass required fields (silent, no QC notification)
+  if(d('q7')){
+    const remarks=getVal('q7_remarks');
+    const raApproved=remarks.length>0;
+    const php=getNum('q7_php'),month=getVal('q7_month'),can=getVal('q7_can'),accname=getVal('q7_accname');
+    if(raApproved){
+      // Silently color all fields green; no QC finding notification
+      setClass('q7_remarks','ok');
+      ['q7_php','q7_cm','q7_month','q7_can','q7_accname'].forEach(id=>setClass(id,'ok'));
+      passedChecks+=5;totalChecks+=5;
+    } else {
+      if(checkNegative('q7_php','PHP Amount','Q7')){}
+      else if(!php||php===0){setMsg('q7_php','err','⛔ Required');setClass('q7_php','err');addFinding('Q7','err','PHP Amount is missing or 0',undefined,'q7_php');}
+      else{setClass('q7_php','ok');passedChecks++;totalChecks++;}
+      if(checkNegative('q7_cm','Cubic Meter','Q7')){}
+      else if(getVal('q7_cm')===''){setMsg('q7_cm','err','⛔ Required');setClass('q7_cm','err');addFinding('Q7','err','Cubic Meter is missing',undefined,'q7_cm');}
+      else if(getNum('q7_cm')===0){setMsg('q7_cm','warn','⚠ Cubic meter is 0 — ask enumerator for clarification');setClass('q7_cm','warn');addFinding('Q7','warn','Cubic meter reading is 0 — verify with enumerator','Ask: "Is water consumption really 0 cubic meters?"','q7_cm');}
+      else{setClass('q7_cm','ok');passedChecks++;totalChecks++;}
+      if(!month){setMsg('q7_month','err','⛔ Select a month');setClass('q7_month','err');addFinding('Q7','err','Bill Month is missing',undefined,'q7_month');}
+      else{setClass('q7_month','ok');passedChecks++;totalChecks++;}
+      if(!can){setMsg('q7_can','err','⛔ Required (8-digit CAN)');setClass('q7_can','err');addFinding('Q7','err','Contract Account Number (CAN) is missing',undefined,'q7_can');}
+      else if(can.replace(/[^0-9]/g,'').length!==8){setMsg('q7_can','err',`Must be 8 digits (currently ${can.replace(/[^0-9]/g,'').length})`);setClass('q7_can','err');addFinding('Q7','err',`CAN "${can}" is not 8 digits`,undefined,'q7_can');}
+      else{setClass('q7_can','ok');passedChecks++;totalChecks++;}
+      if(!accname){setMsg('q7_accname','err','⛔ Required');setClass('q7_accname','err');addFinding('Q7','err','Account Name is missing',undefined,'q7_accname');}
+      else{setClass('q7_accname','ok');passedChecks++;totalChecks++;}
+    }
+  }
+
+  // Q8
+  if(d('q8')){
+    if(checkNegative('q8_hours','Supply hours','Q8')){}
+    else{
+      const hours=getVal('q8_hours');
+      if(!hours){setMsg('q8_hours','err','⛔ Required');setClass('q8_hours','err');addFinding('Q8','err','Supply hours is required',undefined,'q8_hours');}
+      else{const h=parseInt(hours);if(h===24){setClass('q8_hours','ok');passedChecks++;totalChecks++;}else if(h>0&&h<24){setMsg('q8_hours','warn',`⚠ Answer is ${h} hours — confirm with enumerator`);setClass('q8_hours','warn');addFinding('Q8','warn',`Supply hours = ${h} (not 24)`,undefined,'q8_hours');}else{setMsg('q8_hours','err','Enter 1 to 24');setClass('q8_hours','err');addFinding('Q8','err','Supply hours is 0 or invalid',undefined,'q8_hours');}}
+    }
+  }
+
+  // Q9
+  if(d('q9')){
+    if(!getRadio('q9_bp')){addFinding('Q9','err','Q9 (booster pump) is required');setMsg('q9','err','⛔ Required');}
+    else{passedChecks++;totalChecks++;}
+  }
+
+  // Q10
+  if(d('q10')&&sheetType==='RES'){
+    const rows=['q10_day1','q10_day2','q10_night1','q10_night2'];
+    const vals=rows.map(r=>getRadio(r));
+    const missing=vals.filter(v=>!v).length;
+    if(missing>0){setMsg('q10','err',`⛔ ${missing} time period(s) not answered`);addFinding('Q10','err',`${missing} pressure row(s) not answered`);}
+    else{totalChecks++;passedChecks++;}
+    const haAll=vals.filter(v=>v==='Hindi alam').length;
+    if(haAll>=2){setMsg('q10','warn',`⚠ ${haAll}/4 answered "Hindi Alam"`);addFinding('Q10','warn',`${haAll}/4 pressure answers are "Hindi Alam"`);}
+  }
+
+  // Q11 — if Remarks filled, bypass sub-field requirements
+  if(d('q11')){
+    const q11=getRadio('q11_store');
+    const q11remarks=getVal('q11_remarks');
+    if(!q11){addFinding('Q11','err','Q11 (water storage) is required');setMsg('q11','err','⛔ Required');}
+    else if(q11==='Oo'){
+      passedChecks++;totalChecks++;
+      if(q11remarks){
+        // Remarks filled — bypass sub-field validation
+        addFinding('Q11','ok','Q11 Remarks filled — sub-fields accepted as-is');
+        passedChecks+=3;totalChecks+=3;
+      } else {
+        if(getCBs('q11_1').length===0){addFinding('Q11.1','err','Q11.1: No storage method selected');setMsg('q11_1','err','⛔ Please check at least one item');}
+        else{passedChecks++;totalChecks++;}
+        const days=getCBs('q11_2');
+        if(days.length===0){setMsg('q11_2','err','⛔ Please check at least one day');addFinding('Q11.2','err','Q11.2: No storage day selected');}
+        else if(days.length===7){setMsg('q11_2','warn','⚠ All 7 days checked — confirm if agarang paggamit or floater');addFinding('Q11.2','warn','All 7 days of storage checked','Ask: Is this regular storage or immediate use (agarang paggamit)? If respondent uses a floater, write it in Remarks.');}
+        else{passedChecks++;totalChecks++;}
+        const t11=getVal('q11_3_time');
+        if(!t11){setMsg('q11_3','err','⛔ Required');addFinding('Q11.3','err','Q11.3: Storage time is required',undefined,'q11_3_time');}
+        else if(!parseTime(t11)){setMsg('q11_3','err','Invalid format — use HH:MM AM or PM');addFinding('Q11.3','err','Q11.3: Storage time format is invalid',undefined,'q11_3_time');}
+        else{passedChecks++;totalChecks++;}
+      }
+    } else{passedChecks++;totalChecks++;}
+  }
+
+  // Q12
+  if(d('q12')){
+    const q12=getRadio('q12_conserve');
+    if(!q12){addFinding('Q12','err','Q12 (water conservation) is required');setMsg('q12','err','⛔ Required');}
+    else if(q12==='Meron'){
+      passedChecks++;totalChecks++;
+      if(getCBs('q12_1').length===0){addFinding('Q12.1','err','Q12.1: No conservation method selected');setMsg('q12_1','err','⛔ Please check at least one item');}
+      else{passedChecks++;totalChecks++;}
+    } else{passedChecks++;totalChecks++;}
+  }
+
+  // Q13
+  if(d('q13')){
+    if(!getRadio('q13')){addFinding('Q13','err','Q13 (service rating) is required');setMsg('q13','err','⛔ Required');}
+    else{passedChecks++;totalChecks++;}
+  }
+
+  // Q14
+  if(d('q14')){
+    const q14=getRadio('q14_wtp');
+    if(!q14){addFinding('Q14','err','Q14 (willingness to pay) is required');setMsg('q14','err','⛔ Required');}
+    else if(q14==='Oo'){
+      passedChecks++;totalChecks++;
+      if(checkNegative('q14_1_amount','WTP Amount','Q14.1')){}
+      else{const amt=getNum('q14_1_amount');
+        if(!getVal('q14_1_amount')){setMsg('q14_1','err','⛔ Required — specific peso amount');addFinding('Q14.1','err','Q14.1: Extra amount is required',undefined,'q14_1_amount');}
+        else if(amt===0){setMsg('q14_1','warn','⚠ Amount is 0 — verify');addFinding('Q14.1','warn','Q14.1: Extra amount is 0',undefined,'q14_1_amount');}
+        else{passedChecks++;totalChecks++;}
+      }
+    } else{passedChecks++;totalChecks++;}
+  }
+
+  // Q15
+  if(d('q15')){
+    const q15Sels=['q15_komp_sel','q15_dw_sel','q15_ref_sel','q15_wala_sel','q15_other_sel'];
+    if(!q15Sels.some(id=>getVal(id)!=='')){addFinding('Q15','err','Q15: No water source row answered');setMsg('q15_dw','err','⛔ At least one row is required');}
+    else{
+      passedChecks++;totalChecks++;
+      [['q15_komp_sel','q15_komp_liters','q15_komp_cost','Kompanya'],
+       ['q15_dw_sel','q15_dw_liters','q15_dw_cost','Deep well'],
+       ['q15_ref_sel','q15_ref_liters','q15_ref_cost','Refill station'],
+       ['q15_other_sel','q15_other_liters','q15_other_cost','Iba pa']].forEach(([sel,lit,cost,label])=>{
+        if(getVal(sel)==='Yes'){
+          if(checkNegative(lit,`${label} liters`,'Q15')){}
+          else if(!getVal(lit)||getNum(lit)===0){setClass(lit,'err');addFinding('Q15','err',`${label}: liters per month is required and cannot be 0`,undefined,lit);}
+          else{setClass(lit,'ok');}
+          if(checkNegative(cost,`${label} cost`,'Q15')){}
+          else if(!getVal(cost)||getNum(cost)===0){setClass(cost,'err');addFinding('Q15','err',`${label}: monthly cost is required and cannot be 0`,undefined,cost);}
+          else{
+            if(label==='Refill station'){const ppl=getNum(cost)/getNum(lit);if(ppl>5){setMsg('q15_ref','warn',`⚠ ₱${ppl.toFixed(2)}/L — seems high`);addFinding('Q15','warn',`Refill station price = ₱${ppl.toFixed(2)}/L`);}else if(ppl<0.5){setMsg('q15_ref','warn',`⚠ ₱${ppl.toFixed(2)}/L — seems low`);addFinding('Q15','warn',`Refill station price = ₱${ppl.toFixed(2)}/L`);}else{setMsg('q15_ref','ok',`✅ ₱${ppl.toFixed(2)}/L — looks reasonable`);}}
+            setClass(cost,'ok');
+          }
+        }
+      });
+    }
+  }
+
+  // Q16
+  if(d('q16')){
+    if(getCBs('q16').length===0){addFinding('Q16','err','Q16 (other water source reason) is required');}
+    else{passedChecks++;totalChecks++;}
+  }
+
+  // Q17
+  if(d('q17')){
+    const hh=getNum('q17_hh'),biz=getNum('q17_biz');
+    if(checkNegative('q17_hh','Household count','Q17')||checkNegative('q17_biz','Business count','Q17')){}
+    else if(getVal('q17_hh')===''||getVal('q17_biz')===''){
+      addFinding('Q17','err','Q17: Both household and business counts are required');setMsg('q17','err','⛔ Both fields are required');
+      if(getVal('q17_hh')==='')setClass('q17_hh','err');
+      if(getVal('q17_biz')==='')setClass('q17_biz','err');
+    } else if(hh===0&&biz===0){setMsg('q17','err','⛔ Both cannot be 0');addFinding('Q17','err','Both Households and Businesses are 0');setClass('q17_hh','err');setClass('q17_biz','err');}
+    else{setClass('q17_hh','ok');setClass('q17_biz','ok');passedChecks++;totalChecks++;}
+  }
+
+  // Q18
+  if(d('q18')){
+    if(checkNegative('q18_total','Total users','Q18')){}
+    else{const q18t=getNum('q18_total');
+      if(!getVal('q18_total')){addFinding('Q18','err','Q18 (total water users) is required',undefined,'q18_total');setMsg('q18','err','⛔ Required');setClass('q18_total','err');}
+      else if(q18t===0){addFinding('Q18','err','Q18 total is 0',undefined,'q18_total');setMsg('q18','err','⛔ Cannot be 0');setClass('q18_total','err');}
+      else{setClass('q18_total','ok');passedChecks++;totalChecks++;}
+    }
+  }
+
+  // Q18a
+  const ng_np=getNum('q18a_ng_np'),ng_wp=getNum('q18a_ng_wp'),si_=getNum('q18a_si'),res=getNum('q18a_res'),oth18a=getNum('q18a_other');
+  const total18a=ng_np+ng_wp+si_+res+oth18a;
+  document.getElementById('tot18a').textContent=total18a;
+  if(d('q18a')){
+    const q18aSels=['q18a_ng_np_sel','q18a_ng_wp_sel','q18a_si_sel','q18a_res_sel','q18a_other_sel'];
+    if(!q18aSels.some(id=>getVal(id)!=='')){addFinding('Q18a','err','Q18a: No row answered');setMsg('q18a','err','⛔ At least one row is required');}
+    else{
+      q18aSels.forEach(sid=>{
+        const cid=sid.replace('_sel','');
+        if(getVal(sid)==='Yes'){
+          if(checkNegative(cid,cid.replace('q18a_',''),'Q18a')){}
+          else if(!getVal(cid)||getNum(cid)===0){setClass(cid,'err');addFinding('Q18a','err',`Q18a "${cid.replace('q18a_','')}": marked Yes but count is 0 — select No if none`,'If count is really 0, change selection to No.',cid);}
+          else{setClass(cid,'ok');}
+        }
+      });
+      const q18t=getNum('q18_total');
+      if(q18t>0){
+        document.getElementById('tot18').textContent=q18t;
+        if(q18t<total18a){document.getElementById('tot18-status').textContent='ERROR';setMsg('q18','err',`⛔ Q18 (${q18t}) < Q18a (${total18a})`);addFinding('Q18','err',`Q18 (${q18t}) < Q18a total (${total18a})`);}
+        else if(q18t===total18a){document.getElementById('tot18-status').textContent='MATCHES';passedChecks++;totalChecks++;}
+        else{document.getElementById('tot18-status').textContent=`+${q18t-total18a}`;addFinding('Q18','ok',`Q18 (${q18t}) > Q18a (${total18a}) — likely Q18b workers`);passedChecks++;totalChecks++;}
+      } else{document.getElementById('tot18').textContent='—';document.getElementById('tot18-status').textContent='—';}
+      if((ng_np+ng_wp)>1&&res===0){setMsg('q18a','warn','⚠ Renters listed but Residente = 0');addFinding('Q18a','warn',`${ng_np+ng_wp} renters but Residente = 0`);}
+      else if(total18a>0){passedChecks++;totalChecks++;}
+    }
+  }
+
+  // Q18b
+  if(d('q18b')){
+    const sels=['q18b_so_sel','q18b_igib_sel','q18b_other_sel'];
+    if(!sels.some(id=>getVal(id)!=='')){addFinding('Q18b','err','Q18b: No row answered');setMsg('q18b','err','⛔ At least one row required');}
+    else{
+      sels.forEach(sid=>{const cid=sid.replace('_sel','');if(getVal(sid)==='Yes'){if(checkNegative(cid,cid.replace('q18b_',''),'Q18b')){}else if(!getVal(cid)||getNum(cid)===0){setClass(cid,'err');addFinding('Q18b','err',`Q18b "${cid.replace('q18b_','')}": marked Yes but count is 0 — select No if none`,'If count is really 0, change selection to No.',cid);}else{setClass(cid,'ok');}}});
+      passedChecks++;totalChecks++;
+    }
+  }
+
+  // Q18c
+  if(d('q18c')){
+    const sels=['q18c_stu_sel','q18c_emp_sel','q18c_ofw_sel','q18c_other_sel'];
+    if(!sels.some(id=>getVal(id)!=='')){addFinding('Q18c','err','Q18c: No row answered');setMsg('q18c','err','⛔ At least one row required');}
+    else{
+      sels.forEach(sid=>{const cid=sid.replace('_sel','');if(getVal(sid)==='Yes'){if(checkNegative(cid,cid.replace('q18c_',''),'Q18c')){}else if(!getVal(cid)||getNum(cid)===0){setClass(cid,'err');addFinding('Q18c','err',`Q18c "${cid.replace('q18c_','')}": marked Yes but count is 0 — select No if none`,'If count is really 0, change selection to No.',cid);}else{setClass(cid,'ok');}}});
+      passedChecks++;totalChecks++;
+    }
+  }
+
+  // Q18d
+  if(d('q18d')){
+    const y2025=getNum('q18d_2025');
+    if(checkNegative('q18d_2025','2025 count','Q18d')){}
+    else if(!getVal('q18d_2025')){addFinding('Q18d','err','Q18d: 2025 count is required',undefined,'q18d_2025');setMsg('q18d','err','⛔ Required');setClass('q18d_2025','err');}
+    else if(total18a>0&&y2025!==total18a){setMsg('q18d','warn',`⚠ 2025 count (${y2025}) ≠ Q18a total (${total18a})`);addFinding('Q18d','warn',`Q18d 2025 (${y2025}) ≠ Q18a total (${total18a})`,undefined,'q18d_2025');}
+    else{setClass('q18d_2025','ok');passedChecks++;totalChecks++;}
+    const years=[2021,2022,2023,2024,2025];const yv={},yr={};
+    years.forEach(y=>{yv[y]=getNum(`q18d_${y}`);yr[y]=(getVal(`q18d_r${y}`)||'').trim().toLowerCase();});
+    const missing=years.filter(y=>!getVal(`q18d_${y}`)).length;
+    if(missing>0)addFinding('Q18d','err',`Q18d: ${missing} year(s) missing a count`,'All years 2021–2025 must be filled.');
+    for(let i=1;i<years.length;i++){const py=years[i-1],cy=years[i];if(getVal(`q18d_${cy}`)!==''&&getVal(`q18d_${py}`)!==''){if(yv[cy]!==yv[py]&&yr[cy]==='n/a')addFinding('Q18d','err',`Year ${cy}: count changed but reason is N/A`,'Write the reason (moved in, baby, OFW, etc.)');if(yv[cy]===yv[py]&&yr[cy]!=='n/a'&&yr[cy])addFinding('Q18d','warn',`Year ${cy}: count same but reason written — should be N/A`);}}
+  }
+
+  // Q19
+  if(d('q19')){if(!getRadio('q19_septic')){addFinding('Q19','err','Q19 (septic tank) is required');setMsg('q19','err','⛔ Required');}else{passedChecks++;totalChecks++;}}
+
+  // Q20, Q21
+  if(d('q20')){if(!getRadio('q20')){addFinding('Q20','err','Q20 (income source) is required');setMsg('q20','err','⛔ Required');}else{passedChecks++;totalChecks++;}}
+  if(d('q21')){if(!getRadio('q21')){addFinding('Q21','err','Q21 (cashflow description) is required');setMsg('q21','err','⛔ Required');}else{passedChecks++;totalChecks++;}}
+
+  // Q22
+  if(d('q22')){
+    const selIds=['q22_tubig_sel','q22_kuryente_sel','q22_load_sel','q22_internet_sel','q22_cable_sel'];
+    if(!selIds.every(id=>getVal(id)!=='')){addFinding('Q22','err','Q22: Not all utility Yes/No fields answered');setMsg('q22','err','⛔ All Yes/No selections required');}
+    else{
+      const rankIds=['q22_tubig','q22_kuryente','q22_load','q22_internet','q22_cable'];
+      const yesItems=selIds.map((s,i)=>getVal(s)==='Yes'?rankIds[i]:null).filter(Boolean);
+      const ranks=yesItems.map(id=>getVal(id)).filter(v=>v);
+      if(yesItems.some(id=>!getVal(id))){setMsg('q22','err','⛔ Items marked Yes must have a rank');addFinding('Q22','err','Q22: Yes-items missing a rank');}
+      else if(ranks.length>0&&new Set(ranks).size<ranks.length){setMsg('q22','err','⛔ Duplicate rank numbers');addFinding('Q22','err','Duplicate rank numbers in Q22');}
+      else{passedChecks++;totalChecks++;}
+    }
+  }
+
+  // Q23
+  if(d('q23')){if(!getRadio('q23')){addFinding('Q23','err','Q23 (payment behavior) is required');setMsg('q23','err','⛔ Required');}else{passedChecks++;totalChecks++;}}
+
+  // Q24
+  if(d('q24')){
+    if(!getVal('q24_barrier')){setMsg('q24','err','⛔ Required');setClass('q24_barrier','err');addFinding('Q24','err','Q24 (payment barrier) is required',undefined,'q24_barrier');}
+    else{setClass('q24_barrier','ok');passedChecks++;totalChecks++;}
+  }
+
+  // Q25
+  if(d('q25')){if(getCBs('q25').length===0){addFinding('Q25','err','Q25 (how bill received) is required');setMsg('q25','err','⛔ Check at least one option');}else{passedChecks++;totalChecks++;}}
+
+  // Q26
+  if(d('q26')){if(!getRadio('q26')){addFinding('Q26','err','Q26 (bill design rating) is required');setMsg('q26','err','⛔ Required');}else{passedChecks++;totalChecks++;}}
+
+  // Q28
+  if(d('q28')){
+    const pct=getVal('q28_pct'),dir=getVal('q28_dir');
+    if(checkNegative('q28_pct','Q28 percentage','Q28')){}
+    else if(!pct){setMsg('q28_pct','err','⛔ Required');setClass('q28_pct','err');addFinding('Q28','err','Q28: Percentage is required',undefined,'q28_pct');}
+    else{setClass('q28_pct','ok');passedChecks++;totalChecks++;}
+    if(!dir){setMsg('q28_dir','err','⛔ Required');setClass('q28_dir','err');addFinding('Q28','err','Q28: Direction is required',undefined,'q28_dir');}
+    else{
+      setClass('q28_dir','ok');passedChecks++;totalChecks++;
+      const q29f=['q29_inom','q29_linis','q29_luto','q29_laba','q29_ligo','q29_ihi'];
+      const q29v=q29f.map(f=>getRadio(f)).filter(v=>v&&v!=='N/A');
+      if(q29v.length>0){const t=q29v.filter(v=>v==='Tumaas').length,b=q29v.filter(v=>v==='Bumaba').length;
+        if(dir==='Bumaba'&&t>0&&b===0&&t>=q29v.length*0.7){setMsg('q28','warn','⚠ Q28=Bumaba but Q29 shows most went up');addFinding('Q28/Q29','warn','Q28 and Q29 contradict each other');}
+        else if(dir==='Tumaas'&&b>0&&t===0&&b>=q29v.length*0.7){setMsg('q28','warn','⚠ Q28=Tumaas but Q29 shows most went down');addFinding('Q28/Q29','warn','Q28 and Q29 contradict each other');}
+      }
+    }
+  }
+
+  // Q29
+  if(d('q29')){
+    const q29rows=[{name:'q29_inom',lvl:'q29_inom_lvl'},{name:'q29_linis',lvl:'q29_linis_lvl'},
+      {name:'q29_luto',lvl:'q29_luto_lvl'},{name:'q29_laba',lvl:'q29_laba_lvl'},
+      {name:'q29_ligo',lvl:'q29_ligo_lvl'},{name:'q29_ihi',lvl:'q29_ihi_lvl'}];
+    const missing=q29rows.filter(r=>!getRadio(r.name)).length;
+    if(sheetType==='RES'){if(missing>0){setMsg('q29','err',`⛔ ${missing} row(s) not answered`);addFinding('Q29','err',`${missing} Q29 row(s) have no direction selected`);}else{passedChecks++;totalChecks++;}}
+    else{if(missing===q29rows.length){addFinding('Q29','err','Q29: No rows answered at all');}else{passedChecks++;totalChecks++;}}
+    q29rows.forEach(({name,lvl})=>{const dir=getRadio(name);if(dir==='Tumaas'||dir==='Bumaba'){if(!getVal(lvl)){setClass(lvl,'err');addFinding('Q29','err',`Q29 ${name.replace('q29_','')}: Antas (1–5) required when ${dir}`,undefined,lvl);}else{setClass(lvl,'ok');}}});
+    const haAll=q29rows.filter(r=>getRadio(r.name)==='Hindi alam').length;
+    if(haAll>=2){setMsg('q29','warn',`⚠ ${haAll} rows answered "Hindi Alam"`);addFinding('Q29','warn',`${haAll} Q29 answers are "Hindi Alam"`);}
+  }
+
+  // Q30
+  if(d('q30')){if(!getRadio('q30')){addFinding('Q30','err','Q30 (laundry location) is required');setMsg('q30','err','⛔ Required');}else{passedChecks++;totalChecks++;}}
+
+  // Q31
+  if(d('q31')){
+    const q31=getRadio('q31');
+    if(!q31){addFinding('Q31','err','Q31 (return to normal) is required');setMsg('q31','err','⛔ Required');}
+    else if(q31!=='Hindi naman nagbago kahit noong pandemya'){
+      passedChecks++;totalChecks++;
+      if(!getVal('q31_1_reason')){addFinding('Q31.1','err','Q31.1: Reason is required',undefined,'q31_1_reason');setMsg('q31_1','err','⛔ Required');}
+      else{passedChecks++;totalChecks++;}
+    } else{passedChecks++;totalChecks++;}
+  }
+
+  // Q32, Q33
+  if(d('q32')){if(!getRadio('q32')){addFinding('Q32','err','Q32 (maintenance decision-maker) is required');setMsg('q32','err','⛔ Required');}else{passedChecks++;totalChecks++;}}
+  if(d('q33')){if(!getRadio('q33')){addFinding('Q33','err','Q33 (water decision-maker) is required');setMsg('q33','err','⛔ Required');}else{passedChecks++;totalChecks++;}}
+
+  // Q34
+  if(d('q34')){
+    if(checkNegative('q34_exp','Monthly expenses','Q34')){}
+    else{const exp=getNum('q34_exp');
+      if(!getVal('q34_exp')){setMsg('q34','err','⛔ Required');setClass('q34_exp','err');addFinding('Q34','err','Q34 (monthly expenses) is required',undefined,'q34_exp');}
+      else if(exp===0){setMsg('q34','err','⛔ Cannot be 0');addFinding('Q34','err','Monthly expense is 0',undefined,'q34_exp');setClass('q34_exp','err');}
+      else{const pax=total18a>0?total18a:1,lb=getNum('q7_php'),minExp=(pax*2000)+lb+2000;
+        if(exp<minExp*0.5){setMsg('q34','err',`⛔ ₱${exp.toLocaleString()} seems very low for ${pax} person(s)`);addFinding('Q34','err',`Monthly expense ₱${exp.toLocaleString()} too low`,undefined,'q34_exp');setClass('q34_exp','err');}
+        else if(exp<minExp){setMsg('q34','warn',`⚠ May be low for ${pax} person(s)`);addFinding('Q34','warn',`Monthly expense ₱${exp.toLocaleString()} may be low`,undefined,'q34_exp');setClass('q34_exp','warn');}
+        else{setClass('q34_exp','ok');passedChecks++;totalChecks++;}
+      }
+    }
+  }
+
+  // Q35
+  if(d('q35')){
+    if(checkNegative('q35_exp','Water budget','Q35')){}
+    else{const w35=getNum('q35_exp'),q7php=getNum('q7_php');
+      if(!getVal('q35_exp')){setMsg('q35','err','⛔ Required');setClass('q35_exp','err');addFinding('Q35','err','Q35 (monthly water budget) is required',undefined,'q35_exp');}
+      else if(q7php>0&&w35<q7php*0.5){setMsg('q35','warn',`⚠ ₱${w35.toLocaleString()} seems low vs last bill (₱${q7php.toLocaleString()})`);addFinding('Q35','warn',`Water budget ₱${w35.toLocaleString()} seems low`,undefined,'q35_exp');setClass('q35_exp','warn');}
+      else if(w35>0){setClass('q35_exp','ok');passedChecks++;totalChecks++;}
+    }
+  }
+
+  // Q36
+  if(d('q36')){if(!getRadio('q36')){addFinding('Q36','err','Q36 (dwelling type) is required');setMsg('q36','err','⛔ Required');}else{passedChecks++;totalChecks++;}}
+
+  // Q37
+  if(d('q37')){
+    ['q37_type','q37_loc','q37_own'].forEach(id=>{
+      if(!getVal(id)){addFinding('Q37','err',`Q37: "${id.replace('q37_','')}" is required`,undefined,id);setClass(id,'err');}
+      else{setClass(id,'ok');}
+    });
+  }
+
+  // Q38
+  if(d('q38')){
+    const q38rows=[['q38_bidet_yn','q38_bidet_n','Bidet'],['q38_car_yn','q38_car_n','Car/Vehicle'],
+      ['q38_toilet_yn','q38_toilet_n','Flush toilet'],['q38_garden_yn','q38_garden_n','Garden'],
+      ['q38_pets_yn','q38_pets_n','Pets'],['q38_shower_yn','q38_shower_n','Shower'],
+      ['q38_pool_yn','q38_pool_n','Swimming Pool'],['q38_wm_yn','q38_wm_n','Washing Machine'],
+      ['q38_disp_yn','q38_disp_n','Water dispenser'],['q38_fish_yn','q38_fish_n','Fish'],
+      ['q38_other_yn','q38_other_n','Iba pa']];
+    const unanswered=q38rows.filter(([yn])=>getVal(yn)==='').length;
+    if(unanswered>0){addFinding('Q38','err',`Q38: ${unanswered} row(s) missing Yes/No`);setMsg('q38','err',`⛔ ${unanswered} rows need Yes/No`);}
+    else{passedChecks++;totalChecks++;}
+    q38rows.forEach(([yn,count,label])=>{
+      if(getVal(yn)==='Yes'){
+        if(checkNegative(count,`Q38 ${label} count`,'Q38')){}
+        else if(!getVal(count)||getNum(count)===0){setClass(count,'err');addFinding('Q38','err',`Q38 ${label}: marked Yes but count is 0 — select No if none`,'If count is really 0, change selection to No.',count);}
+        else{setClass(count,'ok');}
+      }
+    });
+    const gn=getNum('q38_garden_n'),gyn=getVal('q38_garden_yn');
+    if(gyn==='Yes'&&gn>2)addFinding('Q38','warn',`Garden count = ${gn} (unusually high)`,'Count as 1 unless completely separate garden areas.');
+    const pn=getNum('q38_pool_n'),pyn=getVal('q38_pool_yn');
+    if(pyn==='Yes'){if(pn>1)addFinding('Q38','err',`${pn} swimming pools recorded`,'Very unusual — confirm.');else addFinding('Q38','warn','Swimming pool recorded','Uncommon — verify with enumerator.');}
+    const bidet=getNum('q38_bidet_n'),toilet=getNum('q38_toilet_n'),shower=getNum('q38_shower_n');
+    if(!(bidet===toilet&&toilet===shower&&bidet>0)){if(bidet>2)addFinding('Q38','warn',`Bidet count = ${bidet}`);if(toilet>2)addFinding('Q38','warn',`Flush toilet count = ${toilet}`,'High — may be multi-household.');if(shower>2)addFinding('Q38','warn',`Shower count = ${shower}`);}
+  }
+
+  renderFindings();
+}
+
+// ─── SCROLL + HIGHLIGHT ──────────────────────────────────────────────────────
+function scrollToQuestion(q) {
+  const el=document.getElementById(Q_ANCHOR_MAP[q]);
+  if(!el) return;
+  if(el.closest('[style*="display:none"]')){
+  el.closest('[style*="display:none"]').style.display='block';
+}
+el.scrollIntoView({behavior:'smooth',block:'center'});
+  el.style.transition='background .15s';
+  el.style.background='#fef3c7';
+  setTimeout(()=>{el.style.background='';},1400);
+}
+
+function highlightField(finding) {
+  // Resolve the field ID from FIELD_MAP
+  const mapper = FIELD_MAP[finding.q];
+  let fieldId;
+  if(typeof mapper === 'function') fieldId = mapper(finding.message);
+  else if(typeof mapper === 'string') fieldId = mapper;
+  else fieldId = finding.fieldId; // fallback to stored fieldId
+
+  if(!fieldId) return;
+  const el = document.getElementById(fieldId);
+  if(!el) return;
+
+  // Scroll field into view
+  el.scrollIntoView({behavior:'smooth', block:'center'});
+  // Flash outline
+  const prev = el.style.outline;
+  el.style.transition = 'outline .1s';
+  el.style.outline = '3px solid #2563eb';
+  el.style.boxShadow = '0 0 0 5px rgba(37,99,235,.25)';
+  setTimeout(()=>{
+    el.style.outline = prev;
+    el.style.boxShadow = '';
+  }, 1600);
+  // Focus if it's a text/number input
+  if(el.tagName==='INPUT'&&!el.disabled) el.focus();
+}
+
+// ─── RENDER ──────────────────────────────────────────────────────────────────
+function renderFindings() {
+  const list=document.getElementById('findings-list');
+  list.innerHTML='';
+  if(!findings.length){
+    list.innerHTML='<div style="text-align:center;color:#9ca3af;padding:20px 10px;font-size:.76em">Fill in the form to see QC findings here.</div>';
+    updateScore(0,0); return;
+  }
+  const errs=findings.filter(f=>f.type==='err');
+  const warns=findings.filter(f=>f.type==='warn');
+  const oks=findings.filter(f=>f.type==='ok');
+  [...errs,...warns,...oks].forEach(f=>{
+    const el=document.createElement('div');
+    el.className=`finding-item ${f.type}`;
+    el.title='Click to jump to this field';
+    el.innerHTML=`<span class="fi-q">${f.q}</span>${f.message}${f.action?`<span class="fi-action">→ ${f.action}</span>`:''}`;
+    el.addEventListener('click',()=>{ scrollToQuestion(f.q); highlightField(f); });
+    list.appendChild(el);
+  });
+  updateScore(passedChecks,totalChecks);
+}
+
+function updateScore(passed,total) {
+  const pct=total>0?Math.round((passed/total)*100):0;
+  const scoreEl=document.getElementById('score-display');
+  const errs=findings.filter(f=>f.type==='err').length;
+  const warns=findings.filter(f=>f.type==='warn').length;
+  scoreEl.textContent=total>0?`${pct}% (${passed}/${total})`:'—';
+  scoreEl.className='score '+(pct>=90?'perfect':pct>=70?'good':'poor');
+  document.getElementById('header-score').textContent=total>0?`${pct}%`:'—';
+  const nb=document.getElementById('nav-err-count');
+  if(errs>0){nb.textContent=`${errs} err`;nb.style.display='inline';nb.style.background='#ef4444';}
+  else if(warns>0){nb.textContent=`${warns} warn`;nb.style.display='inline';nb.style.background='#f59e0b';}
+  else{nb.style.display='none';}
+  const bE=document.getElementById('badge-err'),bW=document.getElementById('badge-warn');
+  if(errs>0){bE.textContent=`${errs} ERR`;bE.style.display='inline';}else{bE.style.display='none';}
+  if(warns>0){bW.textContent=`${warns} WARN`;bW.style.display='inline';}else{bW.style.display='none';}
+  const allFilled=getVal('q1_last')&&getVal('q1_first')&&getVal('time_start')&&getVal('time_end')&&getVal('q8_hours');
+  document.getElementById('good-banner').classList.toggle('show',pct>=90&&errs===0&&!!allFilled);
+}
+
+// ─── RESET ───────────────────────────────────────────────────────────────────
+function resetForm() {
+  document.querySelectorAll('input[type=text],input[type=number],input[type=tel],input[type=email],input[type=date]').forEach(el=>el.value='');
+  document.querySelectorAll('select').forEach(el=>el.selectedIndex=0);
+  document.querySelectorAll('input[type=radio],input[type=checkbox]').forEach(el=>el.checked=false);
+  ['q11_sub','q12_sub','q14_sub','q31_sub','block-q5-1','block-q6-1'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
+  dirty.clear();
+  initYesNoControl(); initQ29Antas();
+  findings=[];totalChecks=0;passedChecks=0;
+  document.querySelectorAll('.v-msg').forEach(el=>{el.className='v-msg';el.innerHTML='';});
+  document.querySelectorAll('input,select').forEach(el=>el.classList.remove('ok','warn','err'));
+  document.getElementById('findings-list').innerHTML='<div style="text-align:center;color:#9ca3af;padding:20px 10px;font-size:.76em">Fill in the form to see QC findings here.</div>';
+  document.getElementById('score-display').textContent='—';
+  document.getElementById('score-display').className='score';
+  document.getElementById('header-score').textContent='—';
+  document.getElementById('nav-err-count').style.display='none';
+  document.getElementById('badge-err').style.display='none';
+  document.getElementById('badge-warn').style.display='none';
+  document.getElementById('good-banner').classList.remove('show');
+  document.getElementById('tot18a').textContent='0';
+  document.getElementById('tot18').textContent='—';
+  document.getElementById('tot18-status').textContent='—';
+}
+
+// ─── TOGGLES ─────────────────────────────────────────────────────────────────
+document.querySelectorAll('input[name="q5_rate"]').forEach(r=>{r.addEventListener('change',()=>{document.getElementById('block-q5-1').style.display=r.value==='Semi-business'?'block':'none';});});
+document.querySelectorAll('input[name="q6_sub"]').forEach(r=>{r.addEventListener('change',()=>{document.getElementById('block-q6-1').style.display=r.value==='Oo'?'block':'none';});});
+document.querySelectorAll('input[name="q11_store"]').forEach(r=>{r.addEventListener('change',()=>{document.getElementById('q11_sub').style.display=r.value==='Oo'?'block':'none';});});
+document.querySelectorAll('input[name="q12_conserve"]').forEach(r=>{r.addEventListener('change',()=>{document.getElementById('q12_sub').style.display=r.value==='Meron'?'block':'none';});});
+document.querySelectorAll('input[name="q14_wtp"]').forEach(r=>{r.addEventListener('change',()=>{document.getElementById('q14_sub').style.display=r.value==='Oo'?'block':'none';});});
+document.querySelectorAll('input[name="q31"]').forEach(r=>{r.addEventListener('change',()=>{document.getElementById('q31_sub').style.display=(r.value==='Oo'||r.value==='Hindi')?'block':'none';});});
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+initYesNoControl();
+initQ29Antas();
+</script>
+</body>
+</html>
