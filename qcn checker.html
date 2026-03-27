@@ -310,6 +310,7 @@ body.rz-dragging *{cursor:col-resize!important}
           <div class="fg">
             <label class="flbl">Source Data (CSV / Google Sheets) <span style="font-weight:400;opacity:.6">— optional if sheet-only</span></label>
             <input id="sfSrcUrl" class="fin" type="text" placeholder="https://docs.google.com/… or CSV URL"/>
+            <div id="sfSrcUrlStatus" style="display:none;font-size:10px;margin-top:3px;padding:3px 6px;border-radius:5px"></div>
             <div class="or-div"><span>or</span></div>
             <div id="sfSrcZone" class="fzone">
               <input type="file" id="sfSrcFile" accept=".csv"/>
@@ -320,6 +321,7 @@ body.rz-dragging *{cursor:col-resize!important}
           <div class="fg">
             <label class="flbl">Sheet Data (XLSX / Google Sheets) <span style="font-weight:400;opacity:.6">— optional if source-only</span></label>
             <input id="sfShtUrl" class="fin" type="text" placeholder="https://docs.google.com/…"/>
+            <div id="sfShtUrlStatus" style="display:none;font-size:10px;margin-top:3px;padding:3px 6px;border-radius:5px"></div>
             <div class="or-div"><span>or</span></div>
             <div id="sfShtZone" class="fzone">
               <input type="file" id="sfShtFile" accept=".xlsx"/>
@@ -329,7 +331,6 @@ body.rz-dragging *{cursor:col-resize!important}
           </div>
           <div class="sact">
             <span class="ci" id="sfCI"></span>
-            <button id="sfView" class="btn btn-gray" style="padding:6px 12px;font-size:11px"><svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>View</button>
             <button id="sfRun" class="btn btn-blue" style="padding:6px 12px;font-size:11px"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg><span id="sfRunT">Run</span></button>
             <button id="sfDel" class="btn-del"><svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6M10 11v6M14 11v6M9 6V4h6v2"/></svg>Delete</button>
           </div>
@@ -477,14 +478,13 @@ body.rz-dragging *{cursor:col-resize!important}
         <table class="dtbl" id="qcnTable">
           <colgroup id="qcnColgroup">
             <col style="width:38px"><col style="width:190px"><col style="width:120px"><col style="width:120px">
-            <col style="width:150px"><col style="width:145px"><col style="min-width:130px"><col style="min-width:130px"><col style="width:105px">
+            <col style="width:145px"><col style="min-width:130px"><col style="min-width:130px"><col style="width:105px">
           </colgroup>
           <thead id="qcnThead"><tr>
             <th class="rn-th">#<div class="col-resizer"></div></th>
             <th style="padding:0"><button class="thsort" id="thQcnSort"><span>QCN</span><span class="l5b">last 5</span><span class="sico"><span class="au"></span><span class="ad"></span></span></button><div class="col-resizer"></div></th>
             <th class="thf" id="thSS"><button class="thfbtn" data-col="ss"><span>Source Status</span><span class="adot hidden" id="dot-ss"></span><svg class="chev" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></button><div class="thdd" id="dd-ss"><div class="thdd-srch"><input type="text" placeholder="Filter…" data-dd="ss"/></div><div class="thdd-list" id="ddl-ss"></div><div class="thdd-clr"><button data-clr="ss">✕ Clear</button></div></div><div class="col-resizer"></div></th>
             <th class="thf" id="thSHT"><button class="thfbtn" data-col="sht"><span>Sheet Status</span><span class="adot hidden" id="dot-sht"></span><svg class="chev" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></button><div class="thdd" id="dd-sht"><div class="thdd-srch"><input type="text" placeholder="Filter…" data-dd="sht"/></div><div class="thdd-list" id="ddl-sht"></div><div class="thdd-clr"><button data-clr="sht">✕ Clear</button></div></div><div class="col-resizer"></div></th>
-            <th class="tp" style="text-align:left">From Master<div class="col-resizer"></div></th>
             <th class="thf" id="thEnum"><button class="thfbtn" data-col="enum"><span>Enumerator</span><span class="adot hidden" id="dot-enum"></span><svg class="chev" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></button><div class="thdd" id="dd-enum"><div class="thdd-srch"><input type="text" placeholder="Filter…" data-dd="enum"/></div><div class="thdd-list" id="ddl-enum"></div><div class="thdd-clr"><button data-clr="enum">✕ Clear</button></div></div><div class="col-resizer"></div></th>
             <th class="tp">For Correction<div class="col-resizer"></div></th>
             <th class="tp">Remarks<div class="col-resizer"></div></th>
@@ -597,33 +597,137 @@ function parseCSV(t){
   if(cur.length>1||cur[0]!=='')rows.push(cur);
   return rows.map(r=>r.map(c=>c.trim()));
 }
-function gsUrl(url){try{const id=url.match(/\/d\/([a-zA-Z0-9-_]+)/);const gid=url.match(/gid=([0-9]+)/);return id?`https://docs.google.com/spreadsheets/d/${id[1]}/export?format=csv&gid=${gid?gid[1]:'0'}`:null}catch{return null}}
+function gsId(url){const m=url.match(/\/d\/([a-zA-Z0-9-_]+)/);return m?m[1]:null}
+function gsGid(url){const m=url.match(/[?&#]gid=([0-9]+)/);return m?m[1]:'0'}
+function gsUrl(url){const id=gsId(url),gid=gsGid(url);return id?`https://docs.google.com/spreadsheets/d/${id}/export?format=csv&gid=${gid}`:null}
 function isGs(url){return/docs\.google\.com\/spreadsheets/.test(url)}
-async function fetchCsv(url){
-  const u=isGs(url)?gsUrl(url):url;
-  if(!u)throw new Error('Invalid URL: '+url);
-  const r=await fetch(u);
-  if(!r.ok)throw new Error(`HTTP ${r.status}`);
-  return parseCSV(await r.text());
+function isHtmlResponse(text){return text.trimStart().startsWith('<')}
+
+/* ── Debug log ── */
+const _dbgLog=[];
+function dbg(msg,data){
+  const entry={t:new Date().toISOString().slice(11,23),msg,data};
+  _dbgLog.unshift(entry);if(_dbgLog.length>200)_dbgLog.pop();
+  console.log('[QCN]',entry.t,msg,data||'');
+  renderDebugPanel();
 }
-// Fetch a Google Sheet as XLSX and return rows from a specific tab.
-// which='summary' → finds tab named "summary" (case-insensitive), falls back to first tab
-// which='last'    → uses the last tab
-async function fetchGsTab(url,which){
-  const idM=url.match(/\/d\/([a-zA-Z0-9-_]+)/);
-  if(!idM)throw new Error('Invalid Google Sheets URL');
-  const xlsxUrl=`https://docs.google.com/spreadsheets/d/${idM[1]}/export?format=xlsx`;
-  const resp=await fetch(xlsxUrl);
-  if(!resp.ok)throw new Error(`HTTP ${resp.status} fetching sheet`);
-  const buf=await resp.arrayBuffer();
-  const wb=XLSX.read(new Uint8Array(buf),{type:'array',cellDates:true});
-  let sn;
-  if(which==='summary'){
-    sn=wb.SheetNames.find(s=>s.toLowerCase()==='summary')||wb.SheetNames[0];
-  }else{
-    sn=wb.SheetNames[wb.SheetNames.length-1];
+function renderDebugPanel(){
+  const p=document.getElementById('dbgPanel');if(!p||p.classList.contains('hidden'))return;
+  p.querySelector('#dbgBody').innerHTML=_dbgLog.slice(0,60).map(e=>
+    `<div style="border-bottom:1px solid var(--border);padding:4px 0"><span style="color:var(--muted);font-size:10px;margin-right:6px">${e.t}</span><span style="font-size:11px">${esc(e.msg)}</span>${e.data?`<div style="font-size:10px;color:var(--muted);margin-top:2px;word-break:break-all">${esc(typeof e.data==='object'?JSON.stringify(e.data):String(e.data))}</div>`:''}</div>`
+  ).join('');
+}
+function toggleDebug(){
+  const p=document.getElementById('dbgPanel');
+  p.classList.toggle('hidden');
+  if(!p.classList.contains('hidden'))renderDebugPanel();
+}
+
+/* ── CORS proxy fallback chain ──
+   When running from file://, browsers block cross-origin fetches to Google.
+   We try multiple public CORS proxies in order. */
+const CORS_PROXIES=[
+  u=>`https://corsproxy.io/?url=${encodeURIComponent(u)}`,
+  u=>`https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
+  u=>`https://cors-anywhere.herokuapp.com/${u}`,
+];
+
+async function fetchWithCorsProxy(url,label){
+  // 1. Try direct first
+  dbg(`[fetch] Direct ${label||''}`,url);
+  try{
+    const r=await fetch(url,{credentials:'omit'});
+    if(r.ok){
+      const ct=r.headers.get('content-type')||'';
+      if(!ct.includes('html')){dbg(`[fetch] Direct OK`,`status=${r.status}`);return r;}
+      dbg(`[fetch] Direct got HTML content-type`,'Trying proxies');
+    }else{dbg(`[fetch] Direct non-OK`,`status=${r.status} — trying proxies`)}
+  }catch(e){dbg(`[fetch] Direct threw`,e.message+' — trying proxies')}
+
+  // 2. Try each proxy
+  for(let i=0;i<CORS_PROXIES.length;i++){
+    const proxyUrl=CORS_PROXIES[i](url);
+    dbg(`[fetch] Proxy ${i+1}`,proxyUrl);
+    try{
+      const r=await fetch(proxyUrl,{credentials:'omit'});
+      if(r.ok){dbg(`[fetch] Proxy ${i+1} OK`,`status=${r.status}`);return r;}
+      dbg(`[fetch] Proxy ${i+1} non-OK`,`status=${r.status}`);
+    }catch(e){dbg(`[fetch] Proxy ${i+1} threw`,e.message)}
   }
-  return XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,defval:''});
+  throw new Error(`All fetch attempts failed for:\n${url}\n\nThis usually means:\n• The file is opened locally (file://) and all CORS proxies are unavailable\n• Check your internet connection\n• Try hosting this file on a local server`);
+}
+
+async function fetchTextWithProxy(url,label){
+  const r=await fetchWithCorsProxy(url,label);
+  const text=await r.text();
+  dbg(`[fetch] Got text`,`${text.length} chars, starts: ${text.slice(0,60)}`);
+  if(isHtmlResponse(text))throw new Error(`Got HTML page instead of data from:\n${url}\n\nThe sheet may not be public — set sharing to "Anyone with the link → Viewer"`);
+  return text;
+}
+
+async function fetchGsViaCsv(id,gid,label){
+  const url=`https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&gid=${gid||0}`;
+  dbg(`[gviz] ${label||''}`,url);
+  const text=await fetchTextWithProxy(url,label);
+  const rows=parseCSV(text);
+  dbg(`[gviz] Parsed`,`${rows.length} rows`);
+  return rows;
+}
+async function fetchGsViaTabName(id,tabName){
+  const url=`https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tabName)}`;
+  dbg(`[gviz/tab] Fetching tab "${tabName}"`,url);
+  const text=await fetchTextWithProxy(url,`tab:${tabName}`);
+  return parseCSV(text);
+}
+
+async function fetchCsv(url){
+  if(isGs(url)){
+    const id=gsId(url),gid=gsGid(url);
+    if(!id)throw new Error('Could not parse sheet ID from URL: '+url);
+    return fetchGsViaCsv(id,gid,'fetchCsv');
+  }
+  dbg(`[csv] Fetching`,url);
+  const text=await fetchTextWithProxy(url,'csv');
+  return parseCSV(text);
+}
+
+async function fetchGsTab(url,which){
+  const id=gsId(url);
+  if(!id)throw new Error('Could not parse sheet ID from URL: '+url);
+  dbg(`[fetchGsTab] id=${id} which=${which}`,'Trying XLSX first');
+
+  // Try XLSX export first (lets us pick tab by name/position)
+  try{
+    const xlsxUrl=`https://docs.google.com/spreadsheets/d/${id}/export?format=xlsx`;
+    const resp=await fetchWithCorsProxy(xlsxUrl,'xlsx');
+    if(resp.ok){
+      const ct=resp.headers.get('content-type')||'';
+      if(!ct.includes('html')){
+        const buf=await resp.arrayBuffer();
+        const wb=XLSX.read(new Uint8Array(buf),{type:'array',cellDates:true});
+        dbg(`[xlsx] Tabs`,wb.SheetNames.join(', '));
+        const sn=which==='summary'
+          ?wb.SheetNames.find(s=>s.toLowerCase()==='summary')||wb.SheetNames[0]
+          :wb.SheetNames[wb.SheetNames.length-1];
+        dbg(`[xlsx] Using tab`,sn);
+        const rows=XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,defval:''});
+        dbg(`[xlsx] Parsed`,`${rows.length} rows from "${sn}"`);
+        if(rows.length>0)return rows;
+      }else{dbg(`[xlsx] Got HTML content-type`,'falling back to gviz')}
+    }
+  }catch(e){dbg(`[xlsx] Failed`,e.message+' — falling back to gviz')}
+
+  // Fallback: gviz CSV
+  if(which==='summary'){
+    try{
+      dbg(`[fetchGsTab] Trying gviz SUMMARY tab`,'');
+      return await fetchGsViaTabName(id,'SUMMARY');
+    }catch(e){dbg(`[fetchGsTab] SUMMARY tab failed`,e.message+' — using gid fallback')}
+    return fetchGsViaCsv(id,gsGid(url),'summary-gid-fallback');
+  }else{
+    dbg(`[fetchGsTab] gviz last-tab fallback`,`gid=${gsGid(url)}`);
+    return fetchGsViaCsv(id,gsGid(url),'last-gid-fallback');
+  }
 }
 function parseXlDate(v){
   if(!v)return null;
@@ -756,16 +860,25 @@ document.getElementById('mSrcList2').addEventListener('click',e=>{
   if(MD.allRows.length){renderMasterChips();renderMasterResults()}else{document.getElementById('mResults').style.display='none'}
 });
 
-document.getElementById('mAddUrl2').addEventListener('click',()=>{
+document.getElementById('mAddUrl2').addEventListener('click',async()=>{
   const inp=document.getElementById('mSrcUrl2'),url=inp.value.trim();
   if(!url)return;
   const err=document.getElementById('mSrcErr2');
-  const srcUrl=isGs(url)?gsUrl(url):url;
-  if(!srcUrl){err.textContent='Invalid URL';err.style.display='';return}
+  if(!isGs(url)&&!url.startsWith('http')){err.textContent='Invalid URL';err.style.display='';return}
   err.style.display='none';
   const name=isGs(url)?'Google Sheet '+(MD.sources.filter(s=>s.type==='url').length+1):url.split('/').pop()||'URL Source';
-  MD.sources.push({id:uid(),type:'url',url,name,rows:[],status:'pending',count:0});
+  const src={id:uid(),type:'url',url,name,rows:[],status:'loading',count:0};
+  MD.sources.push(src);
   inp.value='';renderMSourceList2();saveMasterSources();
+  // Auto-load immediately
+  try{
+    dbg(`[Master] Loading URL`,url);
+    const csvRows=isGs(url)?await fetchGsTab(url,'summary'):await fetchCsv(url);
+    src.rows=parseMasterRows(csvRows,src.name);src.status='loaded';src.count=src.rows.length;
+    dbg(`[Master] Loaded`,`${src.count} rows from "${src.name}"`);
+  }catch(e){src.status='error';src.err=e.message;dbg(`[Master] Load error`,e.message)}
+  renderMSourceList2();rebuildMasterAllRows();saveMasterSources();updateMasterStatusBar();
+  if(MD.allRows.length){document.getElementById('mDlRow').style.display='';renderMasterChips();renderMasterResults()}
 });
 document.getElementById('mSrcUrl2').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('mAddUrl2').click()});
 
@@ -776,8 +889,23 @@ document.getElementById('mAddXlsx2').addEventListener('change',function(e){
     reader.onload=evt=>{
       const arr=new Uint8Array(evt.target.result);let bin='';arr.forEach(b=>bin+=String.fromCharCode(b));
       const data=btoa(bin);
-      MD.sources.push({id:uid(),type:'xlsx',name:file.name,data,rows:[],status:'pending',count:0});
+      const src={id:uid(),type:'xlsx',name:file.name,data,rows:[],status:'loading',count:0};
+      MD.sources.push(src);
       renderMSourceList2();saveMasterSources();
+      // Auto-parse immediately
+      try{
+        const wb=XLSX.read(arr,{type:'array',cellDates:true});
+        src.rows=[];
+        wb.SheetNames.forEach(sn=>{
+          const sl=sn.toLowerCase();if(sl==='summary'||sl==='cover'||sl==='legend')return;
+          const jsRows=XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,defval:''});
+          if(jsRows.length<2)return;
+          src.rows.push(...parseMasterRows(jsRows,sn));
+        });
+        src.status='loaded';src.count=src.rows.length;
+      }catch(e){src.status='error';src.err=e.message}
+      renderMSourceList2();rebuildMasterAllRows();saveMasterSources();updateMasterStatusBar();
+      if(MD.allRows.length){document.getElementById('mDlRow').style.display='';renderMasterChips();renderMasterResults()}
     };reader.readAsArrayBuffer(file);
   });
   e.target.value='';
@@ -809,7 +937,8 @@ async function loadAllMasterSources(){
     document.getElementById('mLoadingText').textContent=`Loading ${src.name||'source'}…`;
     try{
       if(src.type==='url'){
-        const csvRows=await fetchCsv(src.url);
+        // Reports (Google Sheet): look for SUMMARY tab; CSV fallback uses gid in URL
+        const csvRows=isGs(src.url)?await fetchGsTab(src.url,'summary'):await fetchCsv(src.url);
         src.rows=parseMasterRows(csvRows,src.name);src.status='loaded';src.count=src.rows.length;
       }else if(src.type==='xlsx'&&src.data){
         const bin=atob(src.data);const arr=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i);
@@ -1302,20 +1431,37 @@ function initLoad(){
   if(!users.length){users=[{id:uid(),name:'',sourceUrl:'',sourceFileName:'',sourceFileData:null,sheetUrl:'',sheetFileName:'',sheetFileData:null}];saveUsers()}
   const saved=ls(SK_RES,{});
   Object.entries(saved).forEach(([id,raw])=>{userSnaps[id]=desSnap(raw);userStatus[id]='done'});
+
+  // Show first user with results immediately from cache
   const first=users.find(u=>userSnaps[u.id]);
   if(first)switchToUser(first.id);
-  else{
-    // Auto-run users that have data configured but no snap (first run)
-    const toAutoRun=users.filter(u=>(u.sourceUrl||u.sourceFileData||u.sheetUrl||u.sheetFileData)&&!userSnaps[u.id]);
-    if(toAutoRun.length){
-      setTimeout(async()=>{
-        for(const u of toAutoRun){try{await runComparison(u.id,true)}catch(_){}}
-        const f=users.find(u=>userSnaps[u.id]);if(f)switchToUser(f.id);
-      },100);
-    }
-  }
   renderUserChips();updateEmptyState();
+
+  // Auto-run ALL users that have URL-based data (re-fetch fresh on every load)
+  // File-based users keep their cached snap; URL users always re-run
+  setTimeout(async()=>{
+    const toRun=users.filter(u=>u.sourceUrl||u.sheetUrl);
+    if(toRun.length){
+      dbg('[initLoad] Auto-running URL users',toRun.map(u=>u.name||u.id).join(', '));
+      for(const u of toRun){
+        try{await runComparison(u.id,true)}
+        catch(e){dbg('[initLoad] User run error',`${u.name||u.id}: ${e.message}`)}
+      }
+      const f=users.find(u=>userSnaps[u.id]);
+      if(f&&!activeUid)switchToUser(f.id);
+    }
+  },200);
+
   restoreMaster();
+
+  // Auto-reload master URL sources on every page load
+  setTimeout(async()=>{
+    const urlSrcs=MD.sources.filter(s=>s.type==='url'&&s.url);
+    if(urlSrcs.length){
+      dbg('[initLoad] Auto-reloading master URL sources',urlSrcs.map(s=>s.name).join(', '));
+      await loadAllMasterSources();
+    }
+  },400);
 }
 function saveUsers(){
   const t=users.map(u=>({id:u.id,name:u.name,sourceUrl:u.sourceUrl,sourceFileName:u.sourceFileName,sheetUrl:u.sheetUrl,sheetFileName:u.sheetFileName,sourceFileData:u.sourceFileData||null,sheetFileData:u.sheetFileData||null}));
@@ -1367,11 +1513,11 @@ function renderSuForm(id){
   updFZ('src',u.sourceFileName,u.sourceFileData);updFZ('sht',u.sheetFileName,u.sheetFileData);
   const snap=userSnaps[id];document.getElementById('sfCI').textContent=snap?`Last run: ${snap.runAt?new Date(snap.runAt).toLocaleString():'?'}`:'No results yet';
   document.getElementById('sfErr').style.display='none';
-  // Show/hide View vs Run
+  document.getElementById('sfSrcUrlStatus').style.display='none';
+  document.getElementById('sfShtUrlStatus').style.display='none';
+  // Show Run button only when at least one data source is configured
   const hasSrc=u.sourceUrl||u.sourceFileData,hasSht=u.sheetUrl||u.sheetFileData;
-  const canCompare=hasSrc&&hasSht;
-  document.getElementById('sfRun').style.display=canCompare?'':'none';
-  document.getElementById('sfView').style.display=!canCompare&&(hasSrc||hasSht)?'':'none';
+  document.getElementById('sfRun').style.display=(hasSrc||hasSht)?'':'none';
 }
 function updFZ(t,fn,fd){
   const [z,l,n,s]=[`sf${t==='src'?'Src':'Sht'}Zone`,`sf${t==='src'?'Src':'Sht'}Loaded`,`sf${t==='src'?'Src':'Sht'}Fn`,`sf${t==='src'?'Src':'Sht'}Fs`];
@@ -1384,8 +1530,55 @@ function sfChg(f,v){
   renderSuForm(settingUid);
 }
 document.getElementById('sfName').addEventListener('input',function(){sfChg('name',this.value)});
-document.getElementById('sfSrcUrl').addEventListener('input',function(){sfChg('sourceUrl',this.value)});
-document.getElementById('sfShtUrl').addEventListener('input',function(){sfChg('sheetUrl',this.value)});
+document.getElementById('sfSrcUrl').addEventListener('input',function(){sfChg('sourceUrl',this.value);checkUrlStatus('src',this.value)});
+document.getElementById('sfShtUrl').addEventListener('input',function(){sfChg('sheetUrl',this.value);checkUrlStatus('sht',this.value)});
+
+// Debounced URL status checker for user settings
+const _urlCheckTimers={};
+function checkUrlStatus(type,url){
+  const statusEl=document.getElementById(type==='src'?'sfSrcUrlStatus':'sfShtUrlStatus');
+  clearTimeout(_urlCheckTimers[type]);
+  if(!url||!url.trim()){statusEl.style.display='none';return}
+  if(!isGs(url.trim())){statusEl.style.display='none';return}
+  statusEl.style.display='';statusEl.style.background='var(--surface2)';statusEl.style.color='var(--muted)';statusEl.textContent='⏳ Checking Google Sheet…';
+  _urlCheckTimers[type]=setTimeout(async()=>{
+    try{
+      const id=gsId(url.trim());
+      if(!id)throw new Error('Could not parse sheet ID from URL');
+      let tabInfo='';
+      // Try XLSX to get tab names and counts
+      try{
+        const xlsxUrl=`https://docs.google.com/spreadsheets/d/${id}/export?format=xlsx`;
+        const resp=await fetch(xlsxUrl,{credentials:'omit'});
+        if(resp.ok){
+          const ct=resp.headers.get('content-type')||'';
+          if(!ct.includes('html')){
+            const buf=await resp.arrayBuffer();
+            const wb=XLSX.read(new Uint8Array(buf),{type:'array'});
+            const tabNames=wb.SheetNames;
+            let rowCount=0;tabNames.forEach(sn=>{rowCount+=XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1}).length-1});
+            const which=type==='src'?'SUMMARY tab → ':type==='sht'?'Last tab ('+tabNames[tabNames.length-1]+') → ':'';
+            tabInfo=` — ${which}${tabNames.length} tab(s), ~${rowCount} rows`;
+          }
+        }
+      }catch(_){}
+      // Fallback: gviz CSV check
+      if(!tabInfo){
+        const rows=await fetchGsViaCsv(id,gsGid(url.trim()));
+        tabInfo=` — ~${Math.max(0,rows.length-1)} rows`;
+      }
+      statusEl.style.background='#0d2e1a';statusEl.style.color='var(--green)';statusEl.textContent='✓ Sheet accessible'+tabInfo;
+    }catch(err){
+      statusEl.style.background='#2e1008';statusEl.style.color='var(--orange)';
+      let msg=err.message||'Unknown error';
+      if(msg.includes('not accessible')||msg.includes('login'))msg='Sheet not publicly accessible — in Google Sheets: Share → "Anyone with the link" → Viewer';
+      else if(msg.includes('403')||msg.includes('401'))msg='Access denied — share the sheet: Google Sheets → Share → "Anyone with the link → Viewer"';
+      else if(msg.includes('404'))msg='Sheet not found — double-check the URL';
+      else if(msg.includes('Failed to fetch')||msg.includes('NetworkError'))msg='Network error — check your connection';
+      statusEl.textContent='⚠ '+msg;
+    }
+  },600);
+}
 document.getElementById('sfSrcFile').addEventListener('change',function(e){
   const f=e.target.files[0];if(!f)return;const r=new FileReader();
   r.onload=ev=>{const u=users.find(x=>x.id===settingUid);if(!u)return;u.sourceFileName=f.name;u.sourceFileData=btoa(unescape(encodeURIComponent(ev.target.result)));saveUsers();updFZ('src',u.sourceFileName,u.sourceFileData);renderSuList();renderSuForm(settingUid)};
@@ -1409,15 +1602,14 @@ document.getElementById('sfDel').addEventListener('click',()=>{
   renderSuList();renderUserChips();if(activeUid&&!users.find(u=>u.id===activeUid)){activeUid=null;updateEmptyState()}
 });
 document.getElementById('sfRun').addEventListener('click',async()=>{
-  if(!settingUid)return;const errEl=document.getElementById('sfErr');errEl.style.display='none';
-  try{await runComparison(settingUid)}catch(e){errEl.textContent='⚠ '+e.message;errEl.style.display=''}
+  if(!settingUid)return;const errEl=document.getElementById('sfErr');errEl.style.display='none';errEl.style.whiteSpace='pre-wrap';
+  try{await runComparison(settingUid)}catch(e){
+    dbg('[Run] Error',e.message);
+    errEl.textContent='⚠ '+e.message;errEl.style.display='';
+  }
   const snap=userSnaps[settingUid];document.getElementById('sfCI').textContent=snap?`Last run: ${snap.runAt?new Date(snap.runAt).toLocaleString():'?'}`:'No results yet';
 });
-document.getElementById('sfView').addEventListener('click',async()=>{
-  if(!settingUid)return;const errEl=document.getElementById('sfErr');errEl.style.display='none';
-  try{await runViewOnly(settingUid)}catch(e){errEl.textContent='⚠ '+e.message;errEl.style.display=''}
-  const snap=userSnaps[settingUid];document.getElementById('sfCI').textContent=snap?`Last viewed: ${snap.runAt?new Date(snap.runAt).toLocaleString():'?'}`:'';
-});
+
 
 /* ═══════════════════════════════════════════════════════
    USER CHIPS (QCN)
@@ -1689,7 +1881,7 @@ const renderQcnTable=debounce(function(){_renderQcnTable()},30);
 function _renderQcnTable(){
   const tbody=document.getElementById('qcnTbody'),rows=getQFiltered(),term=qTerm.trim();
   document.getElementById('qcnRC').textContent=rows.length+' rows';
-  if(!rows.length){tbody.innerHTML=`<tr><td colspan="9" style="text-align:center;padding:36px;color:var(--muted);font-style:italic">No matching rows.</td></tr>`;return}
+  if(!rows.length){tbody.innerHTML=`<tr><td colspan="8" style="text-align:center;padding:36px;color:var(--muted);font-style:italic">No matching rows.</td></tr>`;return}
   const snap=userSnaps[activeUid];
   const isViewOnly=snap&&snap.viewOnly;
   const frag=document.createDocumentFragment();
@@ -1716,7 +1908,6 @@ function _renderQcnTable(){
       <td class="qcopy" data-qcn="${esc(r.qcn)}" style="cursor:pointer;white-space:nowrap"><span class="mono" style="font-size:11px;font-weight:700">${hl(r.qcn,term)}</span><span class="qcp-lbl">Copied!</span></td>
       ${srcTd}
       ${shtTd}
-      <td style="padding:5px 11px">${fromMasterCell(r.qcn)}</td>
       <td style="overflow:hidden;text-overflow:ellipsis;max-width:0;white-space:nowrap"><span class="mono" style="font-size:11px;color:${enums.get(r.qcn)?'var(--text)':'var(--muted)'};">${en2||'—'}</span></td>
       <td><input class="fin-inp${corr.get(r.qcn)?' hv':''}" data-fld="corr" data-qcn="${esc(r.qcn)}" value="${co2}" placeholder="—"/></td>
       <td><input class="fin-inp${rmks.get(r.qcn)?' hv':''}" data-fld="rmk" data-qcn="${esc(r.qcn)}" value="${rm2}" placeholder="—"/></td>
@@ -1820,7 +2011,7 @@ function updateQcnFBar(){
 ═══════════════════════════════════════════════════════ */
 document.getElementById('dlBtn').addEventListener('click',()=>{
   const wb=XLSX.utils.book_new();const user=users.find(u=>u.id===activeUid);const label=user?.name||'Results';
-  const hdr=['Row #','QCN','Source Status','Sheet Status','From Master (Enumerator)','Enumerator','For Correction','Remarks','Result'];
+  const hdr=['Row #','QCN','Source Status','Sheet Status','Enumerator','For Correction','Remarks','Result'];
   const rows=[hdr,...allRows.map(r=>{
     const md=getMasterDataForQcn(r.qcn);
     return[sRowNum.has(r.qcn)?sRowNum.get(r.qcn)+1:'',r.qcn,r.srcStatus,shtOv.has(r.qcn)?shtOv.get(r.qcn):(r.sheetStatus||''),md?md.enumerator:'',enums.get(r.qcn)||'',corr.get(r.qcn)||'',rmks.get(r.qcn)||'',r.type==='match'?'Match':r.type==='mismatch'?'Mismatch':r.type==='notfound'?'Not Found':r.type==='sheet-only'?'Sheet Only':r.type==='source-only'?'Source Only':''];
@@ -1847,5 +2038,18 @@ window.addEventListener('resize',updateStickyTop);
 initLoad();
 updateStickyTop();
 </script>
+
+<!-- ── DEBUG PANEL ── -->
+<div id="dbgPanel" class="hidden" style="position:fixed;bottom:0;left:0;right:0;height:280px;background:var(--surface);border-top:2px solid var(--orange);z-index:9999;display:flex;flex-direction:column;font-family:'Inter',monospace">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 12px;background:var(--surface2);border-bottom:1px solid var(--border);flex-shrink:0">
+    <span style="font-size:11px;font-weight:700;color:var(--orange)">🔍 Fetch Diagnostics</span>
+    <div style="display:flex;gap:8px">
+      <button onclick="navigator.clipboard&&navigator.clipboard.writeText(_dbgLog.map(e=>e.t+' '+e.msg+(e.data?' | '+e.data:'')).join('\n'))" style="font-size:10px;padding:2px 8px;background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--text);cursor:pointer">Copy All</button>
+      <button onclick="toggleDebug()" style="font-size:10px;padding:2px 8px;background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--text);cursor:pointer">✕ Close</button>
+    </div>
+  </div>
+  <div id="dbgBody" style="overflow-y:auto;flex:1;padding:6px 12px;font-size:10px;line-height:1.6"></div>
+</div>
+<button onclick="toggleDebug()" title="Toggle fetch diagnostics" style="position:fixed;bottom:12px;right:12px;z-index:9998;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:4px 9px;font-size:10px;cursor:pointer;font-family:'Inter',sans-serif">🔍 Debug</button>
 </body>
 </html>
