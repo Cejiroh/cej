@@ -298,8 +298,7 @@ textarea{resize:vertical;min-height:60px}
         </div>
       </div>
       <div class="tip-box" id="tip-time" style="margin-top:10px">
-        Type the time like this: <strong>09:30 AM</strong> or <strong>02:15 PM</strong>.<br>
-        If the interview took <strong>more than 1 hour</strong>, ask the enumerator to double-check — most interviews finish within an hour.
+        Type the time like this: <strong>09:30 AM</strong> or <strong>02:15 PM</strong>.
       </div>
 
     </div>
@@ -2161,10 +2160,110 @@ let currentLang = 'EN';
 
 const TIP_CONTENT = {
   'tip-time': {
-    EN: `Type the time like this: <strong>09:30 AM</strong> or <strong>02:15 PM</strong>.<br>
-        If the interview took <strong>more than 1 hour</strong>, ask the enumerator to double-check — most interviews finish within an hour.`,
-    FL: `I-type ang oras ganito: <strong>09:30 AM</strong> o <strong>02:15 PM</strong>.<br>
-        Kung ang panayam ay tumagal nang <strong>mahigit 1 oras</strong>, hilingin sa enumerator na muling suriin — karaniwang natapos ang mga panayam sa loob ng isang oras.`
+    EN: `Type the time like this: <strong>09:30 AM</strong> or <strong>02:15 PM</strong>.`,
+    FL: `I-type ang oras ganito: <strong>09:30 AM</strong> o <strong>02:15 PM</strong>.`
+  },
+  'tip-q3': {
+    EN: `The respondent must have at least one contact — a phone number or an email.
+        <ul>
+          <li>If <strong>both are missing</strong>, write the reason in the <strong>Remarks</strong> box.</li>
+          <li>Cellphone numbers should start with <strong>09</strong> and have 11 digits. Landlines have 7–8 digits.</li>
+        </ul>`,
+    FL: `Ang respondent ay dapat may kahit isang contact — numero ng telepono o email.
+        <ul>
+          <li>Kung <strong>wala ang dalawa</strong>, isulat ang dahilan sa <strong>Remarks</strong> box.</li>
+          <li>Ang cellphone number ay dapat magsimula sa <strong>09</strong> at may 11 digits. Ang landline ay may 7–8 digits.</li>
+        </ul>`
+  },
+  'tip-q4': {
+    EN: `The respondent must have complete address.
+        <ul>
+          <li>Ensure that the <strong>barangay</strong> and <strong>city</strong> match the prefilled data above.</li>
+          <li>Verify that all other details (LGU, DMA and Hydraulic System) align with the information provided in the sheet.</li>
+          <li>If any details do not match, please contact Iza.</li>
+        </ul>`,
+    FL: `Ang respondent ay dapat may kumpletong address.
+        <ul>
+          <li>Tiyaking ang <strong>barangay</strong> at <strong>lungsod</strong> ay tumutugma sa pre-filled na datos sa itaas.</li>
+          <li>I-verify na ang lahat ng iba pang detalye (LGU, DMA at Hydraulic System) ay naaayon sa impormasyon sa sheet.</li>
+          <li>Kung may hindi tumutugmang detalye, makipag-ugnayan kay Iza.</li>
+        </ul>`
+  },
+  'tip-q5': {
+    EN: `If the sheet is Semi-business:
+        <ul>
+          <li>Ensure that the <strong>CAN</strong> is listed on <a href="https://kalasag-ds.com/check-installation-type" tabindex="-1">https://kalasag-ds.com/check-installation-type</a>.</li>
+          <li>Confirm that the installation type matches the result from the <a href="https://kalasag-ds.com/check-installation-type" tabindex="-1">check installation type page</a>.</li>
+          <li>If installation type do not match, please follow the result from the <a href="https://kalasag-ds.com/check-installation-type" tabindex="-1">check installation type page</a>.</li>
+        </ul>`,
+    FL: `Kung ang sheet ay Semi-business:
+        <ul>
+          <li>Tiyaking nakalista ang <strong>CAN</strong> sa <a href="https://kalasag-ds.com/check-installation-type" tabindex="-1">https://kalasag-ds.com/check-installation-type</a>.</li>
+          <li>Kumpirmahin na ang uri ng installation ay tumutugma sa resulta mula sa <a href="https://kalasag-ds.com/check-installation-type" tabindex="-1">check installation type page</a>.</li>
+          <li>Kung hindi tumutugma ang uri ng installation, sundin ang resulta mula sa <a href="https://kalasag-ds.com/check-installation-type" tabindex="-1">check installation type page</a>.</li>
+        </ul>`
+  },
+  'tip-q61': {
+    EN: `<ul>
+          <li>Ensure that the <strong>amount</strong> is less than the amount in Q7</li>
+          <li>If the <strong>amount</strong> is more than Q7, you should ask the enumerator for the clarification.</li>
+          <li><strong>Php Amount</strong> — peso amount on the bill. Cannot be 0.</li>
+        </ul>`,
+    FL: `<ul>
+          <li>Tiyaking ang <strong>halaga</strong> ay mas mababa kaysa sa halaga sa Q7.</li>
+          <li>Kung ang <strong>halaga</strong> ay higit sa Q7, hilingin sa enumerator na magpaliwanag.</li>
+          <li><strong>Halaga sa Php</strong> — peso na halaga sa bill. Hindi maaaring 0.</li>
+        </ul>`
+  },
+  'tip-q7': {
+    EN: `All fields below must be completed based on the physical Maynilad bill.
+        <ul>
+          <li><strong>Php Amount</strong> — the peso amount indicated on the bill (must not be <strong>0</strong>), you should clarify it to the enumerator.</li>
+          <li>If the <strong>Cubic Meter</strong> is <strong>0</strong>, you should clarify it to the enumerator.</li>
+          <li>If the <strong>Buwan ng Bill</strong> is older than 3 months, the sheet must include an <strong>RA signature</strong> or <strong>RA approval stamp</strong>.</li>
+          <li><strong>Contract Account Number (CAN)</strong> — this should be 8-digit number.</li>
+          <li><strong>Meter Number</strong> — optional; may be left blank.</li>
+        </ul>
+        If any required field (except Meter Number) is missing, the sheet must have an <strong>RA signature</strong> or <strong>RA approval stamp</strong>.<br>
+        Indicate <strong>"RA approved"</strong> in the remarks if an <strong>RA signature</strong> or <strong>RA approval stamp</strong> is present.
+        <br><br><strong>RA approval online instruction:</strong>
+        <ul>
+          <li>Ask for enumerator's RA Name</li>
+          <li>Message RA for approval</li>
+          <li>If the sheet is approved, please write this in the sheet beside the concern question</li>
+          <li>What you will write is:
+            <ul>
+              <ol>RA Name</ol>
+              <ol>Messenger</ol>
+              <ol>Date of approval</ol>
+              <ol>Time of approval</ol>
+            </ul>
+          </li>
+        </ul>`,
+    FL: `Lahat ng field sa ibaba ay dapat kumpletuhin batay sa pisikal na Maynilad bill.
+        <ul>
+          <li><strong>Halaga sa Php</strong> — ang peso na halaga na nakasaad sa bill (hindi dapat <strong>0</strong>); kumpirmahin ito sa enumerator.</li>
+          <li>Kung ang <strong>Cubic Meter</strong> ay <strong>0</strong>, kumpirmahin ito sa enumerator.</li>
+          <li>Kung ang <strong>Buwan ng Bill</strong> ay mas matanda pa sa 3 buwan, ang sheet ay dapat may <strong>pirma ng RA</strong> o <strong>RA approval stamp</strong>.</li>
+          <li><strong>Contract Account Number (CAN)</strong> — dapat 8-digit na numero ito.</li>
+          <li><strong>Numero ng Meter</strong> — opsyonal; maaaring iwanang blangko.</li>
+        </ul>
+        Kung may kinakailangang field na kulang (maliban sa Meter Number), ang sheet ay dapat may <strong>pirma ng RA</strong> o <strong>RA approval stamp</strong>.<br>
+        Isulat ang <strong>"RA approved"</strong> sa remarks kung may <strong>pirma ng RA</strong> o <strong>RA approval stamp</strong>.
+        <br><br><strong>Tagubilin sa RA approval online:</strong>
+        <ul>
+          <li>Humingi ng RA Name mula sa enumerator</li>
+          <li>Mag-message sa RA para sa approval</li>
+          <li>Kung na-approve ang sheet, isulat ito sa sheet katabi ng may-kinalamang tanong</li>
+          <li>Ang isusulat ay:
+            <ul>
+              <ol>RA Name</ol>
+              <ol>Messenger</ol>
+              <ol>Petsa ng approval</ol>
+              <ol>Oras ng approval</ol>
+            </ul>
+          </li>
+        </ul>`
   },
   'tip-q1': {
     EN: `<strong>Middle Initial (MI):</strong>
