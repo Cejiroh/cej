@@ -193,6 +193,11 @@ textarea{resize:vertical;min-height:60px}
     </div>
   </div>
   <div style="display:flex;align-items:center;gap:10px">
+    <button id="lang-toggle-btn" onclick="toggleLang()" title="Switch language / Palitan ang wika"
+      style="display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.35);border-radius:8px;padding:4px 12px;cursor:pointer;color:#fff;font-size:.75em;font-weight:700;transition:all .2s;font-family:inherit">
+      <span id="lang-flag">🇵🇭</span>
+      <span id="lang-label">Filipino</span>
+    </button>
     <span id="nav-err-count" style="display:none;background:#ef4444;color:#fff;font-size:.68em;font-weight:700;padding:2px 8px;border-radius:9999px;font-family:monospace"></span>
     <span class="nav-score-pill" id="header-score">—</span>
     <span style="font-size:.78em;opacity:.7;font-weight:500">QC Score</span>
@@ -566,7 +571,7 @@ textarea{resize:vertical;min-height:60px}
         </div>
         <div class="v-msg" id="msg-q11"></div>
         <div id="q11_sub" style="display:none;margin-top:12px;padding-top:12px;border-top:1px dashed #e5e7eb">
-          <div class="tip-box" id="tip-q11">
+          <div class="tip-box" id="tip-q11-sub">
             Ensure that <strong>11.1, 11.2, 11.3</strong> are answered.
           </div>
           <div class="q-text" style="font-size:.82em">11.1 KUNG ANG SAGOT AY OO: Ano ang ginagamit ninyo sa pag-iimbak ng tubig? [Bilugan ang lahat ng angkop na kasagutan.] <span class="req">*</span></div>
@@ -1016,6 +1021,8 @@ textarea{resize:vertical;min-height:60px}
           <button class="tip-btn" tabindex="-1" onclick="toggleTip('tip-q29')">?</button>
         </div>
         <div class="tip-box" id="tip-q29">
+          This is not only for Maynilad as a water source. It includes <strong>all sources of water.</strong><br />
+          This <strong>should be answered</strong> even if they were not around at the time of the pandemic.<br /><br/>
           For <strong>Residential</strong>: All rows must be answered. N/A is not applicable.<br /><br />
           For <strong>Semi-Business</strong>: N/A is possible if the usage doesn't apply to that business.<br /><br />
           <strong>Common mistake:</strong> Some enumerators fill in Q29 like a ranking — writing 1, 2, 3, 4, 5. Check the entire bundle.
@@ -1155,7 +1162,7 @@ textarea{resize:vertical;min-height:60px}
         </div>
         <div class="tip-box" id="tip-q38">
           <strong>All Appliances are included</strong> even if they are unused or broken.<br><br>
-          <strong>Garden:</strong> Count as 1 even with many pots.<br><br>
+          <strong>Garden:</strong> Count as 1 even with many pots. Multiple gardens can only be counted if there are two distinct areas, such as a front yard and a backyard.<br><br>
           <strong>Pets:</strong> For fish, count the number of <strong>aquariums/tanks</strong> and should be placed on <strong>Iba pa</strong>.<br><br>
           <strong>Motorcycle</strong> and <strong>E-bike</strong> count as Vehicle.
         </div>
@@ -2148,6 +2155,242 @@ document.querySelectorAll('input[name="q31"]').forEach(r=>{r.addEventListener('c
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 initYesNoControl();
 initQ29Antas();
+
+// ─── LANGUAGE TOGGLE ─────────────────────────────────────────────────────────
+let currentLang = 'EN';
+
+const TIP_CONTENT = {
+  'tip-time': {
+    EN: `Type the time like this: <strong>09:30 AM</strong> or <strong>02:15 PM</strong>.<br>
+        If the interview took <strong>more than 1 hour</strong>, ask the enumerator to double-check — most interviews finish within an hour.`,
+    FL: `I-type ang oras ganito: <strong>09:30 AM</strong> o <strong>02:15 PM</strong>.<br>
+        Kung ang panayam ay tumagal nang <strong>mahigit 1 oras</strong>, hilingin sa enumerator na muling suriin — karaniwang natapos ang mga panayam sa loob ng isang oras.`
+  },
+  'tip-q1': {
+    EN: `<strong>Middle Initial (MI):</strong>
+        <ul>
+          <li>If the middle initial is missing, you should confirm it to the enumerator why it was left out.</li>
+          <li>If you're reviewing several sheets and <strong>none of them</strong> have a middle initial, ask the enumerator to fill it out.</li>
+          <li>This can be done by sending a picture of all front page of the sheets or by sending the whole bundle to the enumerator.</li>
+        </ul>`,
+    FL: `<strong>Gitnang Inisyal (MI):</strong>
+        <ul>
+          <li>Kung walang gitnang inisyal, kumpirmahin sa enumerator kung bakit ito iniwanan.</li>
+          <li>Kung maraming sheet ang nasusuri at <strong>wala ni isa</strong> na may gitnang inisyal, hilingin sa enumerator na punan ito.</li>
+          <li>Maaaring ipadala ang larawan ng lahat ng unang pahina ng mga sheet o ipadala ang buong bundle sa enumerator.</li>
+        </ul>`
+  },
+  'tip-q8': {
+    EN: `The expected answer is <strong>24 hours</strong>.<br><br>
+        If the answer is <strong>less than 24</strong>, ask the enumerator to confirm with the respondent — the area may have a scheduled water supply.<br><br>
+        Common mistake: Some respondents give the hours when water pressure is strong, not the total hours water is available.`,
+    FL: `Ang inaasahang sagot ay <strong>24 na oras</strong>.<br><br>
+        Kung ang sagot ay <strong>wala pang 24</strong>, hilingin sa enumerator na kumpirmahin sa respondent — maaaring may nakatakdang oras ng suplay ng tubig sa lugar.<br><br>
+        Karaniwang pagkakamali: May mga respondent na sinasabi ang oras ng malakas na presyon ng tubig, hindi ang kabuuang oras na available ang tubig.`
+  },
+  'tip-q10': {
+    EN: `Rate the water flow for each time period. All 4 rows must be answered.<br><br>
+        If the respondent answers <strong>"Wala"</strong>, Q8 should not be 24, you should ask the enumerator for clarification.<br><br>
+        If the respondent answers <strong>"Hindi Alam"</strong> check the bundle of the same enumerator, if the entire or most of the sheet is "Hindi Alam". Ask the enumerator to verify the answers directly with the respondent.`,
+    FL: `I-rate ang daloy ng tubig para sa bawat oras ng araw. Lahat ng 4 na row ay dapat masagutan.<br><br>
+        Kung ang sagot ng respondent ay <strong>"Wala"</strong>, ang Q8 ay hindi dapat 24 — hilingin sa enumerator na magpaliwanag.<br><br>
+        Kung ang sagot ay <strong>"Hindi Alam"</strong>, suriin ang bundle ng parehong enumerator — kung karamihan o lahat ng sheet ay "Hindi Alam," hilingin sa enumerator na direktang kumpirmahin ang mga sagot sa respondent.`
+  },
+  'tip-q11': {
+    EN: `The storage here is for <strong>non-immediate use</strong> and only water coming from <strong>Maynilad</strong>.`,
+    FL: `Ang pag-iimbak dito ay para sa <strong>hindi agarang paggamit</strong> at yung tubig lamang mula sa <strong>Maynilad</strong>.`
+  },
+  'tip-q11-sub': {
+    EN: `Ensure that <strong>11.1, 11.2, 11.3</strong> are answered.`,
+    FL: `Tiyaking nasagutan ang <strong>11.1, 11.2, at 11.3</strong>.`
+  },
+  'tip-q11b': {
+    EN: `If all 7 days are checked, ask the enumerator: <strong>Is this regular storage, or is water used immediately (agarang paggamit)?</strong> Regular storage is the intended answer for Q11 — if it is agarang paggamit, the answer to Q11 should be Hindi.<br><br>
+        <strong>Floater exception:</strong> If the respondent uses a floater (automatic float valve), it is acceptable to leave the storage days and time blank — but the checkoder must write the reason in the 11. Remarks field to explain why these fields are unanswered.`,
+    FL: `Kung lahat ng 7 araw ay tsinecheck, itanong sa enumerator: <strong>Regular bang nag-iimbak ng tubig, o ginagamit agad ang tubig (agarang paggamit)?</strong> Ang regular na pag-iimbak ang tamang sagot sa Q11 — kung agarang paggamit, ang sagot sa Q11 ay dapat Hindi.<br><br>
+        <strong>Pagbubukod para sa Floater:</strong> Kung gumagamit ang respondent ng floater (automatic float valve), maaaring iwanang blangko ang mga araw at oras ng pag-iimbak — ngunit kailangang isulat ng checkoder ang dahilan sa 11. Remarks field.`
+  },
+  'tip-q15': {
+    EN: `If answered Yes, the field <strong>must be answered in liters</strong>. It cannot be 0.<br><br>
+        The answer should be the usage for the entire month.`,
+    FL: `Kung Oo ang sagot, ang field ay <strong>dapat sagutin sa litro</strong>. Hindi maaaring 0.<br><br>
+        Ang sagot ay dapat ang kabuuang gamit para sa buong buwan.`
+  },
+  'tip-q17': {
+    EN: `A household is defined not just by people living under the same roof, but by whether they share food and expenses together.<br />
+        If everyone in the house shares meals and has <strong>one food budget</strong>, that counts as one household.<br />
+        If groups of people in the same house buy, cook, and <strong>eat separately</strong>, then each group is considered a separate household.<br /><br />
+        <strong>Reminder:</strong>
+        <ul>
+          <li>All residential should have at least 1 household.</li>
+          <li>All Semi-business should have at least 1 business.</li>
+          <li>Not all residential have 0 business.</li>
+          <li>Semi-business can have 0 household.</li>
+          <li>If any of the field is blank, ask the enumerator for confirmation.</li>
+        </ul>`,
+    FL: `Ang isang sambahayan ay hindi lamang tinutukoy ng pagsasama sa iisang bubong, kundi kung magkasama silang kumakain at nagbabahagi ng gastusin.<br />
+        Kung lahat sa bahay ay magkasamang kumakain at may <strong>iisang budget sa pagkain</strong>, iyon ay isinasaalang-alang na isang sambahayan.<br />
+        Kung may mga grupo sa loob ng bahay na <strong>magkahiwalay na kumakain</strong>, bawat grupo ay isang hiwalay na sambahayan.<br /><br />
+        <strong>Paalala:</strong>
+        <ul>
+          <li>Ang lahat ng residential ay dapat may kahit isang sambahayan.</li>
+          <li>Ang lahat ng semi-business ay dapat may kahit isang negosyo.</li>
+          <li>Hindi lahat ng residential ay may 0 negosyo.</li>
+          <li>Ang semi-business ay maaaring may 0 sambahayan.</li>
+          <li>Kung may field na blangko, kumpirmahin sa enumerator.</li>
+        </ul>`
+  },
+  'tip-q18': {
+    EN: `This is the <strong>total count</strong> of everyone who used water from this meter last month.<br><br>
+        Q18 should be equal to total of Q18a<br><br>
+        <strong>Exceptions:</strong>
+        Q18 will not be equal to Q18a if the respondent know the count of other household connected to the same meter but doesnt know the number of household for Q18d.`,
+    FL: `Ito ang <strong>kabuuang bilang</strong> ng lahat ng gumagamit ng tubig mula sa metro noong nakaraang buwan.<br><br>
+        Ang Q18 ay dapat katumbas ng kabuuan ng Q18a.<br><br>
+        <strong>Pagbubukod:</strong>
+        Hindi magiging katumbas ang Q18 at Q18a kung alam ng respondent ang bilang ng ibang sambahayan na konektado sa parehong metro ngunit hindi alam ang bilang ng sambahayan para sa Q18d.`
+  },
+  'tip-q18a': {
+    EN: `<strong>Nangungupahan</strong> = renters or boarders. <strong>Residente</strong> = permanent household members (usually the owner and family).<br><br>
+        If Residente is 0 but the respondent is renter, the respondent should be counted under Residente since they are the main resident.<br><br>
+        <strong>Reminder:</strong><ul>
+          <li>If both resident and renters are in the same property, Q17 (number of households) should be more than 1.</li>
+          <li>Select No if the value is 0.</li>
+          <li>If the fields are left blank, ask the enumerator for clarification.</li>
+        </ul><br />
+        Only for <strong>Residential</strong>:
+        <ul><li>The total of 18a should not be 0.</li></ul>`,
+    FL: `<strong>Nangungupahan</strong> = mga umuupa o boarder. <strong>Residente</strong> = permanenteng miyembro ng sambahayan (karaniwang ang may-ari at pamilya).<br><br>
+        Kung ang Residente ay 0 ngunit ang respondent ay nangungupahan, ang respondent ay dapat bilangin sa ilalim ng Residente dahil siya ang pangunahing naninirahan.<br><br>
+        <strong>Paalala:</strong><ul>
+          <li>Kung parehong may residente at nangungupahan sa isang property, ang Q17 (bilang ng sambahayan) ay dapat higit sa 1.</li>
+          <li>Pumili ng No kung ang halaga ay 0.</li>
+          <li>Kung blangko ang mga field, hilingin sa enumerator na magpaliwanag.</li>
+        </ul><br />
+        Para sa <strong>Residential</strong> lamang:
+        <ul><li>Ang kabuuan ng 18a ay hindi dapat 0.</li></ul>`
+  },
+  'tip-q18b': {
+    EN: `These are people who use water at the property but do NOT sleep there (e.g., stay-out kasambahay, daily water fetchers).`,
+    FL: `Ito ang mga taong gumagamit ng tubig sa property ngunit hindi natutulog doon (hal. stay-out na kasambahay, mga nakiki-igib araw-araw).`
+  },
+  'tip-q18c': {
+    EN: `These are household members temporarily away but expected to return:
+        <ul>
+          <li>Students renting a dorm or board near school</li>
+          <li>Employees renting elsewhere for work</li>
+          <li>OFWs expected to return within 5 years</li>
+        </ul>`,
+    FL: `Ito ang mga miyembro ng sambahayan na pansamantala lang na wala ngunit inaasahang magbabalik:
+        <ul>
+          <li>Estudyante na nagdo-dorm o nagbo-board malapit sa paaralan</li>
+          <li>Empleyado na nangungupahan para sa trabaho</li>
+          <li>OFW na inaasahang makakabalik sa loob ng 5 taon</li>
+        </ul>`
+  },
+  'tip-q18d': {
+    EN: `The <strong>2025 count should match the Q18a total</strong> above.<br><br>
+        Only for <strong>Residential</strong>:
+        <ul>
+          <li>The total of 18a should be equal to 18d 2025.</li>
+          <li><strong>Exceptions</strong>: If the respondent does not know the number of other households, it is acceptable to list only the respondent's own household here.</li>
+        </ul><br>
+        For the <strong>Reason</strong> column:
+        <ul>
+          <li>If the number <strong>changed</strong> — write the reason why. Do not write N/A.</li>
+          <li>If the number <strong>did not change</strong> — just write N/A.</li>
+        </ul>`,
+    FL: `Ang <strong>bilang sa 2025 ay dapat katumbas ng kabuuan ng Q18a</strong> sa itaas.<br><br>
+        Para sa <strong>Residential</strong> lamang:
+        <ul>
+          <li>Ang kabuuan ng 18a ay dapat katumbas ng 18d 2025.</li>
+          <li><strong>Pagbubukod</strong>: Kung hindi alam ng respondent ang bilang ng ibang sambahayan, maaaring isama lamang ang kanyang sariling sambahayan.</li>
+        </ul><br>
+        Para sa kolumna ng <strong>Dahilan</strong>:
+        <ul>
+          <li>Kung <strong>nagbago</strong> ang bilang — isulat ang dahilan. Huwag isulat ang N/A.</li>
+          <li>Kung <strong>hindi nagbago</strong> ang bilang — isulat na lamang ang N/A.</li>
+        </ul>`
+  },
+  'tip-q22': {
+    EN: `Each utility the respondent has must be given a <strong>different rank number</strong>.<br/>Two items cannot share the same rank.`,
+    FL: `Ang bawat utility na mayroon ang respondent ay dapat bigyan ng <strong>natatanging numero ng ranggo</strong>.<br/>Hindi maaaring magkaparehong ranggo ang dalawang aytem.`
+  },
+  'tip-q26': {
+    EN: `This field should still have an answer even if they have no physical receipt.`,
+    FL: `Ang field na ito ay dapat pa ring may sagot kahit wala silang pisikal na resibo.`
+  },
+  'tip-q28': {
+    EN: `This is not only for Maynilad as a water source. It includes <strong>all sources of water.</strong><br />
+        This <strong>should be answered</strong> even if they were not around at the time of the pandemic.<br /><br/>
+        <strong>Ask the enumerator to clarify if:</strong><ul>
+          <li>If Q28 says usage went <strong>down</strong> but all Q29 activities show it went <strong>up</strong></li>
+          <li>If Q28 says usage went <strong>up</strong> but all Q29 activities show it went <strong>down</strong></li>
+          <li>If Q28 says usage went <strong>Hindi Nagbago</strong> but Q29 activities show changes</li>
+        </ul>`,
+    FL: `Hindi ito para sa Maynilad lamang bilang pinagkukunan ng tubig. Kasama nito ang <strong>lahat ng pinagkukunan ng tubig.</strong><br />
+        Dapat itong <strong>masagutan</strong> kahit hindi sila naroroon noong panahon ng pandemya.<br /><br/>
+        <strong>Hilingin sa enumerator na magpaliwanag kung:</strong><ul>
+          <li>Kung ang Q28 ay nagsasabing <strong>bumaba</strong> ang konsumo ngunit lahat ng aktibidad sa Q29 ay <strong>tumaas</strong></li>
+          <li>Kung ang Q28 ay nagsasabing <strong>tumaas</strong> ang konsumo ngunit lahat ng aktibidad sa Q29 ay <strong>bumaba</strong></li>
+          <li>Kung ang Q28 ay nagsasabing <strong>Hindi Nagbago</strong> ngunit may mga pagbabago ang mga aktibidad sa Q29</li>
+        </ul>`
+  },
+  'tip-q29': {
+    EN: `This is not only for Maynilad as a water source. It includes <strong>all sources of water.</strong><br />
+        This <strong>should be answered</strong> even if they were not around at the time of the pandemic.<br /><br/>
+        For <strong>Residential</strong>: All rows must be answered. N/A is not applicable.<br /><br />
+        For <strong>Semi-Business</strong>: N/A is possible if the usage doesn't apply to that business.<br /><br />
+        <strong>Common mistake:</strong> Some enumerators fill in Q29 like a ranking — writing 1, 2, 3, 4, 5. Check the entire bundle.`,
+    FL: `Hindi ito para sa Maynilad lamang bilang pinagkukunan ng tubig. Kasama nito ang <strong>lahat ng pinagkukunan ng tubig.</strong><br />
+        Dapat itong <strong>masagutan</strong> kahit hindi sila naroroon noong panahon ng pandemya.<br /><br/>
+        Para sa <strong>Residential</strong>: Lahat ng row ay dapat masagutan. Hindi naaangkop ang N/A.<br /><br />
+        Para sa <strong>Semi-Business</strong>: Maaaring N/A kung ang paggamit ay hindi naaangkop sa negosyo.<br /><br />
+        <strong>Karaniwang pagkakamali:</strong> May mga enumerator na sinasagutan ang Q29 tulad ng isang ranggo — nagsusulat ng 1, 2, 3, 4, 5. Suriin ang buong bundle.`
+  },
+  'tip-q31': {
+    EN: `This is an independent question and may not match to Q28.`,
+    FL: `Ito ay isang independiyenteng tanong at maaaring hindi tumugma sa Q28.`
+  },
+  'tip-q34': {
+    EN: `This is the household's <strong>total monthly spending</strong> — food, water, electricity, rent, transport, and all other regular expenses combined.`,
+    FL: `Ito ang <strong>kabuuang buwanang gastusin</strong> ng sambahayan — pagkain, tubig, kuryente, upa, transportasyon, at lahat ng iba pang regular na gastusin.`
+  },
+  'tip-q35': {
+    EN: `This is an independent question and may not match to the amount being paid.`,
+    FL: `Ito ay isang independiyenteng tanong at maaaring hindi tumugma sa aktwal na bayad.`
+  },
+  'tip-q38': {
+    EN: `<strong>All Appliances are included</strong> even if they are unused or broken.<br><br>
+        <strong>Garden:</strong> Count as 1 even with many pots. Multiple gardens can only be counted if there are two distinct areas, such as a front yard and a backyard.<br><br>
+        <strong>Pets:</strong> For fish, count the number of <strong>aquariums/tanks</strong> and should be placed on <strong>Iba pa</strong>.<br><br>
+        <strong>Motorcycle</strong> and <strong>E-bike</strong> count as Vehicle.`,
+    FL: `<strong>Kasama ang lahat ng appliance</strong> kahit hindi ginagamit o sira na.<br><br>
+        <strong>Hardin:</strong> Bilangin bilang 1 kahit maraming palayok. Maraming hardin ang maaari lamang bilangin kung may dalawang magkahiwalay na lugar, tulad ng harapan at likuran ng bahay.<br><br>
+        <strong>Alagang hayop:</strong> Para sa isda, bilangin ang bilang ng <strong>aquarium/tank</strong> at ilagay sa <strong>Iba pa</strong>.<br><br>
+        <strong>Motorsiklo</strong> at <strong>E-bike</strong> ay binibilang bilang Sasakyan.`
+  }
+};
+
+function applyLang(lang) {
+  currentLang = lang;
+  Object.entries(TIP_CONTENT).forEach(([id, content]) => {
+    const el = document.getElementById(id);
+    if (el && content[lang]) el.innerHTML = content[lang];
+  });
+  const flag = document.getElementById('lang-flag');
+  const lbl  = document.getElementById('lang-label');
+  const btn  = document.getElementById('lang-toggle-btn');
+  if (lang === 'FL') {
+    flag.textContent = '🇬🇧'; lbl.textContent = 'English';
+    btn.style.background = 'rgba(255,255,255,.28)';
+  } else {
+    flag.textContent = '🇵🇭'; lbl.textContent = 'Filipino';
+    btn.style.background = 'rgba(255,255,255,.15)';
+  }
+}
+
+function toggleLang() { applyLang(currentLang === 'EN' ? 'FL' : 'EN'); }
 </script>
 </body>
 </html>
