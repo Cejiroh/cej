@@ -149,6 +149,7 @@ html.dark .btn-del:hover{background:#450a0a;color:#fca5a5}
 .dtbl thead th{background:var(--hbg);border-bottom:1px solid var(--border);padding:0;position:sticky;top:0;z-index:2;overflow:visible}
 .dtbl thead th.tp{padding:8px 11px;color:var(--muted);text-transform:uppercase;font-size:9px;letter-spacing:.07em;font-weight:600}
 .dtbl tbody td{padding:6px 11px;border-bottom:1px solid var(--border);vertical-align:middle;overflow:hidden}
+.dtbl tbody td.td-wrap{overflow:visible;white-space:normal;word-break:break-word}
 .dtbl tbody tr.rm td{background:var(--rm)}
 .dtbl tbody tr.rm:hover td{background:var(--rmh)}
 .dtbl tbody tr.rx td{background:var(--rx)}
@@ -217,8 +218,6 @@ html.dark .sc-rej{background:#450a0a;color:#fca5a5}
 .fin-inp{background:var(--in-bg);border:1px solid var(--in-bd);color:var(--text);border-radius:5px;padding:3px 7px;font-size:11px;width:100%;font-family:'Inter',sans-serif;transition:border-color .15s}
 .fin-inp:focus{outline:none;border-color:var(--blue);background:var(--surface)}
 .fin-inp.hv{border-color:var(--green)}
-html:not(.dark) .fin-inp.hv{color:#15803d}
-html.dark .fin-inp.hv{color:#4ade80}
 .ss-wrap{position:relative;display:inline-flex;align-items:center;width:100%;border-radius:20px}
 .ss-sel{appearance:none;background:transparent;border:none;color:inherit;cursor:pointer;padding:3px 20px 3px 9px;border-radius:20px;font-size:10px;font-weight:600;font-family:'Inter',sans-serif;width:100%}
 .ss-sel:focus{outline:none;box-shadow:inset 0 0 0 2px var(--blue)}
@@ -413,6 +412,20 @@ html.dark .res-missing{background:#500724;color:#f9a8d4}
   </div>
 </div>
 
+<!-- ═══ ROW DETAIL MODAL ═══ -->
+<div id="rowDetailModal" class="mismatch-modal hidden">
+  <div class="mismatch-inner" style="width:640px;max-width:96vw">
+    <div class="mismatch-hdr">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span id="rdTitle" style="font-size:14px;font-weight:700;font-family:'Nunito',sans-serif"></span>
+        <span id="rdBadge"></span>
+      </div>
+      <button id="rdClose" class="ibtn"><svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="mismatch-body" id="rdBody" style="padding:20px 22px;display:flex;flex-direction:column;gap:14px"></div>
+  </div>
+</div>
+
 <!-- ═══ MISMATCH MODAL ═══ -->
 <div id="mismatchModal" class="mismatch-modal hidden">
   <div class="mismatch-inner">
@@ -448,9 +461,6 @@ html.dark .res-missing{background:#500724;color:#f9a8d4}
   </div>
   <div class="hspacer"></div>
   <div id="masterHeaderBtns" style="display:none;align-items:center;gap:6px">
-    <button id="mMismatchBtn" class="btn btn-orange" style="flex-shrink:0;font-size:11px;display:none">
-      <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>Mismatches <span id="mMismatchBadge" style="background:rgba(0,0,0,.15);border-radius:10px;padding:0 5px;font-size:9px"></span>
-    </button>
     <button id="mReloadBtn" class="btn btn-gray" style="flex-shrink:0;font-size:11px;display:none"><svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M1 4v6h6M23 20v-6h-6M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15"/></svg><span id="mReloadT">Reload</span><span id="mReloadSp"><div class="spinner" style="width:10px;height:10px;border-width:1.5px;border-color:rgba(100,116,139,.3);border-top-color:var(--muted)"></div></span></button>
     <button id="mSettingsBtn" class="btn btn-gray" style="flex-shrink:0;font-size:11px"><svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/></svg>Sources</button>
     <div id="mDlRow" style="display:none"><button id="mDlBtn" class="btn btn-teal"><svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4"/></svg>Export</button></div>
@@ -606,7 +616,7 @@ const MD={
   checkoders:[],
   sheetNames:[],
 };
-let mActiveChk='__ALL__', mActiveSheet='__ALL__', mTerm='', mChkSearch='';
+let mActiveChk='__ALL__', mActiveSheet='__ALL__', mTerm='', mChkSearch='', mActiveFilter='all';
 const mF={ba:new Set(),hs:new Set(),dma:new Set(),city:new Set(),barangay:new Set(),enumerator:new Set(),checkoder:new Set(),shtSt:new Set(),rcv:new Set()};
 let mRenderedCount=PAGE_SIZE;
 let mObserver=null;
@@ -1091,9 +1101,9 @@ async function loadAllMasterSources(){
   updateMasterStatusBar();
   if(MD.allRows.length){
     document.getElementById('mDlRow').style.display='';document.getElementById('mReloadBtn').style.display='';
-    mActiveChk='__ALL__';mActiveSheet='__ALL__';mTerm='';mChkSearch='';
-    Object.keys(mF).forEach(k=>mF[k].clear());
-    document.getElementById('mSrch').value='';document.getElementById('mChipSrch').value='';
+    // Validate saved selections still exist after reload
+    if(mActiveChk!=='__ALL__'&&!MD.checkoders.includes(mActiveChk))mActiveChk='__ALL__';
+    if(mActiveSheet!=='__ALL__'&&!MD.sheetNames.includes(mActiveSheet))mActiveSheet='__ALL__';
     renderMasterChips();renderMasterResults();
     updateMismatchBadge();
   }
@@ -1241,33 +1251,23 @@ function matchStatusBadge(status){
 function getCheckoderWarnings(checkoder){
   const rows=checkoder==='__ALL__'?MD.allRows:MD.allRows.filter(r=>r.checkoder===checkoder);
   if(!rows.length)return{warns:0,hasUser:false};
-  const m=findUserByCheckoder(checkoder);
-  if(!m)return{warns:0,hasUser:false};
-  let warns=0;
-  rows.forEach(r=>{const s=getQcnMatchStatus(r.qcn,r.checkoder);if(s!=='match'&&s!=='no-user')warns++});
-  return{warns,hasUser:true};
+  let warns=0,hasUser=false;
+  rows.forEach(r=>{
+    const mu=findUserByCheckoder(r.checkoder);
+    if(!mu)return;
+    hasUser=true;
+    const v=(mu.snap.received||new Map()).get(r.qcn)||'';
+    const vu=v.trim().toUpperCase();
+    if(!vu||vu==='N'||vu==='NO')warns++;
+  });
+  return{warns,hasUser};
 }
 
 /* ═══════════════════════════════════════════════════════
    MISMATCH PANEL
 ═══════════════════════════════════════════════════════ */
-function updateMismatchBadge(){
-  const btn=document.getElementById('mMismatchBtn');
-  const badge=document.getElementById('mMismatchBadge');
-  if(!MD.allRows.length){btn.style.display='none';return}
-  // Scope to active checkoder and sheet (same as what renderMismatchTable will show)
-  let base=mActiveChk==='__ALL__'?MD.allRows:MD.allRows.filter(r=>r.checkoder===mActiveChk);
-  if(mActiveSheet!=='__ALL__')base=base.filter(r=>r.sheetName===mActiveSheet);
-  let count=0;
-  base.forEach(r=>{
-    const s=getQcnMatchStatus(r.qcn,r.checkoder);
-    if(s==='mismatch'||s==='not-in-user'||s==='not-in-sheet')count++;
-  });
-  btn.style.display=count>0?'':'none';
-  badge.textContent=count>0?count:'';
-}
+function updateMismatchBadge(){/* mMismatchBtn removed — mismatch now shown in stat-card */}
 
-document.getElementById('mMismatchBtn').addEventListener('click',openMismatchModal);
 document.getElementById('mismatchClose').addEventListener('click',closeMismatchModal);
 document.getElementById('mismatchModal').addEventListener('click',e=>{if(e.target===document.getElementById('mismatchModal'))closeMismatchModal()});
 document.getElementById('mismatchSrch').addEventListener('input',debounce(function(){mismatchSrchTerm=this.value;renderMismatchTable()},100));
@@ -1367,14 +1367,25 @@ function renderMasterChips(){
   const term=mChkSearch.toLowerCase();
   const filtered=MD.checkoders.filter(x=>!term||x.toLowerCase().includes(term));
   const allCount=getMasterBase().length;
+  let allWarns=0;MD.checkoders.forEach(x=>{const{warns,hasUser}=getCheckoderWarnings(x);if(hasUser)allWarns+=warns;});
+  const anyHasUser=MD.checkoders.some(x=>getCheckoderWarnings(x).hasUser);
+  const allBadge=!anyHasUser
+    ?`<span class="cbadge ok" style="opacity:.35;font-size:8px">${allCount}</span>`
+    :allWarns>0
+      ?`<span class="cbadge warn">${allWarns}⚡</span>`
+      :`<span class="cbadge ok">✓</span>`;
   let html=`<button class="chip teal-chip${mActiveChk==='__ALL__'?' active':''}" data-mchip="__ALL__">
     <span class="dot" style="background:var(--teal)"></span><span>All</span>
-    <span class="cbadge ok">${allCount}</span></button>`;
+    ${allBadge}</button>`;
   filtered.forEach(x=>{
     const rows=MD.allRows.filter(r=>r.checkoder===x);
     const {warns,hasUser}=getCheckoderWarnings(x);
     const isActive=mActiveChk===x;
-    const badgeHtml=hasUser&&warns>0?`<span class="cbadge warn">${warns}⚡</span>`:`<span class="cbadge ok" style="opacity:.45;font-size:8px">${rows.length}</span>`;
+    const badgeHtml=!hasUser
+      ?`<span class="cbadge ok" style="opacity:.35;font-size:8px">${rows.length}</span>`
+      :warns>0
+        ?`<span class="cbadge warn">${warns}⚡</span>`
+        :`<span class="cbadge ok">✓</span>`;
     html+=`<button class="chip teal-chip${isActive?' active':''}" data-mchip="${esc(x)}" title="${esc(x)}">
       <span class="dot" style="background:${hasUser?'var(--teal)':'var(--muted2)'}"></span>
       <span style="max-width:110px;overflow:hidden;text-overflow:ellipsis">${esc(x)}</span>
@@ -1384,7 +1395,7 @@ function renderMasterChips(){
 }
 document.getElementById('masterChips').addEventListener('click',e=>{
   const btn=e.target.closest('[data-mchip]');if(!btn)return;
-  mActiveChk=btn.dataset.mchip;mActiveSheet='__ALL__';mTerm='';
+  mActiveChk=btn.dataset.mchip;mActiveSheet='__ALL__';mTerm='';mActiveFilter='all';
   Object.keys(mF).forEach(k=>mF[k].clear());
   document.getElementById('mSrch').value='';
   renderMasterChips();buildMTabs();renderMasterResults();saveUiState();
@@ -1401,6 +1412,9 @@ function getMasterBase(){
 }
 function getMasterVisibleSync(){
   let rows=getMasterBase();
+  // Apply type filter
+  if(mActiveFilter==='match')rows=rows.filter(r=>getQcnMatchStatus(r.qcn,r.checkoder)==='match');
+  else if(mActiveFilter==='mismatch')rows=rows.filter(r=>{const s=getQcnMatchStatus(r.qcn,r.checkoder);return s==='mismatch'||s==='not-in-user'||s==='not-in-sheet';});
   if(mTerm){
     const t=mTerm.toLowerCase();
     rows=rows.filter(r=>
@@ -1443,7 +1457,7 @@ function getMasterVisibleSync(){
 function renderMasterResults(){
   if(!MD.allRows.length){document.getElementById('mResults').style.display='none';return}
   document.getElementById('mResults').style.display='';
-  renderMCards();buildMTabs();buildMasterTHead();renderMasterTableBody();
+  renderMCards();buildMTabs();buildMasterFBar();buildMasterTHead();renderMasterTableBody();
   updateStickyTop();updateMismatchBadge();
 }
 function renderMCards(){
@@ -1499,10 +1513,27 @@ function renderMCards(){
   // Unique checkoders in current base
   const uniqueChkCount=new Set(base.map(r=>r.checkoder).filter(Boolean)).size;
 
+  // Mismatch / not-found counts
+  let mMismatchCount=0;
+  base.forEach(r=>{
+    const s=getQcnMatchStatus(r.qcn,r.checkoder);
+    if(s==='mismatch'||s==='not-in-user'||s==='not-in-sheet')mMismatchCount++;
+  });
+  const mismatchFilterActive=mActiveFilter==='mismatch';
+
   document.getElementById('mCards').innerHTML=`
-    <div class="stat-card" style="min-width:100px;cursor:pointer;${noFiltersActive?'border-color:var(--teal);':''}" data-msc-total="1"><div style="font-size:20px;font-weight:800;color:var(--teal)">${base.length.toLocaleString()}</div><div style="font-size:9px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;color:var(--muted);margin-top:2px">Total QCNs</div></div>
+    <div class="stat-card" style="min-width:100px;cursor:pointer;${noFiltersActive&&mActiveFilter==='all'?'border-color:var(--teal);':''}" data-msc-total="1"><div style="font-size:20px;font-weight:800;color:var(--teal)">${base.length.toLocaleString()}</div><div style="font-size:9px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;color:var(--muted);margin-top:2px">Total QCNs</div></div>
     ${showChkCard?`<div class="stat-card" style="min-width:100px"><div style="font-size:20px;font-weight:800">${uniqueChkCount}</div><div style="font-size:9px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;color:var(--muted);margin-top:2px">Checkoders</div></div>`:''}
+    <div class="stat-card" style="min-width:90px;cursor:pointer;${mismatchFilterActive?'border-color:var(--orange);':''}" data-msc-mismatch="1"><div style="font-size:20px;font-weight:800;color:${mismatchFilterActive?'var(--orange)':mMismatchCount>0?'var(--orange)':'inherit'}">${mMismatchCount.toLocaleString()}</div><div style="font-size:9px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;color:${mismatchFilterActive?'var(--orange)':mMismatchCount>0?'var(--orange)':'var(--muted)'};margin-top:2px">⚡ Mismatch</div></div>
     ${rcvCards}${statusCards}`;
+
+  // Wire clicks
+  document.getElementById('mCards').querySelectorAll('[data-msc-mismatch]').forEach(card=>{
+    card.addEventListener('click',()=>{
+      mActiveFilter=mActiveFilter==='mismatch'?'all':'mismatch';
+      mRenderedCount=PAGE_SIZE;buildMasterTHead();renderMasterTableBody();renderMCards();buildMasterFBar();
+    });
+  });
 
   // Wire clicks
   document.getElementById('mCards').querySelectorAll('[data-msc-st]').forEach(card=>{
@@ -1510,7 +1541,7 @@ function renderMCards(){
       const st=card.dataset.mscSt;
       if(mF.shtSt.size===1&&mF.shtSt.has(st)){mF.shtSt.clear();}
       else{mF.shtSt.clear();mF.shtSt.add(st);}
-      mRenderedCount=PAGE_SIZE;buildMasterTHead();renderMasterTableBody();renderMCards();
+      mRenderedCount=PAGE_SIZE;buildMasterTHead();renderMasterTableBody();renderMCards();buildMasterFBar();
     });
   });
   document.getElementById('mCards').querySelectorAll('[data-msc-rcv]').forEach(card=>{
@@ -1518,14 +1549,14 @@ function renderMCards(){
       const v=card.dataset.mscRcv;
       if(mF.rcv.size===1&&mF.rcv.has(v)){mF.rcv.clear();}
       else{mF.rcv.clear();mF.rcv.add(v);}
-      mRenderedCount=PAGE_SIZE;buildMasterTHead();renderMasterTableBody();renderMCards();
+      mRenderedCount=PAGE_SIZE;buildMasterTHead();renderMasterTableBody();renderMCards();buildMasterFBar();
     });
   });
   const totalCard=document.getElementById('mCards').querySelector('[data-msc-total]');
   if(totalCard){
     totalCard.addEventListener('click',()=>{
-      Object.keys(mF).forEach(k=>mF[k].clear());
-      mRenderedCount=PAGE_SIZE;buildMasterTHead();renderMasterTableBody();renderMCards();
+      mActiveFilter='all';Object.keys(mF).forEach(k=>mF[k].clear());
+      mRenderedCount=PAGE_SIZE;buildMasterTHead();renderMasterTableBody();renderMCards();buildMasterFBar();
     });
   }
 }
@@ -1561,14 +1592,40 @@ function buildMTabs(){
         :`<span class="badge" style="background:var(--pt-bg);color:var(--pt-t)">${t.count}</span>`;
     }
     btn.innerHTML=`<span>${esc(t.label)}</span>${badge}`;
-    btn.addEventListener('click',()=>{mActiveSheet=t.key;mTerm='';Object.keys(mF).forEach(k=>mF[k].clear());document.getElementById('mSrch').value='';document.querySelectorAll('[data-mdt]').forEach(b=>b.classList.toggle('active',b.dataset.mdt===t.key));buildMasterTHead();mRenderedCount=PAGE_SIZE;renderMasterTableBody();renderMCards();updateMismatchBadge();saveUiState()});
+    btn.addEventListener('click',()=>{mActiveSheet=t.key;mTerm='';mActiveFilter='all';Object.keys(mF).forEach(k=>mF[k].clear());document.getElementById('mSrch').value='';document.querySelectorAll('[data-mdt]').forEach(b=>b.classList.toggle('active',b.dataset.mdt===t.key));buildMasterTHead();mRenderedCount=PAGE_SIZE;renderMasterTableBody();renderMCards();buildMasterFBar();updateMismatchBadge();saveUiState()});
     bar.appendChild(btn);
   });
 }
 
 /* ═══════════════════════════════════════════════════════
-   MASTER — TABLE HEADER WITH FILTERS
+   MASTER — FILTER BAR (type pills)
 ═══════════════════════════════════════════════════════ */
+function buildMasterFBar(){
+  const bar=document.getElementById('mFBar');bar.innerHTML='';
+  const base=getMasterBase();
+  const counts={
+    all:base.length,
+    match:base.filter(r=>getQcnMatchStatus(r.qcn,r.checkoder)==='match').length,
+    mismatch:base.filter(r=>{const s=getQcnMatchStatus(r.qcn,r.checkoder);return s==='mismatch'||s==='not-in-user'||s==='not-in-sheet';}).length,
+  };
+  const filters=[
+    {key:'all',label:'All'},
+    {key:'match',label:'✓ Match'},
+    {key:'mismatch',label:'⚡ Mismatch'},
+  ];
+  filters.forEach(d=>{
+    if(d.key!=='all'&&!counts[d.key])return;
+    const btn=document.createElement('button');btn.className='tpill'+(mActiveFilter===d.key?' active':'');
+    btn.innerHTML=`${d.label} <span style="opacity:.7">(${counts[d.key]})</span>`;
+    btn.addEventListener('click',()=>{
+      mActiveFilter=d.key;
+      mRenderedCount=PAGE_SIZE;renderMasterTableBody();renderMCards();buildMasterFBar();
+    });
+    bar.appendChild(btn);
+  });
+}
+
+
 function mkMasterFilterTh(col,label,fKey,w){
   const active=mF[fKey]&&mF[fKey].size>0;
   const mw=w?`${w}px`:'70px';
@@ -1635,9 +1692,9 @@ function handleMasterThClick(e){
   if(fbtn){e.stopPropagation();const col=fbtn.dataset.mcol;toggleMDrop(col);return}
   const item=e.target.closest('[data-mval]');
   if(item){e.stopPropagation();const dd=item.closest('.thdd');const col=dd.id.replace('mdd-','');const val=item.dataset.mval;
-    const key=col;if(mF[key]){if(mF[key].has(val))mF[key].delete(val);else mF[key].add(val);mRenderedCount=PAGE_SIZE;buildMasterTHead();renderMasterTableBody();}return}
+    const key=col;if(mF[key]){if(mF[key].has(val))mF[key].delete(val);else mF[key].add(val);mRenderedCount=PAGE_SIZE;buildMasterTHead();renderMasterTableBody();buildMasterFBar();}return}
   const clr=e.target.closest('[data-mclr]');
-  if(clr){e.stopPropagation();const key=clr.dataset.mclr;if(mF[key])mF[key].clear();mRenderedCount=PAGE_SIZE;buildMasterTHead();renderMasterTableBody();return}
+  if(clr){e.stopPropagation();const key=clr.dataset.mclr;if(mF[key])mF[key].clear();mRenderedCount=PAGE_SIZE;buildMasterTHead();renderMasterTableBody();buildMasterFBar();return}
 }
 
 document.getElementById('mFBar').addEventListener('input',e=>{
@@ -1704,6 +1761,7 @@ function renderMasterTableBody(){
     else if(mStatus==='mismatch')tr.className='rx';
     else if(mStatus==='not-in-sheet'||mStatus==='not-in-user')tr.className='rn';
     else tr.className='ro';
+    tr.dataset.qcn=r.qcn;tr.dataset.chk=r.checkoder||'';tr.style.cursor='pointer';
     // Combine master remarks + user sheet remarks
     const userRemarks=userRow?userRow.remarks||'':'';
     const masterRemarks=r.remarks||'';
@@ -1753,6 +1811,87 @@ document.getElementById('mTbody').addEventListener('click',e=>{
   td.classList.remove('fl');void td.offsetWidth;td.classList.add('fl');
   setTimeout(()=>td.classList.remove('fl'),900);
 });
+
+/* ── Master Row Detail Popup ── */
+document.getElementById('mTbody').addEventListener('click',e=>{
+  if(e.target.closest('.qcopy')||e.target.closest('select')||e.target.closest('button')||e.target.closest('input'))return;
+  const tr=e.target.closest('tr[data-qcn]');if(!tr)return;
+  const qcn=tr.dataset.qcn,chk=tr.dataset.chk;
+  const r=MD.allRows.find(x=>x.qcn===qcn&&x.checkoder===chk)||MD.allRows.find(x=>x.qcn===qcn);
+  if(!r)return;
+  openMasterRowDetail(r);
+});
+
+function openMasterRowDetail(r){
+  const qcn=r.qcn;
+  const mStatus=getQcnMatchStatus(qcn,r.checkoder);
+  const matchedUser=findUserByCheckoder(r.checkoder);
+  const userRow=getReceivedData(qcn,r.checkoder);
+  // Received from user snap
+  const rcvVal=matchedUser?(matchedUser.snap.received||new Map()).get(qcn)||'':'';
+  const rcvUpper=rcvVal.trim().toUpperCase();
+  // For correction & sheet status override from user snap
+  const corrVal=matchedUser?matchedUser.snap.corrections.get(qcn)||'':'';
+  const shtOvVal=matchedUser?matchedUser.snap.sheetStatusOverrides.get(qcn):undefined;
+  const userSheetSt=shtOvVal!==undefined?shtOvVal:(userRow?(userRow.sheetStatus||userRow.srcStatus||''):'');
+  const stDateRaw=matchedUser?matchedUser.snap.statusChangeDates.get(qcn):null;
+  const stDateStr=stDateRaw?.iso?new Date(stDateRaw.iso).toLocaleString()+(stDateRaw.source?` (${stDateRaw.source})`:''):'';
+  // User remarks
+  const userRemarks=matchedUser?matchedUser.snap.remarks.get(qcn)||'':'';
+
+  document.getElementById('rdTitle').textContent=qcn;
+  document.getElementById('rdBadge').innerHTML=matchStatusBadge(mStatus);
+
+  const section=(title,html)=>`
+    <div>
+      <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--teal);margin-bottom:10px;padding-bottom:4px;border-bottom:1px solid var(--border)">${title}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">${html}</div>
+    </div>`;
+
+  const f=(label,value,opts={})=>{
+    const disp=value||'—';
+    const color=opts.color?`color:${opts.color};`:'color:var(--text);';
+    const mono=opts.mono?`font-family:'Nunito',sans-serif;font-weight:700;`:'';
+    const full=opts.full?'grid-column:1/-1;':'';
+    return`<div style="${full}display:flex;flex-direction:column;gap:3px">
+      <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--muted)">${label}</span>
+      <span style="font-size:12px;${color}${mono}word-break:break-word;line-height:1.5">${disp}</span>
+    </div>`;
+  };
+
+  const masterSection=section('📋 Master Data',`
+    ${f('ID',esc(r.id||''),{mono:true})}
+    ${f('Sheet / Tab',esc(r.sheetName||''))}
+    ${f('BA',esc(r.ba||''))}
+    ${f('HS',esc(r.hs||''))}
+    ${f('DMA',esc(r.dma||''),{mono:true})}
+    ${f('City',esc(r.city||''))}
+    ${f('Barangay',esc(r.barangay||''))}
+    ${f('Enumerator',esc(r.enumerator||''))}
+    ${f('Checkoder',esc(r.checkoder||''),{color:'var(--teal)'})}
+    ${r.remarks?f('Master Remarks',esc(r.remarks),{full:true}):''}
+    ${r.receivedDate?f('Received Date',esc(r.receivedDate)):''}
+  `);
+
+  const userLabel=matchedUser?`👤 User Data — ${esc(matchedUser.user.name)}`:'👤 User Data';
+  const rcvColor=rcvUpper==='Y'||rcvUpper==='YES'?'var(--green)':rcvUpper==='N'||rcvUpper==='NO'?'var(--red)':'';
+  const userSection=section(userLabel,`
+    ${f('Source Status',userRow?esc(userRow.srcStatus||''):'No user data',{color:userRow?'':'var(--muted)'})}
+    ${f('Sheet Status',userSheetSt?esc(userSheetSt)+(shtOvVal!==undefined?' ✏':''):'—',{color:shtOvVal!==undefined?'var(--orange)':''})}
+    ${f('Received',rcvVal?esc(rcvVal):'No Data',{color:rcvColor||'var(--muted)'})}
+    ${corrVal?f('For Correction',esc(corrVal)):''}
+    ${userRemarks?f('Remarks',esc(userRemarks),{full:true}):''}
+    ${stDateStr?f('Status Changed',stDateStr,{full:true}):''}
+    ${!matchedUser?`<div style="grid-column:1/-1;font-size:11px;color:var(--muted);font-style:italic">No matching user found for checkoder "${esc(r.checkoder||'')}"</div>`:''}
+  `);
+
+  document.getElementById('rdBody').innerHTML=`
+    <div style="display:flex;flex-direction:column;gap:18px">
+      ${masterSection}
+      ${userSection}
+    </div>`;
+  document.getElementById('rowDetailModal').classList.remove('hidden');
+}
 const _mSrchDb=debounce(v=>{mTerm=v;mRenderedCount=PAGE_SIZE;renderMasterTableBody();},80);
 document.getElementById('mSrch').addEventListener('input',function(){_mSrchDb(this.value)});
 
@@ -1804,8 +1943,9 @@ function initLoad(){
   const firstUser=users.find(u=>userSnaps[u.id]);
   const userToShow=targetUser||firstUser;
   if(userToShow){
-    if(uiState?.activeUid===userToShow.id&&uiState?.actSheet){actSheet=uiState.actSheet;}
-    switchToUser(userToShow.id);
+    const wantedSheet=uiState?.activeUid===userToShow.id&&uiState?.actSheet?uiState.actSheet:null;
+    if(wantedSheet)actSheet=wantedSheet;
+    switchToUser(userToShow.id,!!wantedSheet);
   }
   renderUserChips();updateEmptyState();
 
@@ -1837,8 +1977,9 @@ function initLoad(){
       }
       const uid2=uiState?.activeUid||users.find(u=>userSnaps[u.id])?.id;
       if(uid2&&userSnaps[uid2]){
-        if(uiState?.actSheet)actSheet=uiState.actSheet;
-        switchToUser(uid2);
+        const savedTab=uiState?.actSheet||null;
+        if(savedTab)actSheet=savedTab;
+        switchToUser(uid2,!!savedTab);
       }
     }
 
@@ -1987,7 +2128,7 @@ document.getElementById('sfDel').addEventListener('click',()=>{
 });
 document.getElementById('sfRun').addEventListener('click',async()=>{
   if(!settingUid)return;const errEl=document.getElementById('sfErr');errEl.style.display='none';errEl.style.whiteSpace='pre-wrap';
-  try{await runComparison(settingUid)}catch(e){
+  try{await runComparison(settingUid);closeSettings();}catch(e){
     dbg('[Run] Error',e.message);
     errEl.textContent='⚠ '+e.message;errEl.style.display='';
   }
@@ -2005,7 +2146,7 @@ function renderUserChips(){
   if(!filt.length){c.innerHTML=`<span style="font-size:11px;color:var(--muted)">No users with data</span>`;return}
   c.innerHTML=filt.map(u=>{
     const snap=userSnaps[u.id],st=userStatus[u.id]||'idle',isAct=u.id===activeUid;
-    let badge='';if(snap){const iss=snap.stats.mismatches+snap.stats.notFound;badge=iss>0?`<span class="cbadge warn">${iss}⚡</span>`:`<span class="cbadge ok">✓</span>`}
+    let badge='';if(snap){const hasSrc2=!snap.viewOnly||(snap.viewMode!=='sheet');const sheetOnly=hasSrc2?snap.allRowsFlat.filter(r=>r.type==='sheet-only').length:0;const iss=snap.stats.mismatches+snap.stats.notFound+sheetOnly;badge=iss>0?`<span class="cbadge warn">${iss}⚡</span>`:`<span class="cbadge ok">✓</span>`}
     const viewOnly=snap&&snap.viewOnly?` <span style="font-size:8px;opacity:.6">(view)</span>`:'';
     return`<button class="chip${isAct?' active':''}" data-sw="${u.id}">
       <span class="dot" style="background:${st==='done'?'var(--green)':st==='error'?'var(--red)':st==='running'?'var(--blue)':'var(--muted2)'}"></span>
@@ -2042,7 +2183,7 @@ document.getElementById('runAllBtn').addEventListener('click',async()=>{
 /* ═══════════════════════════════════════════════════════
    VIEW ONLY MODE (sheet-only or source-only)
 ═══════════════════════════════════════════════════════ */
-async function runViewOnly(uid2){
+async function runViewOnly(uid2,silent=false){
   const u=users.find(x=>x.id===uid2);if(!u)throw new Error('User not found');
   const hasSrc=u.sourceUrl||u.sourceFileData;
   const hasSht=u.sheetUrl||u.sheetFileData;
@@ -2090,7 +2231,8 @@ async function runViewOnly(uid2){
       });
       const now=nowIso();
       const snap={allRowsFlat:_aRF,sheetRowMap:_sRM,sheetNames:_sN,sheetOrder:_sO,sheetRowNum:_sRN,corrections:_co,enumerators:_en,remarks:_rm,received:_rcv,sheetStatusOverrides:_ov,statusChangeDates:_sd,colIndexMap:{},stats:{matches:0,mismatches:0,notFound:0},runAt:now,viewOnly:true,viewMode:'sheet'};
-      userSnaps[uid2]=snap;saveResults();userStatus[uid2]='done';switchToUser(uid2);
+      userSnaps[uid2]=snap;saveResults();userStatus[uid2]='done';
+      if(!silent||uid2===activeUid)switchToUser(uid2,silent&&uid2===activeUid);
     }else if(hasSrc){
       // View source data
       let srcRows;
@@ -2110,7 +2252,8 @@ async function runViewOnly(uid2){
       });
       const now=nowIso();
       const snap={allRowsFlat:_aRF,sheetRowMap:{Source:_aRF},sheetNames:['Source'],sheetOrder:_sO,sheetRowNum:_sRN,corrections:new Map(),enumerators:new Map(),remarks:new Map(),sheetStatusOverrides:new Map(),statusChangeDates:new Map(),colIndexMap:{},stats:{matches:0,mismatches:0,notFound:0},runAt:now,viewOnly:true,viewMode:'source'};
-      userSnaps[uid2]=snap;saveResults();userStatus[uid2]='done';switchToUser(uid2);
+      userSnaps[uid2]=snap;saveResults();userStatus[uid2]='done';
+      if(!silent||uid2===activeUid)switchToUser(uid2,silent&&uid2===activeUid);
     }
   }catch(err){userStatus[uid2]='error';renderUserChips();throw err}
   renderUserChips();
@@ -2125,7 +2268,7 @@ async function runComparison(uid2,silent=false){
   const hasSht=u.sheetUrl||u.sheetFileData;
   // If only one side, run view-only mode
   if(!hasSrc&&!hasSht){userStatus[uid2]='error';renderUserChips();throw new Error('No data configured.')}
-  if(!hasSrc||!hasSht){await runViewOnly(uid2);return}
+  if(!hasSrc||!hasSht){await runViewOnly(uid2,silent);return}
   userStatus[uid2]='running';renderUserChips();
   try{
     let srcRows;
@@ -2179,8 +2322,10 @@ async function runComparison(uid2,silent=false){
       _sN.push(sh2.name);_sRM[sh2.name]=[];
     });
     const _aRF=[];let matches=0,mms=0,nf=0;const now=nowIso();
+    const srcMatchedQcns=new Set();
     srcRecs.forEach(row=>{
       const qcn=String(row[sqIdx]||'').trim(),srcSt=ssIdx!==-1?String(row[ssIdx]||'').trim():'';if(!qcn)return;
+      srcMatchedQcns.add(qcn);
       const info=gMap.get(qcn);let r;
       if(!info){r={type:'notfound',qcn,srcStatus:srcSt,sheetStatus:null,sheetName:null};nf++}
       else if(info.status!==srcSt){
@@ -2190,8 +2335,16 @@ async function runComparison(uid2,silent=false){
       }else{r={type:'match',qcn,srcStatus:srcSt,sheetStatus:info.status,sheetName:info.sheetName};matches++}
       _aRF.push(r);if(r.sheetName&&_sRM[r.sheetName])_sRM[r.sheetName].push(r);
     });
+    // Sheet-only: QCNs present in the user's sheet but missing from the source file
+    gMap.forEach((info,qcn)=>{
+      if(!srcMatchedQcns.has(qcn)){
+        const r={type:'sheet-only',qcn,srcStatus:'',sheetStatus:info.status,sheetName:info.sheetName};
+        _aRF.push(r);if(r.sheetName&&_sRM[r.sheetName])_sRM[r.sheetName].push(r);
+      }
+    });
     const snap={allRowsFlat:_aRF,sheetRowMap:_sRM,sheetNames:_sN,sheetOrder:_sO,sheetRowNum:_sRN,corrections:_co,enumerators:_en,remarks:_rm,received:_rcv,sheetStatusOverrides:_ov,statusChangeDates:_sd,colIndexMap:_ci,stats:{matches,mismatches:mms,notFound:nf},runAt:now,viewOnly:false};
-    userSnaps[uid2]=snap;saveResults();userStatus[uid2]='done';switchToUser(uid2);
+    userSnaps[uid2]=snap;saveResults();userStatus[uid2]='done';
+    if(!silent||uid2===activeUid)switchToUser(uid2,silent&&uid2===activeUid);
   }catch(err){userStatus[uid2]='error';renderUserChips();throw err}
   renderUserChips();if(!silent)updateEmptyState();
 }
@@ -2199,7 +2352,7 @@ async function runComparison(uid2,silent=false){
 /* ═══════════════════════════════════════════════════════
    SWITCH USER
 ═══════════════════════════════════════════════════════ */
-function switchToUser(id){
+function switchToUser(id,keepTab=false){
   const snap=userSnaps[id];if(!snap)return;activeUid=id;
   allRows.length=0;allRows.push(...snap.allRowsFlat);
   Object.keys(sRowMap).forEach(k=>delete sRowMap[k]);Object.assign(sRowMap,snap.sheetRowMap);
@@ -2213,7 +2366,13 @@ function switchToUser(id){
   shtOv.clear();snap.sheetStatusOverrides.forEach((v,k)=>shtOv.set(k,v));
   stDates.clear();snap.statusChangeDates.forEach((v,k)=>stDates.set(k,v));
   Object.keys(cMap).forEach(k=>delete cMap[k]);Object.assign(cMap,snap.colIndexMap);
-  actSheet='__ALL__';actFilter='all';qTerm='';qSort='none';
+  if(!keepTab){
+    actSheet='__ALL__';
+  }else{
+    // Validate saved tab still exists in this user's data
+    if(actSheet!=='__ALL__'&&actSheet!=='__NF__'&&!sNames.includes(actSheet))actSheet='__ALL__';
+  }
+  actFilter='all';qTerm='';qSort='none';
   Object.keys(cF).forEach(k=>cF[k].clear());
   document.getElementById('qcnSrch').value='';
   const {matches,mismatches,notFound}=snap.stats;
@@ -2383,11 +2542,9 @@ function sortQRows(rows){
   return[...rows].sort((a,b)=>(sOrder.get(a.qcn)??Infinity)-(sOrder.get(b.qcn)??Infinity));
 }
 function getQBase(){
-  // When searching, always scan ALL rows regardless of active tab
+  // Search is scoped to the active tab — never expands to all rows
   let r;
-  if(qTerm.trim()){
-    r=allRows;
-  }else if(actSheet==='__ALL__'){
+  if(actSheet==='__ALL__'){
     r=allRows;
   }else if(actSheet==='__NF__'){
     r=allRows.filter(r2=>r2.type==='notfound');
@@ -2439,25 +2596,26 @@ function _renderQcnTable(){
     else if(rcvUpper==='N'||rcvUpper==='NO'){rcvBadge=`<span class="rcv-no"><svg width="8" height="8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M18 6L6 18M6 6l12 12"/></svg> ${esc(rcvVal)}</span>`}
     else{rcvBadge=sPill(rcvVal)}
     const rcvTd=`<td style="text-align:center">${rcvBadge}</td>`;
-    // Remarks: show up to 50 chars, full value in title
+    // Remarks: show full value with word-wrap
     const rm2full=rmks.get(r.qcn)||'';
-    const rm2disp=rm2full.length>50?esc(rm2full.slice(0,50))+'…':esc(rm2full);
     let resPill='';
     if(hasSrc){
       if(r.type==='match')resPill=`<span class="pill res-match"><svg width="9" height="9" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg> Match</span>`;
       else if(r.type==='mismatch')resPill=`<span class="pill res-miss"><svg width="9" height="9" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> Mismatch</span>`;
-      else if(r.type==='notfound')resPill=`<span class="pill res-missing"><svg width="9" height="9" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg> Missing</span>`;
-      else if(r.type==='sheet-only')resPill=`<span class="pill res-shonly"><svg width="9" height="9" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Sheet Only</span>`;
+      else if(r.type==='notfound')resPill=`<span class="pill res-miss"><svg width="9" height="9" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg> Not in Source Data</span>`;
+      else if(r.type==='sheet-only')resPill=`<span class="pill res-miss"><svg width="9" height="9" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Not in Source Data</span>`;
       else if(r.type==='source-only')resPill=`<span class="pill res-srconly"><svg width="9" height="9" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg> Source Only</span>`;
       else resPill=`<span class="pill" style="background:var(--surface2);color:var(--muted)">—</span>`;
     }
+    tr.dataset.qcn=r.qcn;
+    tr.style.cursor='pointer';
     tr.innerHTML=`<td class="rn-td">${rn2}</td>
       <td class="qcopy" data-qcn="${esc(r.qcn)}" style="cursor:pointer;white-space:nowrap"><span class="mono" style="font-size:11px;font-weight:700">${hl(r.qcn,term)}</span><span class="qcp-lbl">Copied!</span></td>
       ${srcTd}
       ${shtTd}
       <td style="white-space:nowrap"><span class="mono" style="font-size:11px;color:${enums.get(r.qcn)?'var(--text)':'var(--muted)'};">${en2||'—'}</span></td>
-      <td><input class="fin-inp${corr.get(r.qcn)?' hv':''}" data-fld="corr" data-qcn="${esc(r.qcn)}" value="${co2}" placeholder="—"/></td>
-      <td title="${esc(rm2full)}" style="font-size:11px;color:var(--muted)">${rm2disp||'—'}</td>
+      <td class="td-wrap" style="font-size:11px;${co2?'':'color:var(--muted);'}white-space:normal;word-break:break-word">${co2||'—'}</td>
+      <td class="td-wrap" style="font-size:11px;color:var(--muted);white-space:normal;word-break:break-word">${esc(rm2full)||'—'}</td>
       ${rcvTd}
       ${hasSrc?`<td style="text-align:center">${resPill}</td>`:''}`;
     frag.appendChild(tr);
@@ -2471,6 +2629,89 @@ document.getElementById('qcnTbody').addEventListener('click',e=>{
   const q=td.dataset.qcn;try{navigator.clipboard.writeText(q)}catch{const ta=Object.assign(document.createElement('textarea'),{value:q,style:'position:fixed;opacity:0'});document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove()}
   td.classList.remove('fl');void td.offsetWidth;td.classList.add('fl');setTimeout(()=>td.classList.remove('fl'),900);
 });
+
+/* ── Row Detail Popup ── */
+document.getElementById('qcnTbody').addEventListener('click',e=>{
+  // Don't open popup when clicking interactive/copy cells
+  if(e.target.closest('.qcopy')||e.target.closest('select')||e.target.closest('.ss-wrap')||e.target.closest('input')||e.target.closest('button'))return;
+  const tr=e.target.closest('tr[data-qcn]');if(!tr)return;
+  const qcn=tr.dataset.qcn;
+  const row=allRows.find(r=>r.qcn===qcn);if(!row)return;
+  openRowDetail(row);
+});
+document.getElementById('rdClose').addEventListener('click',()=>document.getElementById('rowDetailModal').classList.add('hidden'));
+document.getElementById('rowDetailModal').addEventListener('click',e=>{if(e.target===e.currentTarget)e.currentTarget.classList.add('hidden')});
+
+function rdField(label,value,opts={}){
+  if(!value&&!opts.showEmpty)return'';
+  const disp=value||'—';
+  const color=opts.color?`color:${opts.color};`:'';
+  const mono=opts.mono?`font-family:'Nunito',sans-serif;font-weight:700;`:'';
+  const full=opts.full?'grid-column:1/-1;':'';
+  return`<div style="${full}display:flex;flex-direction:column;gap:3px">
+    <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--muted)">${label}</span>
+    <span style="font-size:12px;${color}${mono}word-break:break-word;line-height:1.5">${disp}</span>
+  </div>`;
+}
+function openRowDetail(r){
+  const snap=userSnaps[activeUid];
+  const hasSrc=!snap?.viewOnly||(snap?.viewMode!=='sheet');
+  const qcn=r.qcn;
+  // Badge
+  let badge='';
+  if(r.type==='match')badge=`<span class="pill res-match"><svg width="9" height="9" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg> Match</span>`;
+  else if(r.type==='mismatch')badge=`<span class="pill res-miss"><svg width="9" height="9" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> Mismatch</span>`;
+  else if(r.type==='notfound')badge=`<span class="pill res-miss"><svg width="9" height="9" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg> Not in Source Data</span>`;
+  else if(r.type==='sheet-only')badge=`<span class="pill res-miss"><svg width="9" height="9" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Not in Source Data</span>`;
+  else if(r.type==='source-only')badge=`<span class="pill res-srconly">Source Only</span>`;
+  // User data fields
+  const sheetSt=shtOv.has(qcn)?shtOv.get(qcn):(r.sheetStatus||'');
+  const rcvVal=rcvd.get(qcn)||'';
+  const rcvUpper=rcvVal.trim().toUpperCase();
+  const corrVal=corr.get(qcn)||'';
+  const stDate=stDates.get(qcn);
+  const stDateStr=stDate?.iso?new Date(stDate.iso).toLocaleString()+(stDate.source?` (${stDate.source})`:''):'';
+  const rowNum=sRowNum.has(qcn)?String(sRowNum.get(qcn)+1):'';
+  // Master data lookup
+  const md=getMasterDataForQcn(qcn);
+
+  const section=(title,html)=>`
+    <div>
+      <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--teal);margin-bottom:10px;padding-bottom:4px;border-bottom:1px solid var(--border)">${title}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">${html}</div>
+    </div>`;
+
+  const userSection=section('👤 User Data',`
+    ${rdField('Sheet',r.sheetName||'',{showEmpty:true})}
+    ${rdField('Row # in Sheet',rowNum,{showEmpty:true,mono:true})}
+    ${hasSrc?rdField('Source Status',r.srcStatus||'—',{showEmpty:true}):''}
+    ${rdField('Sheet Status',sheetSt?esc(sheetSt)+(shtOv.has(qcn)?' ✏':''):'—',{showEmpty:true,color:shtOv.has(qcn)?'var(--orange)':''})}
+    ${rdField('Enumerator',enums.get(qcn)||'',{showEmpty:true})}
+    ${rdField('Received',rcvVal||'No Data',{showEmpty:true,color:rcvUpper==='Y'||rcvUpper==='YES'?'var(--green)':rcvUpper==='N'||rcvUpper==='NO'?'var(--red)':'var(--muted)'})}
+    ${corrVal?rdField('For Correction',esc(corrVal),{full:true}):''}
+    ${rdField('Remarks',esc(rmks.get(qcn)||''),{showEmpty:true,full:true})}
+    ${stDateStr?rdField('Status Changed',stDateStr,{full:true}):''}
+  `);
+
+  const masterSection=md?section('📋 Master Data',`
+    ${rdField('ID',esc(md.id||''),{mono:true})}
+    ${rdField('Sheet / Tab',esc(md.sheetName||''))}
+    ${rdField('BA',esc(md.ba||''))}
+    ${rdField('HS',esc(md.hs||''))}
+    ${rdField('DMA',esc(md.dma||''),{mono:true})}
+    ${rdField('City',esc(md.city||''))}
+    ${rdField('Barangay',esc(md.barangay||''))}
+    ${rdField('Enumerator',esc(md.enumerator||''))}
+    ${rdField('Checkoder',esc(md.checkoder||''),{color:'var(--teal)'})}
+    ${md.remarks?rdField('Remarks',esc(md.remarks),{full:true}):''}
+    ${md.receivedDate?rdField('Received Date',esc(md.receivedDate)):''}
+  `):'';
+
+  document.getElementById('rdTitle').textContent=qcn;
+  document.getElementById('rdBadge').innerHTML=badge;
+  document.getElementById('rdBody').innerHTML=`<div style="display:flex;flex-direction:column;gap:18px">${userSection}${masterSection}</div>`;
+  document.getElementById('rowDetailModal').classList.remove('hidden');
+}
 document.getElementById('qcnTbody').addEventListener('input',e=>{
   const el=e.target;
   if(el.classList.contains('fin-inp')){
@@ -2539,6 +2780,16 @@ document.querySelector('#qcnThead').addEventListener('click',e=>{
 });
 document.querySelector('#qcnThead').addEventListener('input',e=>{const inp=e.target.closest('[data-dd]');if(inp)buildDDList(inp.dataset.dd,inp.value)});
 document.getElementById('qcnSrch').addEventListener('input',function(){qTerm=this.value;renderQcnTable()});
+
+/* ── Global Escape: close all popups/overlays ── */
+document.addEventListener('keydown',function(e){
+  if(e.key!=='Escape')return;
+  if(!document.getElementById('settingsOv').classList.contains('hidden')){closeSettings();return;}
+  if(!document.getElementById('mSettingsOv').classList.contains('hidden')){closeMasterSettings(false);return;}
+  if(!document.getElementById('rowDetailModal').classList.contains('hidden')){document.getElementById('rowDetailModal').classList.add('hidden');return;}
+  if(!document.getElementById('mismatchModal').classList.contains('hidden')){closeMismatchModal();return;}
+  closeAllDD();closeMDrops();
+});
 function qMatchesTerm(r,term){
   if(!term)return true;
   const t=term.toLowerCase();
@@ -2560,18 +2811,19 @@ function buildQcnTabs(){
   const nf=allRows.filter(r=>r.type==='notfound').length;
   const snap=userSnaps[activeUid];
   const hasSrc=!snap?.viewOnly||(snap?.viewMode!=='sheet');
-  const allIssues=allRows.filter(r=>r.type!=='match'&&r.type!=='sheet-only'&&r.type!=='source-only').length;
+  const allIssues=allRows.filter(r=>r.type!=='match'&&r.type!=='source-only'&&(hasSrc||r.type!=='sheet-only')).length;
   // Default to last tab (most recent) when on ALL
   if(actSheet==='__ALL__'&&sNames.length>0){actSheet=sNames[sNames.length-1];}
   // Reverse named tabs so newest (last loaded) appears first
   const reversedNames=[...sNames].reverse();
 
-  // Helper: count warn-worthy rows for a tab (only received blank/N, not source-data issues)
+  // Helper: count warn-worthy rows for a tab (received blank/N AND not-in-source rows)
+  // sheet-only rows only count as warns when source data is present
   function tabWarnCount(rows){
     return rows.filter(r=>{
+      if(r.type==='sheet-only')return hasSrc;
       const v=(rcvd.get(r.qcn)||'').trim().toUpperCase();
-      const isRcvWarn=!v||(v==='N'||v==='NO');
-      return isRcvWarn;
+      return !v||(v==='N'||v==='NO');
     }).length;
   }
 
@@ -2611,7 +2863,7 @@ function updateQcnFBar(){
   else if(actSheet==='__NF__') rows=allRows.filter(r=>r.type==='notfound');
   else rows=[...(sRowMap[actSheet]||[]),...allRows.filter(r=>r.type==='notfound')];
   const c={all:rows.length,match:rows.filter(r=>r.type==='match').length,mismatch:rows.filter(r=>r.type==='mismatch').length,notfound:rows.filter(r=>r.type==='notfound').length,'sheet-only':rows.filter(r=>r.type==='sheet-only').length,'source-only':rows.filter(r=>r.type==='source-only').length};
-  const filters=[{key:'all',label:'All'},{key:'match',label:'✓ Match'},{key:'mismatch',label:'⚡ Mismatch'},{key:'notfound',label:'🔍 Not Found'},{key:'source-only',label:'📋 Source Only'}];
+  const filters=[{key:'all',label:'All'},{key:'match',label:'✓ Match'},{key:'mismatch',label:'⚡ Mismatch'},{key:'notfound',label:'🔍 Not Found'},{key:'sheet-only',label:'📋 Not in Source'},{key:'source-only',label:'📋 Source Only'}];
   filters.forEach(d=>{
     if(d.key!=='all'&&!c[d.key])return;
     const btn=document.createElement('button');btn.className='tpill'+(actFilter===d.key?' active':'');
