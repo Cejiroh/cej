@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>QCN Checker</title>
+<title>QCN Checker — Master</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -142,6 +142,8 @@ html.dark .btn-del:hover{background:#450a0a;color:#fca5a5}
 .tscroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 .dtbl{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}
 #qcnTable,#mTbl{table-layout:auto}
+#mTbl{table-layout:fixed!important;width:100%!important}
+#mTscroll{overflow-x:hidden}
 .rn-th{padding:8px 5px;background:var(--rn-bg);color:var(--rn-t);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;text-align:center;border-bottom:1px solid var(--border);border-right:1px solid var(--border);position:sticky;top:0;z-index:2;width:40px;overflow:hidden}
 .rn-td{padding:6px 4px;border-bottom:1px solid var(--border);border-right:1px solid var(--border);text-align:center;font-family:'Nunito',sans-serif;font-size:10px;font-weight:600;color:var(--rn-t);vertical-align:middle;user-select:none;background:var(--rn-bg)!important;width:40px}
 .dtbl thead th{background:var(--hbg);border-bottom:1px solid var(--border);padding:0;position:sticky;top:0;z-index:2;overflow:visible}
@@ -438,7 +440,7 @@ html.dark .res-missing{background:#500724;color:#f9a8d4}
   <span class="logo">QCN Checker</span>
   <div class="mode-sw" style="margin-left:8px">
     <button class="mode-btn active" id="modeQcn">
-      <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M9 17H7A5 5 0 017 7h1M15 7h1a5 5 0 010 10h-1M8 12h8"/></svg>QCN Checker
+      <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M9 17H7A5 5 0 017 7h1M15 7h1a5 5 0 010 10h-1M8 12h8"/></svg>User Data
     </button>
     <button class="mode-btn" id="modeMaster">
       <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M3 3h18v4H3zM3 10h18v4H3zM3 17h18v4H3z"/></svg>Master
@@ -1372,7 +1374,7 @@ function renderMasterChips(){
     const rows=MD.allRows.filter(r=>r.checkoder===x);
     const {warns,hasUser}=getCheckoderWarnings(x);
     const isActive=mActiveChk===x;
-    const badgeHtml=hasUser?(warns>0?`<span class="cbadge warn">${warns}⚡</span>`:`<span class="cbadge ok">✓</span>`):`<span class="cbadge ok" style="opacity:.5">${rows.length}</span>`;
+    const badgeHtml=hasUser&&warns>0?`<span class="cbadge warn">${warns}⚡</span>`:`<span class="cbadge ok" style="opacity:.45;font-size:8px">${rows.length}</span>`;
     html+=`<button class="chip teal-chip${isActive?' active':''}" data-mchip="${esc(x)}" title="${esc(x)}">
       <span class="dot" style="background:${hasUser?'var(--teal)':'var(--muted2)'}"></span>
       <span style="max-width:110px;overflow:hidden;text-overflow:ellipsis">${esc(x)}</span>
@@ -1567,10 +1569,10 @@ function buildMTabs(){
 /* ═══════════════════════════════════════════════════════
    MASTER — TABLE HEADER WITH FILTERS
 ═══════════════════════════════════════════════════════ */
-function mkMasterFilterTh(col,label,fKey,minW){
+function mkMasterFilterTh(col,label,fKey,w){
   const active=mF[fKey]&&mF[fKey].size>0;
-  const mw=minW?`${minW}px`:'70px';
-  return`<th class="thf" style="min-width:${mw};max-width:${mw};overflow:visible" id="mth-${col}">
+  const mw=w?`${w}px`:'70px';
+  return`<th class="thf" style="width:${mw};overflow:visible" id="mth-${col}">
     <button class="thfbtn${active?' af':''}" data-mcol="${col}" style="padding:8px 24px 8px 11px">
       <span>${label}</span>${active?`<span class="adot" id="mdot-${col}"></span>`:''}<svg class="chev" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
     </button>
@@ -1589,18 +1591,18 @@ function masterHasSourceData(){
 function buildMasterTHead(){
   const showChk=mActiveChk==='__ALL__';
   document.getElementById('mTHead').innerHTML=`<tr>
-    <th class="rn-th" style="width:40px;max-width:40px">#<div class="col-resizer"></div></th>
-    <th class="tp" style="min-width:220px;max-width:220px;padding:8px 11px;position:relative">QCN<div class="col-resizer"></div></th>
-    ${mkMasterFilterTh('ba','BA','ba',60)}
-    ${mkMasterFilterTh('hs','HS','hs',60)}
-    ${mkMasterFilterTh('dma','DMA','dma',70)}
-    ${mkMasterFilterTh('city','City','city',90)}
-    ${mkMasterFilterTh('barangay','Barangay','barangay',110)}
-    ${mkMasterFilterTh('enumerator','Enumerator','enumerator',140)}
-    ${showChk?mkMasterFilterTh('checkoder','Checkoder','checkoder',130):''}
-    <th class="tp" style="min-width:220px;padding:8px 11px;position:relative">Remarks<div class="col-resizer"></div></th>
-    ${mkMasterFilterTh('shtSt','Sheet Status','shtSt',110)}
-    ${mkMasterFilterTh('rcv','Received (Y/N)','rcv',120)}
+    <th class="rn-th" style="width:36px">#<div class="col-resizer"></div></th>
+    <th class="tp" style="width:160px;padding:8px 11px;position:relative">QCN<div class="col-resizer"></div></th>
+    ${mkMasterFilterTh('ba','BA','ba',48)}
+    ${mkMasterFilterTh('hs','HS','hs',48)}
+    ${mkMasterFilterTh('dma','DMA','dma',58)}
+    ${mkMasterFilterTh('city','City','city',80)}
+    ${mkMasterFilterTh('barangay','Barangay','barangay',100)}
+    ${mkMasterFilterTh('enumerator','Enumerator','enumerator',120)}
+    ${showChk?mkMasterFilterTh('checkoder','Checkoder','checkoder',110):''}
+    <th class="tp" style="width:120px;padding:8px 11px;position:relative;overflow:hidden">Remarks<div class="col-resizer"></div></th>
+    ${mkMasterFilterTh('shtSt','Sheet Status','shtSt',100)}
+    ${mkMasterFilterTh('rcv','Received','rcv',100)}
   </tr>`;
   const thead=document.getElementById('mTHead');
   thead.addEventListener('click',handleMasterThClick,{once:false});
@@ -1708,19 +1710,19 @@ function renderMasterTableBody(){
     const combinedRemarks=[...new Set([masterRemarks,userRemarks].filter(Boolean))].join(' · ');
     const remarks=esc(combinedRemarks);
     // Status cells
-    const shtStatusTd=userRow?`<td style="text-align:center">${sPill(userRow.sheetStatus||userRow.srcStatus||'')}</td>`:`<td style="text-align:center;color:var(--muted)">—</td>`;
-    const receivedTd=`<td style="text-align:center">${receivedCell(r.qcn,r.checkoder)}</td>`;
+    const shtStatusTd=userRow?`<td style="text-align:center;overflow:hidden">${sPill(userRow.sheetStatus||userRow.srcStatus||'')}</td>`:`<td style="text-align:center;color:var(--muted);overflow:hidden">—</td>`;
+    const receivedTd=`<td style="text-align:center;overflow:hidden">${receivedCell(r.qcn,r.checkoder)}</td>`;
     const cols=[
       `<td class="rn-td">${idx+1}</td>`,
-      `<td class="qcopy" data-qcn="${esc(r.qcn)}" style="cursor:pointer;white-space:nowrap"><span class="mono" style="font-size:11px;font-weight:700">${hl(r.qcn,term)}</span><span class="qcp-lbl">Copied!</span></td>`,
-      `<td style="text-align:center">${r.ba?`<span class="pill" style="background:var(--pb-bg);color:var(--pb-t);font-size:9px">${esc(r.ba)}</span>`:'—'}</td>`,
+      `<td class="qcopy" data-qcn="${esc(r.qcn)}" style="cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.qcn)}"><span class="mono" style="font-size:11px;font-weight:700">${hl(r.qcn,term)}</span><span class="qcp-lbl">Copied!</span></td>`,
+      `<td style="text-align:center;overflow:hidden">${r.ba?`<span class="pill" style="background:var(--pb-bg);color:var(--pb-t);font-size:9px">${esc(r.ba)}</span>`:'—'}</td>`,
       `<td style="font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center" title="${esc(r.hs)}">${esc(r.hs)||'—'}</td>`,
-      `<td class="mono" style="font-size:11px;white-space:nowrap;text-align:center">${esc(r.dma)||'—'}</td>`,
-      `<td style="font-size:11px;white-space:nowrap;text-align:center">${esc(r.city)||'—'}</td>`,
+      `<td class="mono" style="font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center" title="${esc(r.dma)}">${esc(r.dma)||'—'}</td>`,
+      `<td style="font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center" title="${esc(r.city)}">${esc(r.city)||'—'}</td>`,
       `<td style="font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center" title="${esc(r.barangay)}">${esc(r.barangay)||'—'}</td>`,
       `<td style="font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center" title="${esc(r.enumerator)}">${esc(r.enumerator)||'—'}</td>`,
-      ...(showChk?[`<td style="text-align:center"><span class="pill" style="background:var(--pt-bg);color:var(--pt-t);font-size:9px">${esc(r.checkoder)||'—'}</span></td>`]:[]),
-      `<td style="font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center" title="${remarks}">${remarks||'—'}</td>`,
+      ...(showChk?[`<td style="text-align:center;overflow:hidden"><span class="pill" style="background:var(--pt-bg);color:var(--pt-t);font-size:9px;overflow:hidden;text-overflow:ellipsis;max-width:100%;display:inline-block" title="${esc(r.checkoder)}">${esc(r.checkoder)||'—'}</span></td>`]:[]),
+      `<td style="font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left" title="${remarks}">${remarks||'—'}</td>`,
       shtStatusTd,
       receivedTd,
     ];
@@ -1784,10 +1786,16 @@ function initLoad(){
 
   // Restore UI state (last user, tab, mode)
   const uiState=restoreUiState();
+  const isFirstLoad=!uiState;
+
+  // Default to master on first ever load; otherwise restore saved mode
   if(uiState){
-    if(uiState.viewMode==='master'){viewMode='master';}
+    // Always start in master unless user explicitly saved qcn mode
+    viewMode=uiState.viewMode||'master';
     if(uiState.mActiveChk)mActiveChk=uiState.mActiveChk;
     if(uiState.mActiveSheet)mActiveSheet=uiState.mActiveSheet;
+  }else{
+    viewMode='master';
   }
 
   // Restore last user — use saved activeUid or first with results
@@ -1796,7 +1804,6 @@ function initLoad(){
   const firstUser=users.find(u=>userSnaps[u.id]);
   const userToShow=targetUser||firstUser;
   if(userToShow){
-    // restore saved tab for this user before switching
     if(uiState?.activeUid===userToShow.id&&uiState?.actSheet){actSheet=uiState.actSheet;}
     switchToUser(userToShow.id);
   }
@@ -1804,34 +1811,38 @@ function initLoad(){
 
   restoreMaster();
 
-  // Restore mode after master is loaded
-  if(uiState?.viewMode==='master'){
-    setTimeout(()=>switchMode('master'),50);
-  }
+  // Always switch to master view (default), or restore saved mode
+  setTimeout(()=>switchMode(viewMode),50);
 
-  // After DOM settles, reload ALL users that have any data configured
+  // After DOM settles, reload ALL data (users + master sources)
   setTimeout(async()=>{
+    // Show a loading indicator on the reload button
+    const reloadBtn=document.getElementById('runAllBtn');
+    if(reloadBtn){reloadBtn.disabled=true;document.getElementById('raT').textContent='Loading…';document.getElementById('raSp').classList.remove('hidden');}
+
+    // Reload all master sources first
+    if(MD.sources.length){
+      await loadAllMasterSources();
+      if(uiState?.mActiveChk)mActiveChk=uiState.mActiveChk;
+      if(uiState?.mActiveSheet)mActiveSheet=uiState.mActiveSheet;
+      if(viewMode==='master')renderMasterResults();
+    }
+
+    // Reload all user comparisons
     const toRun=users.filter(u=>u.sourceUrl||u.sourceFileData||u.sheetUrl||u.sheetFileData);
     if(toRun.length){
       for(const u of toRun){
         try{await runComparison(u.id,true)}
         catch(e){console.log('[initLoad] User error',`${u.name||u.id}: ${e.message}`)}
       }
-      // Re-apply saved user/tab after reload
       const uid2=uiState?.activeUid||users.find(u=>userSnaps[u.id])?.id;
       if(uid2&&userSnaps[uid2]){
         if(uiState?.actSheet)actSheet=uiState.actSheet;
         switchToUser(uid2);
       }
     }
-    // Also reload all master sources
-    if(MD.sources.length){
-      await loadAllMasterSources();
-      // Re-apply master state
-      if(uiState?.mActiveChk)mActiveChk=uiState.mActiveChk;
-      if(uiState?.mActiveSheet)mActiveSheet=uiState.mActiveSheet;
-      if(viewMode==='master')renderMasterResults();
-    }
+
+    if(reloadBtn){reloadBtn.disabled=false;document.getElementById('raT').textContent='Reload';document.getElementById('raSp').classList.add('hidden');}
   },300);
 }
 function saveUsers(){
@@ -1989,8 +2000,9 @@ document.getElementById('sfRun').addEventListener('click',async()=>{
 ═══════════════════════════════════════════════════════ */
 function renderUserChips(){
   const c=document.getElementById('userChips'),term=userSrchTerm.toLowerCase();
-  const filt=users.filter(u=>(u.name||'').toLowerCase().includes(term)||(!u.name&&!term));
-  if(!filt.length){c.innerHTML=`<span style="font-size:11px;color:var(--muted)">No match</span>`;return}
+  // Only show users who have at least some data configured
+  const filt=users.filter(u=>(u.sourceUrl||u.sourceFileData||u.sheetUrl||u.sheetFileData)&&((u.name||'').toLowerCase().includes(term)||(!u.name&&!term)));
+  if(!filt.length){c.innerHTML=`<span style="font-size:11px;color:var(--muted)">No users with data</span>`;return}
   c.innerHTML=filt.map(u=>{
     const snap=userSnaps[u.id],st=userStatus[u.id]||'idle',isAct=u.id===activeUid;
     let badge='';if(snap){const iss=snap.stats.mismatches+snap.stats.notFound;badge=iss>0?`<span class="cbadge warn">${iss}⚡</span>`:`<span class="cbadge ok">✓</span>`}
