@@ -748,8 +748,6 @@ textarea{resize:vertical;min-height:60px}
           <button class="tip-btn" tabindex="-1" onclick="toggleTip('tip-q18')">?</button>
         </div>
         <div class="tip-box" id="tip-q18">
-		Q18 should be asked <strong>independently</strong>.<br><br>
-          This is the <strong>total count</strong> of everyone who used water from this meter last month.<br><br>
 		  <strong>Exceptions:</strong>
 		  Q18 will not be equal to Q18a if the respondent know the count of other household connected to the same meter but doesnt know the number of household for Q18d.<br><br>
 		  <strong>Only for Residential:</strong>
@@ -2350,9 +2348,7 @@ const TIP_CONTENT = {
         </ul>`
   },
   'tip-q18': {
-    EN: `Q18 should be asked <strong>independently</strong>.<br><br>
-          This is the <strong>total count</strong> of everyone who used water from this meter last month.<br><br>
-		  <strong>Exceptions:</strong>
+    EN: `<strong>Exceptions:</strong>
 		  Q18 will not be equal to Q18a if the respondent know the count of other household connected to the same meter but doesnt know the number of household for Q18d.<br><br>
 		  <strong>Only for Residential:</strong>
 		  <ul><li>
@@ -2361,8 +2357,7 @@ const TIP_CONTENT = {
 		  <ul><li>
 		  Q18 = Q18a + Q18b = Q18d (2025)
 			</li></ul>`,
-    FL: `Q18 ay dapat itanong nang <strong>hiwalay</strong>.<br><br>
-	Ito ang <strong>kabuuang bilang</strong> ng lahat ng gumagamit ng tubig mula sa meter noong nakaraang buwan.<br><br>
+    FL: `
         <strong>Exceptions:</strong>
         Hindi magiging katumbas ang Q18 at Q18a kung alam ng respondent ang bilang ng ibang household na konektado sa parehong meter ngunit hindi alam ang bilang ng household para sa Q18d.<br><br>
 		<strong>Para lamang sa Residential:</strong>  
