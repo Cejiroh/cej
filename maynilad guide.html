@@ -748,8 +748,8 @@ textarea{resize:vertical;min-height:60px}
           <button class="tip-btn" tabindex="-1" onclick="toggleTip('tip-q18')">?</button>
         </div>
         <div class="tip-box" id="tip-q18">
-		  <strong>Exceptions:</strong>
-		  Q18 will not be equal to Q18a if the respondent know the count of other household connected to the same meter but doesnt know the number of household for Q18d.<br><br>
+		 
+		  <strong>Do not include changes from 2026</strong><br>
 		  <strong>Only for Residential:</strong>
 		  <ul><li>
 		  Q18 = Q18a = Q18d (2025)
@@ -757,7 +757,9 @@ textarea{resize:vertical;min-height:60px}
 		  <strong>Only for Semi-Business:</strong>
 		  <ul><li>
 		  Q18 = Q18a + Q18b = Q18d (2025)
-			</li></ul>
+			</li></ul><br><br>
+			 <strong>Exceptions:</strong>
+		  Q18 will not be equal to Q18a if the respondent know the count of other household connected to the same meter but doesnt know the number of household for Q18d.
         </div>
         <div style="max-width:180px;margin-top:8px"><input type="number" min="0" id="q18_total" step="1" placeholder="0" oninput="runValidation()"><div class="v-msg" id="msg-q18"></div></div>
         <div style="display:none" id="tot18a">0</div>
@@ -2348,22 +2350,26 @@ const TIP_CONTENT = {
         </ul>`
   },
   'tip-q18': {
-    EN: `<strong>Exceptions:</strong>
-		  Q18 will not be equal to Q18a if the respondent know the count of other household connected to the same meter but doesnt know the number of household for Q18d.<br><br>
+    EN: `
+		  <strong>Do not include changes from 2026</strong><br>
 		  <strong>Only for Residential:</strong>
 		  <ul><li>
 		  Q18 = Q18a = Q18d (2025)<br><br>
 		  <strong>Only for Semi-Business:</strong>
 		  <ul><li>
 		  Q18 = Q18a + Q18b = Q18d (2025)
-			</li></ul>`,
+			</li></ul><br><br>
+			<strong>Exceptions:</strong>
+		  Q18 will not be equal to Q18a if the respondent know the count of other household connected to the same meter but doesnt know the number of household for Q18d.`,
     FL: `
-        <strong>Exceptions:</strong>
-        Hindi magiging katumbas ang Q18 at Q18a kung alam ng respondent ang bilang ng ibang household na konektado sa parehong meter ngunit hindi alam ang bilang ng household para sa Q18d.<br><br>
+       
+		<strong>Hindi kasama ang pagbabago sa 2026</strong><br>
 		<strong>Para lamang sa Residential:</strong>  
 		<ul><li>Q18 = Q18a = Q18d (2025)</ul></li><br><br>
 		<strong>Para lamang sa Semi-Business:</strong>  
-		<ul><li>Q18 = Q18a + Q18b = Q18d (2025)</ul></li>
+		<ul><li>Q18 = Q18a + Q18b = Q18d (2025)</ul></li><br><br>
+		<strong>Exceptions:</strong>
+        Hindi magiging katumbas ang Q18 at Q18a kung alam ng respondent ang bilang ng ibang household na konektado sa parehong meter ngunit hindi alam ang bilang ng household para sa Q18d.
 		`
   },
   'tip-q18a': {
