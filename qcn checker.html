@@ -141,6 +141,7 @@ html.dark .btn-del:hover{background:#450a0a;color:#fca5a5}
 .tscroll::-webkit-scrollbar{height:5px}
 .tscroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 .dtbl{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}
+#qcnTable,#mTbl{table-layout:auto}
 .rn-th{padding:8px 5px;background:var(--rn-bg);color:var(--rn-t);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;text-align:center;border-bottom:1px solid var(--border);border-right:1px solid var(--border);position:sticky;top:0;z-index:2;width:40px;overflow:hidden}
 .rn-td{padding:6px 4px;border-bottom:1px solid var(--border);border-right:1px solid var(--border);text-align:center;font-family:'Nunito',sans-serif;font-size:10px;font-weight:600;color:var(--rn-t);vertical-align:middle;user-select:none;background:var(--rn-bg)!important;width:40px}
 .dtbl thead th{background:var(--hbg);border-bottom:1px solid var(--border);padding:0;position:sticky;top:0;z-index:2;overflow:visible}
@@ -167,7 +168,7 @@ html.dark .btn-del:hover{background:#450a0a;color:#fca5a5}
 .thfbtn svg.chev{flex-shrink:0;transition:transform .15s}
 .thfbtn.open svg.chev{transform:rotate(180deg)}
 .thfbtn .adot{width:5px;height:5px;border-radius:50%;background:var(--blue);flex-shrink:0}
-.thdd{position:absolute;top:calc(100% + 1px);left:0;z-index:210;background:var(--surface);border:1px solid var(--border);border-radius:9px;box-shadow:var(--shadowlg);min-width:180px;max-height:250px;overflow-y:auto;display:none;flex-direction:column}
+.thdd{position:fixed;z-index:9999;background:var(--surface);border:1px solid var(--border);border-radius:9px;box-shadow:var(--shadowlg);min-width:180px;max-height:260px;overflow-y:auto;display:none;flex-direction:column}
 .thdd.open{display:flex}
 .thdd::-webkit-scrollbar{width:4px}
 .thdd::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
@@ -204,6 +205,8 @@ html.dark .btn-del:hover{background:#450a0a;color:#fca5a5}
 .sc-bs{background:#fef08a;color:#854d0e}
 .sc-enc{background:var(--pb-bg);color:var(--pb-t)}
 .sc-fe{background:var(--pg-bg);color:var(--pg-t)}
+.sc-yes{background:var(--pg-bg);color:var(--pg-t)}
+.sc-no{background:#fee2e2;color:#991b1b}
 .sc-rej{background:#fee2e2;color:#991b1b}
 .sc-def{background:var(--pb-bg);color:var(--pb-t)}
 html.dark .sc-bs{background:#713f12;color:#fde047}
@@ -309,9 +312,14 @@ body.rz-dragging *{cursor:col-resize!important}
           <div class="fg"><label class="flbl">Name</label><input id="sfName" class="fin big" type="text" placeholder="User name…" autocomplete="off"/></div>
           <div class="fg">
             <label class="flbl">Source Data (CSV / Google Sheets) <span style="font-weight:400;opacity:.6">— optional if sheet-only</span></label>
-            <input id="sfSrcUrl" class="fin" type="text" placeholder="https://docs.google.com/… or CSV URL"/>
-            <div id="sfSrcUrlStatus" style="display:none;font-size:10px;margin-top:3px;padding:3px 6px;border-radius:5px"></div>
-            <div class="or-div"><span>or</span></div>
+            <div id="sfSrcUrlRow" style="display:none;align-items:center;gap:6px;margin-bottom:4px">
+              <span style="font-size:10px;color:var(--muted);flex-shrink:0">🔗</span>
+              <span id="sfSrcUrlName" style="font-size:11px;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+              <span id="sfSrcUrlStatus" style="font-size:9px;padding:2px 7px;border-radius:10px;cursor:pointer;flex-shrink:0"></span>
+              <button id="sfSrcUrlEdit" style="font-size:10px;padding:2px 7px;background:var(--surface2);border:1px solid var(--border);border-radius:5px;color:var(--muted);cursor:pointer">Edit</button>
+            </div>
+            <input id="sfSrcUrl" class="fin" type="text" placeholder="https://docs.google.com/… or CSV URL" style="display:none"/>
+            <div class="or-div" id="sfSrcOrDiv"><span>or</span></div>
             <div id="sfSrcZone" class="fzone">
               <input type="file" id="sfSrcFile" accept=".csv"/>
               <div class="fzone-lbl"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" style="color:var(--muted);margin:0 auto 3px;display:block"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>Drop CSV or <span class="acc">browse</span></div>
@@ -320,9 +328,14 @@ body.rz-dragging *{cursor:col-resize!important}
           </div>
           <div class="fg">
             <label class="flbl">Sheet Data (XLSX / Google Sheets) <span style="font-weight:400;opacity:.6">— optional if source-only</span></label>
-            <input id="sfShtUrl" class="fin" type="text" placeholder="https://docs.google.com/…"/>
-            <div id="sfShtUrlStatus" style="display:none;font-size:10px;margin-top:3px;padding:3px 6px;border-radius:5px"></div>
-            <div class="or-div"><span>or</span></div>
+            <div id="sfShtUrlRow" style="display:none;align-items:center;gap:6px;margin-bottom:4px">
+              <span style="font-size:10px;color:var(--muted);flex-shrink:0">🔗</span>
+              <span id="sfShtUrlName" style="font-size:11px;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+              <span id="sfShtUrlStatus" style="font-size:9px;padding:2px 7px;border-radius:10px;cursor:pointer;flex-shrink:0"></span>
+              <button id="sfShtUrlEdit" style="font-size:10px;padding:2px 7px;background:var(--surface2);border:1px solid var(--border);border-radius:5px;color:var(--muted);cursor:pointer">Edit</button>
+            </div>
+            <input id="sfShtUrl" class="fin" type="text" placeholder="https://docs.google.com/…" style="display:none"/>
+            <div class="or-div" id="sfShtOrDiv"><span>or</span></div>
             <div id="sfShtZone" class="fzone">
               <input type="file" id="sfShtFile" accept=".xlsx"/>
               <div class="fzone-lbl"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" style="color:var(--muted);margin:0 auto 3px;display:block"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>Drop XLSX or <span class="acc">browse</span></div>
@@ -411,7 +424,19 @@ body.rz-dragging *{cursor:col-resize!important}
     </button>
   </div>
   <div class="hspacer"></div>
-  <button id="settingsBtn" class="btn btn-gray"><svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Settings</button>
+  <div id="masterHeaderBtns" style="display:none;align-items:center;gap:6px">
+    <button id="mMismatchBtn" class="btn btn-orange" style="flex-shrink:0;font-size:11px;display:none">
+      <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>Mismatches <span id="mMismatchBadge" style="background:rgba(0,0,0,.15);border-radius:10px;padding:0 5px;font-size:9px"></span>
+    </button>
+    <button id="mReloadBtn" class="btn btn-gray" style="flex-shrink:0;font-size:11px;display:none"><svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M1 4v6h6M23 20v-6h-6M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15"/></svg>Reload</button>
+    <button id="mSettingsBtn" class="btn btn-gray" style="flex-shrink:0;font-size:11px"><svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/></svg>Sources</button>
+    <div id="mDlRow" style="display:none"><button id="mDlBtn" class="btn btn-teal"><svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4"/></svg>Export</button></div>
+  </div>
+  <div id="qcnHeaderBtns" style="display:flex;align-items:center;gap:6px">
+    <button id="runAllBtn" class="btn btn-blue"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg><span id="raT">Run All</span><div id="raSp" class="spinner hidden"></div></button>
+    <div id="dlRow" class="hidden"><button id="dlBtn" class="btn btn-green"><svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4"/></svg>Download</button></div>
+    <button id="settingsBtn" class="btn btn-gray"><svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Settings</button>
+  </div>
   <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="color:var(--muted)"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
   <button id="ttog" class="ttog"></button>
   <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="color:var(--muted)"><path d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z"/></svg>
@@ -430,8 +455,6 @@ body.rz-dragging *{cursor:col-resize!important}
         <div style="font-size:10px;font-weight:600;color:var(--muted)" id="raPL"></div>
         <div class="prog-wrap"><div class="prog-fill" id="raPF" style="width:0%"></div></div>
       </div>
-      <button id="runAllBtn" class="btn btn-blue"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg><span id="raT">Run All</span><div id="raSp" class="spinner hidden"></div></button>
-      <div id="dlRow" class="hidden"><button id="dlBtn" class="btn btn-green"><svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4"/></svg>Download</button></div>
     </div>
     <div id="masterBar" style="display:none;align-items:center;gap:8px;flex:1;min-width:0">
       <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--teal);flex-shrink:0;display:flex;align-items:center;gap:5px"><svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>CHECKODER</span>
@@ -440,12 +463,6 @@ body.rz-dragging *{cursor:col-resize!important}
         <input type="text" id="mChipSrch" class="srch" placeholder="Search…"/>
       </div>
       <div id="masterChips" class="chips-scroll"></div>
-      <button id="mMismatchBtn" class="btn btn-orange" style="flex-shrink:0;font-size:11px;display:none">
-        <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>Mismatches <span id="mMismatchBadge" style="background:rgba(0,0,0,.15);border-radius:10px;padding:0 5px;font-size:9px"></span>
-      </button>
-      <button id="mReloadBtn" class="btn btn-gray" style="flex-shrink:0;font-size:11px;display:none"><svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M1 4v6h6M23 20v-6h-6M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15"/></svg>Reload</button>
-      <button id="mSettingsBtn" class="btn btn-gray" style="flex-shrink:0;font-size:11px"><svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/></svg>Sources</button>
-      <div id="mDlRow" style="display:none"><button id="mDlBtn" class="btn btn-teal"><svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4"/></svg>Export</button></div>
     </div>
   </div>
 </div>
@@ -462,7 +479,7 @@ body.rz-dragging *{cursor:col-resize!important}
     <button class="btn btn-gray" id="qcnEmptyBtn" style="margin-top:6px"><svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/></svg>Open Settings</button>
   </div>
   <div id="qcnResults" class="hidden">
-    <div id="qcnCards" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px"></div>
+    <div id="qcnCards" style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:nowrap"></div>
     <div class="sband" id="qcnBand">
       <div class="tabs-row" id="qcnTabs"></div>
       <div class="tbar">
@@ -476,20 +493,8 @@ body.rz-dragging *{cursor:col-resize!important}
     <div class="tpanel">
       <div class="tscroll" id="qcnTscroll">
         <table class="dtbl" id="qcnTable">
-          <colgroup id="qcnColgroup">
-            <col style="width:38px"><col style="width:190px"><col style="width:120px"><col style="width:120px">
-            <col style="width:145px"><col style="min-width:130px"><col style="min-width:130px"><col style="width:105px">
-          </colgroup>
-          <thead id="qcnThead"><tr>
-            <th class="rn-th">#<div class="col-resizer"></div></th>
-            <th style="padding:0"><button class="thsort" id="thQcnSort"><span>QCN</span><span class="l5b">last 5</span><span class="sico"><span class="au"></span><span class="ad"></span></span></button><div class="col-resizer"></div></th>
-            <th class="thf" id="thSS"><button class="thfbtn" data-col="ss"><span>Source Status</span><span class="adot hidden" id="dot-ss"></span><svg class="chev" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></button><div class="thdd" id="dd-ss"><div class="thdd-srch"><input type="text" placeholder="Filter…" data-dd="ss"/></div><div class="thdd-list" id="ddl-ss"></div><div class="thdd-clr"><button data-clr="ss">✕ Clear</button></div></div><div class="col-resizer"></div></th>
-            <th class="thf" id="thSHT"><button class="thfbtn" data-col="sht"><span>Sheet Status</span><span class="adot hidden" id="dot-sht"></span><svg class="chev" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></button><div class="thdd" id="dd-sht"><div class="thdd-srch"><input type="text" placeholder="Filter…" data-dd="sht"/></div><div class="thdd-list" id="ddl-sht"></div><div class="thdd-clr"><button data-clr="sht">✕ Clear</button></div></div><div class="col-resizer"></div></th>
-            <th class="thf" id="thEnum"><button class="thfbtn" data-col="enum"><span>Enumerator</span><span class="adot hidden" id="dot-enum"></span><svg class="chev" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></button><div class="thdd" id="dd-enum"><div class="thdd-srch"><input type="text" placeholder="Filter…" data-dd="enum"/></div><div class="thdd-list" id="ddl-enum"></div><div class="thdd-clr"><button data-clr="enum">✕ Clear</button></div></div><div class="col-resizer"></div></th>
-            <th class="tp">For Correction<div class="col-resizer"></div></th>
-            <th class="tp">Remarks<div class="col-resizer"></div></th>
-            <th class="tp" style="text-align:center">Result<div class="col-resizer"></div></th>
-          </tr></thead>
+          <colgroup id="qcnColgroup"></colgroup>
+          <thead id="qcnThead"></thead>
           <tbody id="qcnTbody"></tbody>
         </table>
       </div>
@@ -540,15 +545,21 @@ body.rz-dragging *{cursor:col-resize!important}
 /* ═══════════════════════════════════════════════════════
    STORAGE
 ═══════════════════════════════════════════════════════ */
-const SK_USERS='qcn-users-v4', SK_RES='qcn-results-v4', SK_MASTER='qcn-master-v2';
+const SK_USERS='qcn-users-v4', SK_RES='qcn-results-v4', SK_MASTER='qcn-master-v2', SK_STATE='qcn-ui-state-v1';
+function saveUiState(){
+  ss(SK_STATE,{activeUid,actSheet,viewMode,mActiveChk,mActiveSheet});
+}
+function restoreUiState(){
+  return ls(SK_STATE,null);
+}
 const STATUS_OPTS=['For Encoding','Encoded','Bad Sheet','Reject'];
 const PAGE_SIZE=150;
 
 function ls(k,d){try{const s=localStorage.getItem(k);return s?JSON.parse(s):d}catch{return d}}
 function ss(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){console.warn('Storage:',e);return false}}
 
-function serSnap(s){if(!s)return null;return{...s,sheetOrder:[...s.sheetOrder],sheetRowNum:[...s.sheetRowNum],corrections:[...s.corrections],enumerators:[...s.enumerators],remarks:[...s.remarks],sheetStatusOverrides:[...s.sheetStatusOverrides],statusChangeDates:[...s.statusChangeDates]}}
-function desSnap(d){if(!d)return null;return{...d,sheetOrder:new Map(d.sheetOrder||[]),sheetRowNum:new Map(d.sheetRowNum||[]),corrections:new Map(d.corrections||[]),enumerators:new Map(d.enumerators||[]),remarks:new Map(d.remarks||[]),sheetStatusOverrides:new Map(d.sheetStatusOverrides||[]),statusChangeDates:new Map(d.statusChangeDates||[]),stats:d.stats||{matches:0,mismatches:0,notFound:0}}}
+function serSnap(s){if(!s)return null;return{...s,sheetOrder:[...s.sheetOrder],sheetRowNum:[...s.sheetRowNum],corrections:[...s.corrections],enumerators:[...s.enumerators],remarks:[...s.remarks],received:[...(s.received||new Map())],sheetStatusOverrides:[...s.sheetStatusOverrides],statusChangeDates:[...s.statusChangeDates]}}
+function desSnap(d){if(!d)return null;return{...d,sheetOrder:new Map(d.sheetOrder||[]),sheetRowNum:new Map(d.sheetRowNum||[]),corrections:new Map(d.corrections||[]),enumerators:new Map(d.enumerators||[]),remarks:new Map(d.remarks||[]),received:new Map(d.received||[]),sheetStatusOverrides:new Map(d.sheetStatusOverrides||[]),statusChangeDates:new Map(d.statusChangeDates||[]),stats:d.stats||{matches:0,mismatches:0,notFound:0}}}
 
 /* ═══════════════════════════════════════════════════════
    STATE
@@ -559,10 +570,10 @@ let viewMode='qcn';
 // QCN view state
 let allRows=[], sRowMap={}, sNames=[];
 let sOrder=new Map(), sRowNum=new Map();
-const corr=new Map(), enums=new Map(), rmks=new Map();
+const corr=new Map(), enums=new Map(), rmks=new Map(), rcvd=new Map();
 const shtOv=new Map(), stDates=new Map();
 let cMap={}, actSheet='__ALL__', actFilter='all', qTerm='', qSort='none';
-const cF={ss:new Set(),sht:new Set(),enum:new Set()};
+const cF={ss:new Set(),sht:new Set(),enum:new Set(),rcv:new Set(),res:new Set()};
 
 // Master state
 const MD={
@@ -573,7 +584,7 @@ const MD={
   sheetNames:[],
 };
 let mActiveChk='__ALL__', mActiveSheet='__ALL__', mTerm='', mChkSearch='';
-const mF={ba:new Set(),hs:new Set(),dma:new Set(),city:new Set(),barangay:new Set(),enumerator:new Set(),checkoder:new Set()};
+const mF={ba:new Set(),hs:new Set(),dma:new Set(),city:new Set(),barangay:new Set(),enumerator:new Set(),checkoder:new Set(),shtSt:new Set(),rcv:new Set()};
 let mRenderedCount=PAGE_SIZE;
 let mObserver=null;
 let mismatchSrchTerm='';
@@ -603,25 +614,10 @@ function gsUrl(url){const id=gsId(url),gid=gsGid(url);return id?`https://docs.go
 function isGs(url){return/docs\.google\.com\/spreadsheets/.test(url)}
 function isHtmlResponse(text){return text.trimStart().startsWith('<')}
 
-/* ── Debug log ── */
 const _dbgLog=[];
-function dbg(msg,data){
-  const entry={t:new Date().toISOString().slice(11,23),msg,data};
-  _dbgLog.unshift(entry);if(_dbgLog.length>200)_dbgLog.pop();
-  console.log('[QCN]',entry.t,msg,data||'');
-  renderDebugPanel();
-}
-function renderDebugPanel(){
-  const p=document.getElementById('dbgPanel');if(!p||p.classList.contains('hidden'))return;
-  p.querySelector('#dbgBody').innerHTML=_dbgLog.slice(0,60).map(e=>
-    `<div style="border-bottom:1px solid var(--border);padding:4px 0"><span style="color:var(--muted);font-size:10px;margin-right:6px">${e.t}</span><span style="font-size:11px">${esc(e.msg)}</span>${e.data?`<div style="font-size:10px;color:var(--muted);margin-top:2px;word-break:break-all">${esc(typeof e.data==='object'?JSON.stringify(e.data):String(e.data))}</div>`:''}</div>`
-  ).join('');
-}
-function toggleDebug(){
-  const p=document.getElementById('dbgPanel');
-  p.classList.toggle('hidden');
-  if(!p.classList.contains('hidden'))renderDebugPanel();
-}
+function dbg(msg,data){console.log('[QCN]',msg,data||'')}
+function renderDebugPanel(){}
+function toggleDebug(){}
 
 /* ── CORS proxy fallback chain ──
    When running from file://, browsers block cross-origin fetches to Google.
@@ -729,6 +725,51 @@ async function fetchGsTab(url,which){
     return fetchGsViaCsv(id,gsGid(url),'last-gid-fallback');
   }
 }
+
+// Fetch ALL tabs from a Google Sheet → [{name, rows}]
+// XLSX gives all tabs; gviz fallback gives just one (the gid tab or first)
+async function fetchGsAllSheets(url){
+  const id=gsId(url);
+  if(!id)throw new Error('Could not parse sheet ID from URL: '+url);
+  dbg(`[fetchGsAllSheets] id=${id}`,'Trying XLSX for all tabs');
+  try{
+    const xlsxUrl=`https://docs.google.com/spreadsheets/d/${id}/export?format=xlsx`;
+    const resp=await fetchWithCorsProxy(xlsxUrl,'xlsx-all');
+    if(resp.ok){
+      const ct=resp.headers.get('content-type')||'';
+      if(!ct.includes('html')){
+        const buf=await resp.arrayBuffer();
+        const wb=XLSX.read(new Uint8Array(buf),{type:'array',cellDates:true});
+        dbg(`[fetchGsAllSheets] All tabs`,wb.SheetNames.join(', '));
+        const sheets=[];
+        wb.SheetNames.forEach(sn=>{
+          const rows=XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,defval:''});
+          if(rows.length>1)sheets.push({name:sn,rows});
+        });
+        if(sheets.length){dbg(`[fetchGsAllSheets] Loaded`,`${sheets.length} tabs`);return sheets;}
+      }
+    }
+  }catch(e){dbg(`[fetchGsAllSheets] XLSX failed`,e.message+' — gviz fallback')}
+  // Fallback: single tab via gviz
+  dbg(`[fetchGsAllSheets] Fallback`,`gviz gid=${gsGid(url)}`);
+  const rows=await fetchGsViaCsv(id,gsGid(url),'allsheets-fallback');
+  if(rows.length<2)throw new Error('Sheet has no data.');
+  const tabName=`Sheet (gid=${gsGid(url)})`;
+  return [{name:tabName,rows}];
+}
+// Fetch the spreadsheet title from the HTML page title (works for public sheets)
+async function fetchGsTitle(id){
+  try{
+    const url=`https://docs.google.com/spreadsheets/d/${id}/`;
+    const resp=await fetchWithCorsProxy(url,'title');
+    if(resp.ok){
+      const text=await resp.text();
+      const m=text.match(/<title>([^<]+)<\/title>/i);
+      if(m){const t=m[1].replace(/ - Google Sheets$/,'').replace(/ - Google Docs$/,'').trim();if(t&&t.length>0&&t.length<80)return t;}
+    }
+  }catch(_){}
+  return null;
+}
 function parseXlDate(v){
   if(!v)return null;
   if(v instanceof Date)return v.toISOString();
@@ -747,8 +788,8 @@ function nowIso(){return new Date().toISOString()}
 function fmtBytes(b){if(b<1024)return b+' B';if(b<1048576)return(b/1024).toFixed(1)+' KB';return(b/1048576).toFixed(1)+' MB'}
 function last5(q){return q.slice(-5)}
 function hl(q,t){const s=esc(q);if(!t)return s;const i=q.toLowerCase().indexOf(t.toLowerCase());if(i===-1)return s;return esc(q.slice(0,i))+`<span class="qhl">${esc(q.slice(i,i+t.length))}</span>`+esc(q.slice(i+t.length))}
-function sCls(v){const x=(v||'').trim().toLowerCase();if(x==='bad sheet')return'sc-bs';if(x==='encoded')return'sc-enc';if(x==='for encoding')return'sc-fe';if(x==='reject')return'sc-rej';return'sc-def'}
-function sPill(v){return`<span class="pill ${sCls(v)}">${esc(v)||'—'}</span>`}
+function sCls(v){const x=(v||'').trim().toLowerCase();if(x==='bad sheet')return'sc-bs';if(x==='encoded')return'sc-enc';if(x==='for encoding')return'sc-fe';if(x==='reject')return'sc-rej';if(x==='y'||x==='yes')return'sc-yes';if(x==='n'||x==='no')return'sc-no';return'sc-def'}
+function sPill(v){if(!v&&v!==0)return`<span style="color:var(--muted)">—</span>`;return`<span class="pill ${sCls(v)}">${esc(String(v))}</span>`}
 function debounce(fn,ms){let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms)}}
 
 /* ═══════════════════════════════════════════════════════
@@ -795,9 +836,11 @@ function switchMode(m){
   document.getElementById('masterBar').style.display=m==='master'?'flex':'none';
   document.getElementById('qcnView').style.display=m==='qcn'?'':'none';
   document.getElementById('masterView').style.display=m==='master'?'':'none';
-  document.getElementById('settingsBtn').style.display=m==='qcn'?'':'none';
+  document.getElementById('qcnHeaderBtns').style.display=m==='qcn'?'flex':'none';
+  document.getElementById('masterHeaderBtns').style.display=m==='master'?'flex':'none';
   updateStickyTop();
   if(m==='master'){renderMasterChips();if(MD.allRows.length)renderMasterResults();updateMasterStatusBar()}
+  saveUiState();
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -808,11 +851,20 @@ function updateMasterStatusBar(){
   const txt=document.getElementById('mStatusText');
   const loadBar=document.getElementById('mLoadingBar');
   loadBar.style.display='none';
-  if(!MD.sources.length){bar.classList.remove('has-data');txt.style.display='';txt.innerHTML='No sources loaded — click <strong>Sources</strong> to add data.';return}
+  if(!MD.sources.length){
+    bar.style.display='';bar.classList.remove('has-data');
+    txt.style.display='';txt.innerHTML='No sources loaded — click <strong>Sources</strong> to add data.';
+    return;
+  }
   const loaded=MD.sources.filter(s=>s.status==='loaded').length;
   const total=MD.sources.length;
-  if(!MD.allRows.length){bar.classList.remove('has-data');txt.style.display='';txt.innerHTML=`${total} source(s) configured, ${loaded} loaded — <strong>${MD.allRows.length} rows</strong>. Click <strong>Sources</strong> to reload.`}
-  else{bar.classList.add('has-data');txt.style.display='';txt.innerHTML=`<span style="color:var(--teal);font-weight:700">${MD.allRows.length.toLocaleString()} rows</span> across ${loaded} source(s) — <span style="color:var(--muted)">${MD.checkoders.length} checkoders, ${MD.sheetNames.length} sheets</span>`}
+  if(!MD.allRows.length){
+    bar.style.display='';bar.classList.remove('has-data');
+    txt.style.display='';txt.innerHTML=`${total} source(s) configured, ${loaded} loaded. Click <strong>Sources</strong> to reload.`;
+  }else{
+    // Data is loaded — hide the status bar, stat-cards show the info
+    bar.style.display='none';
+  }
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -843,21 +895,42 @@ function renderMSourceList2(){
   if(!MD.sources.length){list.innerHTML='<div style="font-size:11px;color:var(--muted);padding:4px 0">No sources yet — add a Google Sheets URL or upload XLSX files.</div>';return}
   list.innerHTML=MD.sources.map(s=>{
     const icon=s.type==='url'?'🔗':'📄';
-    const statusBadge=s.status==='loaded'?`<span class="pill" style="background:var(--pg-bg);color:var(--pg-t);font-size:9px">✓ ${(s.rows||[]).length||s.count||0} rows</span>`:s.status==='loading'?`<span class="pill" style="background:var(--pb-bg);color:var(--pb-t);font-size:9px">Loading…</span>`:s.status==='error'?`<span class="pill" style="background:var(--po-bg);color:var(--po-t);font-size:9px">⚠ Error: ${esc(s.err||'')}</span>`:s.status==='pending'?`<span class="pill" style="background:var(--surface2);color:var(--muted);font-size:9px">Pending</span>`:'';
-    return`<div class="msrc-item${s.status==='loaded'?' loaded':s.status==='error'?' error':''}">
+    const displayName=esc(s.sheetTitle||s.name||s.url||'Unnamed');
+    const statusBadge=s.status==='loaded'?`<span class="pill" style="background:var(--pg-bg);color:var(--pg-t);font-size:9px;cursor:pointer" data-edit-url="${esc(s.id)}" title="Click to edit URL">✓ ${(s.rows||[]).length||s.count||0} rows</span>`:s.status==='loading'?`<span class="pill" style="background:var(--pb-bg);color:var(--pb-t);font-size:9px">Loading…</span>`:s.status==='error'?`<span class="pill" style="background:var(--po-bg);color:var(--po-t);font-size:9px;cursor:pointer" data-edit-url="${esc(s.id)}" title="${esc(s.err||'')}">⚠ Error — click to edit</span>`:s.status==='pending'?`<span class="pill" style="background:var(--surface2);color:var(--muted);font-size:9px">Pending</span>`:'';
+    const editArea=s._editing?`<div style="display:flex;gap:5px;margin-top:5px;width:100%"><input value="${esc(s.url||'')}" style="flex:1;background:var(--in-bg);border:1px solid var(--in-bd);color:var(--text);border-radius:5px;padding:4px 8px;font-size:11px;font-family:'Inter',sans-serif" data-url-edit="${esc(s.id)}" /><button class="btn btn-teal" style="font-size:10px;padding:3px 8px" data-url-save="${esc(s.id)}">Save</button><button class="btn btn-gray" style="font-size:10px;padding:3px 8px" data-url-cancel="${esc(s.id)}">✕</button></div>`:'';
+    return`<div class="msrc-item${s.status==='loaded'?' loaded':s.status==='error'?' error':''}" style="flex-wrap:wrap">
       <span style="flex-shrink:0">${icon}</span>
-      <span class="msrc-name" title="${esc(s.url||s.name)}">${esc(s.name||s.url||'Unnamed')}</span>
+      <span class="msrc-name" style="cursor:pointer" title="${esc(s.url||s.name)}" data-edit-url="${esc(s.id)}">${displayName}</span>
       ${statusBadge}
       <button class="msrc-rm" data-rm-src2="${esc(s.id)}" title="Remove"><svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+      ${editArea}
     </div>`;
   }).join('');
 }
 
 document.getElementById('mSrcList2').addEventListener('click',e=>{
-  const btn=e.target.closest('[data-rm-src2]');if(!btn)return;
-  MD.sources=MD.sources.filter(s=>s.id!==btn.dataset.rmSrc2);
-  rebuildMasterAllRows();renderMSourceList2();saveMasterSources();updateMasterStatusBar();
-  if(MD.allRows.length){renderMasterChips();renderMasterResults()}else{document.getElementById('mResults').style.display='none'}
+  const rm=e.target.closest('[data-rm-src2]');if(rm){
+    MD.sources=MD.sources.filter(s=>s.id!==rm.dataset.rmSrc2);
+    rebuildMasterAllRows();renderMSourceList2();saveMasterSources();updateMasterStatusBar();
+    if(MD.allRows.length){renderMasterChips();renderMasterResults()}else{document.getElementById('mResults').style.display='none'}
+    return;
+  }
+  const editBtn=e.target.closest('[data-edit-url]');if(editBtn){
+    const id=editBtn.dataset.editUrl;const src=MD.sources.find(s=>s.id===id);if(!src)return;
+    MD.sources.forEach(s=>s._editing=false);src._editing=true;renderMSourceList2();
+    const inp=document.querySelector(`[data-url-edit="${id}"]`);if(inp){inp.focus();inp.select();}
+    return;
+  }
+  const saveBtn=e.target.closest('[data-url-save]');if(saveBtn){
+    const id=saveBtn.dataset.urlSave;const src=MD.sources.find(s=>s.id===id);if(!src)return;
+    const inp=document.querySelector(`[data-url-edit="${id}"]`);
+    if(inp){src.url=inp.value.trim();src._editing=false;src.status='pending';src.rows=[];src.count=0;renderMSourceList2();saveMasterSources();loadAllMasterSources();}
+    return;
+  }
+  const cancelBtn=e.target.closest('[data-url-cancel]');if(cancelBtn){
+    const id=cancelBtn.dataset.urlCancel;const src=MD.sources.find(s=>s.id===id);if(src){src._editing=false;renderMSourceList2();}
+    return;
+  }
 });
 
 document.getElementById('mAddUrl2').addEventListener('click',async()=>{
@@ -873,10 +946,23 @@ document.getElementById('mAddUrl2').addEventListener('click',async()=>{
   // Auto-load immediately
   try{
     dbg(`[Master] Loading URL`,url);
-    const csvRows=isGs(url)?await fetchGsTab(url,'summary'):await fetchCsv(url);
-    src.rows=parseMasterRows(csvRows,src.name);src.status='loaded';src.count=src.rows.length;
-    dbg(`[Master] Loaded`,`${src.count} rows from "${src.name}"`);
-  }catch(e){src.status='error';src.err=e.message;dbg(`[Master] Load error`,e.message)}
+    if(isGs(url)){
+      const allSheets=await fetchGsAllSheets(url);
+      src.rows=[];
+      allSheets.forEach(sh=>{
+        const sl=sh.name.toLowerCase();
+        if(sl==='cover'||sl==='legend')return;
+        src.rows.push(...parseMasterRows(sh.rows,sh.name));
+      });
+    }else{
+      const csvRows=await fetchCsv(url);
+      src.rows=parseMasterRows(csvRows,src.name);
+    }
+    src.status='loaded';src.count=src.rows.length;
+    // Fetch actual Google Sheet title
+    if(isGs(url)){const t=await fetchGsTitle(gsId(url));if(t)src.sheetTitle=t;}
+    console.log(`[Master] Loaded ${src.count} rows from "${src.sheetTitle||src.name}"`);
+  }catch(e){src.status='error';src.err=e.message;console.error('[Master] Load error',e.message)}
   renderMSourceList2();rebuildMasterAllRows();saveMasterSources();updateMasterStatusBar();
   if(MD.allRows.length){document.getElementById('mDlRow').style.display='';renderMasterChips();renderMasterResults()}
 });
@@ -937,9 +1023,22 @@ async function loadAllMasterSources(){
     document.getElementById('mLoadingText').textContent=`Loading ${src.name||'source'}…`;
     try{
       if(src.type==='url'){
-        // Reports (Google Sheet): look for SUMMARY tab; CSV fallback uses gid in URL
-        const csvRows=isGs(src.url)?await fetchGsTab(src.url,'summary'):await fetchCsv(src.url);
-        src.rows=parseMasterRows(csvRows,src.name);src.status='loaded';src.count=src.rows.length;
+        // Google Sheet: fetch all tabs via XLSX proxy; each non-skipped tab becomes master rows
+        if(isGs(src.url)){
+          const allSheets=await fetchGsAllSheets(src.url);
+          src.rows=[];
+          allSheets.forEach(sh=>{
+            const sl=sh.name.toLowerCase();
+            if(sl==='cover'||sl==='legend')return; // skip known metadata tabs
+            src.rows.push(...parseMasterRows(sh.rows,sh.name));
+          });
+        }else{
+          const csvRows=await fetchCsv(src.url);
+          src.rows=parseMasterRows(csvRows,src.name);
+        }
+        src.status='loaded';src.count=src.rows.length;
+        // Fetch actual Google Sheet title if not already stored
+        if(isGs(src.url)&&!src.sheetTitle){const t=await fetchGsTitle(gsId(src.url));if(t)src.sheetTitle=t;}
       }else if(src.type==='xlsx'&&src.data){
         const bin=atob(src.data);const arr=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i);
         const wb=XLSX.read(arr,{type:'array',cellDates:true});
@@ -1045,16 +1144,18 @@ function fromMasterCell(qcn){
 function getReceivedData(qcn,checkoder){
   const m=findUserByCheckoder(checkoder);
   if(!m)return null;
-  return m.snap.allRowsFlat.find(r=>r.qcn===qcn)||null;
+  const row=m.snap.allRowsFlat.find(r=>r.qcn===qcn)||null;
+  if(!row)return null;
+  // Attach remarks from the snap's remarks Map (not stored on the row itself)
+  return {...row, remarks: m.snap.remarks.get(qcn)||''};
 }
 function receivedCell(qcn,checkoder){
-  const row=getReceivedData(qcn,checkoder);
-  if(!row)return`<span class="pill mc-nrcv" style="font-size:9px">— Not Recv'd</span>`;
-  if(row.type==='match')return`<span class="pill mc-rcv" style="font-size:9px">✓ Received</span>`;
-  if(row.type==='mismatch')return`<span class="pill mc-miss" style="font-size:9px">⚡ Pending</span>`;
-  if(row.type==='notfound')return`<span class="pill mc-nf" style="font-size:9px">🔍 Not in Sheet</span>`;
-  if(row.type==='sheet-only')return`<span class="pill mc-nr" style="font-size:9px">📄 Sheet Only</span>`;
-  return`<span class="pill mc-nrcv" style="font-size:9px">—</span>`;
+  // Look up the user matched to this checkoder and get their sheet RECEIVED value
+  const m=findUserByCheckoder(checkoder);
+  if(!m)return`<span style="color:var(--muted)">—</span>`;
+  const rcvVal=(m.snap.received||new Map()).get(qcn)||'';
+  if(!rcvVal)return`<span style="color:var(--muted)">—</span>`;
+  return sPill(rcvVal);
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -1107,12 +1208,15 @@ function updateMismatchBadge(){
   const btn=document.getElementById('mMismatchBtn');
   const badge=document.getElementById('mMismatchBadge');
   if(!MD.allRows.length){btn.style.display='none';return}
+  // Scope to active checkoder and sheet (same as what renderMismatchTable will show)
+  let base=mActiveChk==='__ALL__'?MD.allRows:MD.allRows.filter(r=>r.checkoder===mActiveChk);
+  if(mActiveSheet!=='__ALL__')base=base.filter(r=>r.sheetName===mActiveSheet);
   let count=0;
-  MD.allRows.forEach(r=>{
+  base.forEach(r=>{
     const s=getQcnMatchStatus(r.qcn,r.checkoder);
     if(s==='mismatch'||s==='not-in-user'||s==='not-in-sheet')count++;
   });
-  btn.style.display='';
+  btn.style.display=count>0?'':'none';
   badge.textContent=count>0?count:'';
 }
 
@@ -1131,7 +1235,9 @@ function closeMismatchModal(){document.getElementById('mismatchModal').classList
 
 function renderMismatchTable(){
   const showChk=mActiveChk==='__ALL__';
-  const base=mActiveChk==='__ALL__'?MD.allRows:MD.allRows.filter(r=>r.checkoder===mActiveChk);
+  // Scope to active checkoder and sheet — same scope as the badge
+  let base=mActiveChk==='__ALL__'?MD.allRows:MD.allRows.filter(r=>r.checkoder===mActiveChk);
+  if(mActiveSheet!=='__ALL__')base=base.filter(r=>r.sheetName===mActiveSheet);
   const term=mismatchSrchTerm.toLowerCase();
   let rows=base.filter(r=>{
     const s=getQcnMatchStatus(r.qcn,r.checkoder);
@@ -1140,35 +1246,59 @@ function renderMismatchTable(){
   if(term)rows=rows.filter(r=>r.qcn.toLowerCase().includes(term)||(r.enumerator||'').toLowerCase().includes(term)||(r.checkoder||'').toLowerCase().includes(term));
   document.getElementById('mismatchCount').textContent=rows.length+' mismatches';
   document.getElementById('mTHead').innerHTML='';
+
+  // Determine which optional columns have at least one non-empty value
+  const hasMasterStatus=rows.some(r=>{const s=r.srcStatus||r.checkStatus||'';return!!s;});
+  const hasUserStatus=rows.some(r=>{const userRow=getReceivedData(r.qcn,r.checkoder);return!!(userRow&&(userRow.sheetStatus||userRow.srcStatus));});
+  // "Found in" shows for rows that are not-in-user or not-in-sheet (i.e. missing from one side)
+  const hasFoundIn=rows.some(r=>{
+    const s=getQcnMatchStatus(r.qcn,r.checkoder);
+    return s==='not-in-user'||s==='not-in-sheet';
+  });
+
   document.getElementById('mismatchTHead').innerHTML=`<tr>
     <th class="rn-th">#</th>
-    <th class="tp" style="min-width:180px;padding:8px 11px">QCN</th>
-    ${showChk?'<th class="tp" style="min-width:120px;padding:8px 11px">Checkoder</th>':''}
-    <th class="tp" style="min-width:120px;padding:8px 11px">Master Source Status</th>
-    <th class="tp" style="min-width:120px;padding:8px 11px">User Sheet Status</th>
-    <th class="tp" style="min-width:120px;padding:8px 11px">Master Enumerator</th>
-    <th class="tp" style="min-width:110px;padding:8px 11px">Master Barangay</th>
-    <th class="tp" style="min-width:100px;padding:8px 11px">Master City</th>
-    <th class="tp" style="min-width:90px;padding:8px 11px;text-align:center">Status</th>
+    <th class="tp" style="min-width:180px;max-width:180px;padding:8px 11px">QCN</th>
+    ${showChk?'<th class="tp" style="min-width:130px;max-width:130px;padding:8px 11px">Checkoder</th>':''}
+    ${hasMasterStatus?'<th class="tp" style="min-width:130px;max-width:130px;padding:8px 11px">Master Source Status</th>':''}
+    ${hasUserStatus?'<th class="tp" style="min-width:130px;max-width:130px;padding:8px 11px">User Sheet Status</th>':''}
+    <th class="tp" style="min-width:140px;max-width:140px;padding:8px 11px">Enumerator</th>
+    <th class="tp" style="min-width:120px;max-width:120px;padding:8px 11px">Barangay</th>
+    <th class="tp" style="min-width:110px;max-width:110px;padding:8px 11px">City</th>
+    ${hasFoundIn?'<th class="tp" style="min-width:130px;max-width:130px;padding:8px 11px">Found in</th>':''}
+    <th class="tp" style="min-width:110px;max-width:110px;padding:8px 11px;text-align:center">Status</th>
   </tr>`;
+
   const tbody=document.getElementById('mismatchTbody');tbody.innerHTML='';
   if(!rows.length){tbody.innerHTML=`<tr><td colspan="20" style="text-align:center;padding:36px;color:var(--muted);font-style:italic">No mismatches found.</td></tr>`;return}
   const frag=document.createDocumentFragment();
   rows.forEach((r,idx)=>{
     const mStatus=getQcnMatchStatus(r.qcn,r.checkoder);
     const userRow=getReceivedData(r.qcn,r.checkoder);
-    const userStatus=userRow?sPill(userRow.sheetStatus||userRow.srcStatus||''):`<span style="color:var(--muted)">—</span>`;
+    const userStatusHtml=userRow?sPill(userRow.sheetStatus||userRow.srcStatus||''):`<span style="color:var(--muted)">—</span>`;
     const masterStatus=r.srcStatus||r.checkStatus||'';
+
+    // "Found in" — show master sheet tab name for missing rows
+    let foundInHtml='';
+    if(hasFoundIn){
+      if(mStatus==='not-in-user'||mStatus==='not-in-sheet'){
+        foundInHtml=r.sheetName?`<span class="pill" style="background:var(--pt-bg);color:var(--pt-t);font-size:9px">${esc(r.sheetName)}</span>`:`<span style="color:var(--muted)">—</span>`;
+      }else{
+        foundInHtml=`<span style="color:var(--muted)">—</span>`;
+      }
+    }
+
     const tr=document.createElement('tr');tr.className='ro';
     tr.innerHTML=`
       <td class="rn-td">${idx+1}</td>
       <td class="qcopy" data-qcn="${esc(r.qcn)}" style="cursor:pointer;white-space:nowrap"><span class="mono" style="font-size:11px;font-weight:700">${hl(r.qcn,mismatchSrchTerm)}</span><span class="qcp-lbl">Copied!</span></td>
       ${showChk?`<td><span class="pill" style="background:var(--pt-bg);color:var(--pt-t);font-size:9px">${esc(r.checkoder)||'—'}</span></td>`:''}
-      <td>${masterStatus?sPill(masterStatus):`<span style="color:var(--muted)">—</span>`}</td>
-      <td>${userStatus}</td>
-      <td style="font-size:11px">${esc(r.enumerator)||'—'}</td>
-      <td style="font-size:11px">${esc(r.barangay)||'—'}</td>
-      <td style="font-size:11px">${esc(r.city)||'—'}</td>
+      ${hasMasterStatus?`<td>${masterStatus?sPill(masterStatus):`<span style="color:var(--muted)">—</span>`}</td>`:''}
+      ${hasUserStatus?`<td>${userStatusHtml}</td>`:''}
+      <td style="font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(r.enumerator)||'—'}</td>
+      <td style="font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(r.barangay)||'—'}</td>
+      <td style="font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(r.city)||'—'}</td>
+      ${hasFoundIn?`<td>${foundInHtml}</td>`:''}
       <td style="text-align:center">${matchStatusBadge(mStatus)}</td>`;
     frag.appendChild(tr);
   });
@@ -1210,7 +1340,7 @@ document.getElementById('masterChips').addEventListener('click',e=>{
   mActiveChk=btn.dataset.mchip;mActiveSheet='__ALL__';mTerm='';
   Object.keys(mF).forEach(k=>mF[k].clear());
   document.getElementById('mSrch').value='';
-  renderMasterChips();buildMTabs();renderMasterResults();
+  renderMasterChips();buildMTabs();renderMasterResults();saveUiState();
 });
 document.getElementById('mChipSrch').addEventListener('input',function(){mChkSearch=this.value;renderMasterChips()});
 
@@ -1224,7 +1354,21 @@ function getMasterBase(){
 }
 function getMasterVisibleSync(){
   let rows=getMasterBase();
-  if(mTerm)rows=rows.filter(r=>r.qcn.toLowerCase().includes(mTerm.toLowerCase()));
+  if(mTerm){
+    const t=mTerm.toLowerCase();
+    rows=rows.filter(r=>
+      (r.qcn||'').toLowerCase().includes(t)||
+      (r.ba||'').toLowerCase().includes(t)||
+      (r.hs||'').toLowerCase().includes(t)||
+      (r.dma||'').toLowerCase().includes(t)||
+      (r.city||'').toLowerCase().includes(t)||
+      (r.barangay||'').toLowerCase().includes(t)||
+      (r.enumerator||'').toLowerCase().includes(t)||
+      (r.checkoder||'').toLowerCase().includes(t)||
+      (r.remarks||'').toLowerCase().includes(t)||
+      (r.sheetName||'').toLowerCase().includes(t)
+    );
+  }
   if(mF.ba.size)rows=rows.filter(r=>mF.ba.has(r.ba));
   if(mF.hs.size)rows=rows.filter(r=>mF.hs.has(r.hs));
   if(mF.dma.size)rows=rows.filter(r=>mF.dma.has(r.dma));
@@ -1232,6 +1376,17 @@ function getMasterVisibleSync(){
   if(mF.barangay.size)rows=rows.filter(r=>mF.barangay.has(r.barangay));
   if(mF.enumerator.size)rows=rows.filter(r=>mF.enumerator.has(r.enumerator));
   if(mF.checkoder.size)rows=rows.filter(r=>mF.checkoder.has(r.checkoder));
+  if(mF.shtSt.size)rows=rows.filter(r=>{
+    const m=findUserByCheckoder(r.checkoder);
+    const userRow=m?m.snap.allRowsFlat.find(x=>x.qcn===r.qcn):null;
+    const st=userRow?(userRow.sheetStatus||userRow.srcStatus||''):'';
+    return mF.shtSt.has(st);
+  });
+  if(mF.rcv.size)rows=rows.filter(r=>{
+    const m=findUserByCheckoder(r.checkoder);
+    const rcvVal=m?(m.snap.received||new Map()).get(r.qcn)||'':'';
+    return mF.rcv.has(rcvVal);
+  });
   return rows;
 }
 
@@ -1246,21 +1401,120 @@ function renderMasterResults(){
 }
 function renderMCards(){
   const base=getMasterBase();
-  const sheets=[...new Set(base.map(r=>r.sheetName))].length;
-  const chkrs=mActiveChk==='__ALL__'?MD.checkoders.length:1;
+  const showChkCard=mActiveChk==='__ALL__';
+
+  // Sheet Status counts from matched user sheet data for visible rows
+  const statusCounts={};
+  base.forEach(r=>{
+    const m=findUserByCheckoder(r.checkoder);
+    const userRow=m?m.snap.allRowsFlat.find(x=>x.qcn===r.qcn):null;
+    const st=userRow?(userRow.sheetStatus||userRow.srcStatus||''):'';
+    statusCounts[st]=(statusCounts[st]||0)+1;
+  });
+
+  const mkAccent=cls=>cls==='sc-fe'||cls==='sc-yes'?'var(--green)':cls==='sc-enc'?'var(--teal)':cls==='sc-bs'?'var(--orange)':cls==='sc-rej'||cls==='sc-no'?'var(--red)':'var(--muted)';
+
+  // Determine if status filter is active for a given status value
+  const stFilterActive=(st)=>mF.shtSt.size===1&&mF.shtSt.has(st);
+  const rcvFilterActive=(v)=>mF.rcv.size===1&&mF.rcv.has(v);
+  const noFiltersActive=!Object.values(mF).some(s=>s.size>0);
+
+  const statusCards=Object.entries(statusCounts)
+    .sort((a,b)=>b[1]-a[1])
+    .map(([st,n])=>{
+      const cls=sCls(st);
+      const label=st?st:'Status (No data)';
+      const accent=mkAccent(cls);
+      const isActive=stFilterActive(st);
+      const borderStyle=isActive?`border-color:${accent};`:'';
+      const numColor=isActive?accent:'inherit';
+      return`<div class="stat-card" style="min-width:80px;text-align:center;cursor:pointer;${borderStyle}" data-msc-st="${esc(st)}" title="Filter by ${esc(label)}"><div style="font-size:20px;font-weight:800;color:${numColor}">${n.toLocaleString()}</div><div style="margin-top:4px;font-size:10px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;color:${isActive?accent:'var(--muted)'}">${esc(label)}</div></div>`;
+    }).join('');
+
+  // Received Y/N/blank counts
+  let mRcvY=0,mRcvN=0,mRcvBlank=0;
+  base.forEach(r=>{
+    const m=findUserByCheckoder(r.checkoder);
+    const v=m?(m.snap.received||new Map()).get(r.qcn)||'':'';
+    const vu=v.trim().toUpperCase();
+    if(vu==='Y'||vu==='YES')mRcvY++;
+    else if(vu==='N'||vu==='NO')mRcvN++;
+    else mRcvBlank++;
+  });
+  const rcvYActive=rcvFilterActive('Y')||rcvFilterActive('YES');
+  const rcvNActive=rcvFilterActive('N')||rcvFilterActive('NO');
+  const rcvBlankActive=rcvFilterActive('');
+  const rcvCards=`
+    ${mRcvY>0?`<div class="stat-card" style="min-width:80px;text-align:center;${rcvYActive?'border-color:var(--green);':''}cursor:pointer" data-msc-rcv="Y"><div style="font-size:20px;font-weight:800;color:${rcvYActive?'var(--green)':'inherit'}">${mRcvY.toLocaleString()}</div><div style="margin-top:4px;font-size:10px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;color:${rcvYActive?'var(--green)':'var(--muted)'}">Received</div></div>`:''}
+    ${mRcvN>0?`<div class="stat-card" style="min-width:80px;text-align:center;${rcvNActive?'border-color:var(--red);':''}cursor:pointer" data-msc-rcv="N"><div style="font-size:20px;font-weight:800;color:${rcvNActive?'var(--red)':'inherit'}">${mRcvN.toLocaleString()}</div><div style="margin-top:4px;font-size:10px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;color:${rcvNActive?'var(--red)':'var(--muted)'}">Not Received</div></div>`:''}
+    ${mRcvBlank>0?`<div class="stat-card" style="min-width:80px;text-align:center;${rcvBlankActive?'border-color:var(--muted);':''}cursor:pointer" data-msc-rcv=""><div style="font-size:20px;font-weight:800;color:${rcvBlankActive?'var(--muted)':'inherit'}">${mRcvBlank.toLocaleString()}</div><div style="margin-top:4px;font-size:10px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;color:var(--muted)">Received (No data)</div></div>`:''}`;
+
+  // Unique checkoders in current base
+  const uniqueChkCount=new Set(base.map(r=>r.checkoder).filter(Boolean)).size;
+
   document.getElementById('mCards').innerHTML=`
-    <div class="stat-card" style="min-width:100px"><div style="font-size:20px;font-weight:800;color:var(--teal)">${base.length.toLocaleString()}</div><div style="font-size:9px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;color:var(--muted);margin-top:2px">Total QCNs</div></div>
-    <div class="stat-card" style="min-width:100px"><div style="font-size:20px;font-weight:800">${sheets}</div><div style="font-size:9px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;color:var(--muted);margin-top:2px">Sheets</div></div>
-    <div class="stat-card" style="min-width:100px"><div style="font-size:20px;font-weight:800">${chkrs}</div><div style="font-size:9px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;color:var(--muted);margin-top:2px">Checkoders</div></div>`;
+    <div class="stat-card" style="min-width:100px;cursor:pointer;${noFiltersActive?'border-color:var(--teal);':''}" data-msc-total="1"><div style="font-size:20px;font-weight:800;color:var(--teal)">${base.length.toLocaleString()}</div><div style="font-size:9px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;color:var(--muted);margin-top:2px">Total QCNs</div></div>
+    ${showChkCard?`<div class="stat-card" style="min-width:100px"><div style="font-size:20px;font-weight:800">${uniqueChkCount}</div><div style="font-size:9px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;color:var(--muted);margin-top:2px">Checkoders</div></div>`:''}
+    ${rcvCards}${statusCards}`;
+
+  // Wire clicks
+  document.getElementById('mCards').querySelectorAll('[data-msc-st]').forEach(card=>{
+    card.addEventListener('click',()=>{
+      const st=card.dataset.mscSt;
+      if(mF.shtSt.size===1&&mF.shtSt.has(st)){mF.shtSt.clear();}
+      else{mF.shtSt.clear();mF.shtSt.add(st);}
+      mRenderedCount=PAGE_SIZE;buildMasterTHead();renderMasterTableBody();renderMCards();
+    });
+  });
+  document.getElementById('mCards').querySelectorAll('[data-msc-rcv]').forEach(card=>{
+    card.addEventListener('click',()=>{
+      const v=card.dataset.mscRcv;
+      if(mF.rcv.size===1&&mF.rcv.has(v)){mF.rcv.clear();}
+      else{mF.rcv.clear();mF.rcv.add(v);}
+      mRenderedCount=PAGE_SIZE;buildMasterTHead();renderMasterTableBody();renderMCards();
+    });
+  });
+  const totalCard=document.getElementById('mCards').querySelector('[data-msc-total]');
+  if(totalCard){
+    totalCard.addEventListener('click',()=>{
+      Object.keys(mF).forEach(k=>mF[k].clear());
+      mRenderedCount=PAGE_SIZE;buildMasterTHead();renderMasterTableBody();renderMCards();
+    });
+  }
 }
 function buildMTabs(){
   const bar=document.getElementById('mTabs');bar.innerHTML='';
   const base=mActiveChk==='__ALL__'?MD.allRows:MD.allRows.filter(r=>r.checkoder===mActiveChk);
   const present=MD.sheetNames.filter(sn=>base.some(r=>r.sheetName===sn));
-  [{key:'__ALL__',label:'All Dates',count:base.length},...present.map(sn=>({key:sn,label:sn,count:base.filter(r=>r.sheetName===sn).length}))].forEach(t=>{
+  // Default to last tab on first render
+  if(mActiveSheet==='__ALL__'&&present.length){mActiveSheet=present[present.length-1];}
+  // Reverse so newest tab appears first
+  const reversedPresent=[...present].reverse();
+
+  // Warn only for received blank or N/No — not for no source data
+  function mTabWarnCount(rows){
+    return rows.filter(r=>{
+      const m=findUserByCheckoder(r.checkoder);
+      const v=m?(m.snap.received||new Map()).get(r.qcn)||'':'';
+      const vu=v.trim().toUpperCase();
+      return !vu||(vu==='N'||vu==='NO');
+    }).length;
+  }
+
+  [{key:'__ALL__',label:'All Dates',count:base.length},...reversedPresent.map(sn=>({key:sn,label:sn,count:base.filter(r=>r.sheetName===sn).length}))].forEach(t=>{
     const btn=document.createElement('button');btn.className='stab'+(t.key===mActiveSheet?' active':'');btn.dataset.mdt=t.key;
-    btn.innerHTML=`<span>${esc(t.label)}</span><span class="badge" style="background:var(--pt-bg);color:var(--pt-t)">${t.count}</span>`;
-    btn.addEventListener('click',()=>{mActiveSheet=t.key;mTerm='';Object.keys(mF).forEach(k=>mF[k].clear());document.getElementById('mSrch').value='';document.querySelectorAll('[data-mdt]').forEach(b=>b.classList.toggle('active',b.dataset.mdt===t.key));buildMasterTHead();mRenderedCount=PAGE_SIZE;renderMasterTableBody()});
+    let badge;
+    if(t.key==='__ALL__'){
+      badge=`<span class="badge" style="background:var(--pt-bg);color:var(--pt-t)">${t.count}</span>`;
+    }else{
+      const tabRows=base.filter(r=>r.sheetName===t.key);
+      const warns=mTabWarnCount(tabRows);
+      badge=warns>0
+        ?`<span class="badge" style="background:var(--po-bg);color:var(--po-t)">${warns}⚡</span>`
+        :`<span class="badge" style="background:var(--pt-bg);color:var(--pt-t)">${t.count}</span>`;
+    }
+    btn.innerHTML=`<span>${esc(t.label)}</span>${badge}`;
+    btn.addEventListener('click',()=>{mActiveSheet=t.key;mTerm='';Object.keys(mF).forEach(k=>mF[k].clear());document.getElementById('mSrch').value='';document.querySelectorAll('[data-mdt]').forEach(b=>b.classList.toggle('active',b.dataset.mdt===t.key));buildMasterTHead();mRenderedCount=PAGE_SIZE;renderMasterTableBody();renderMCards();updateMismatchBadge();saveUiState()});
     bar.appendChild(btn);
   });
 }
@@ -1268,9 +1522,10 @@ function buildMTabs(){
 /* ═══════════════════════════════════════════════════════
    MASTER — TABLE HEADER WITH FILTERS
 ═══════════════════════════════════════════════════════ */
-function mkMasterFilterTh(col,label,fKey){
+function mkMasterFilterTh(col,label,fKey,minW){
   const active=mF[fKey]&&mF[fKey].size>0;
-  return`<th class="thf" style="min-width:70px;overflow:visible" id="mth-${col}">
+  const mw=minW?`${minW}px`:'70px';
+  return`<th class="thf" style="min-width:${mw};max-width:${mw};overflow:visible" id="mth-${col}">
     <button class="thfbtn${active?' af':''}" data-mcol="${col}" style="padding:8px 24px 8px 11px">
       <span>${label}</span>${active?`<span class="adot" id="mdot-${col}"></span>`:''}<svg class="chev" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
     </button>
@@ -1283,33 +1538,48 @@ function mkMasterFilterTh(col,label,fKey){
   </th>`;
 }
 
+function masterHasSourceData(){
+  return users.some(u=>(u.sourceUrl||u.sourceFileData)&&userSnaps[u.id]&&!userSnaps[u.id].viewOnly);
+}
 function buildMasterTHead(){
   const showChk=mActiveChk==='__ALL__';
   document.getElementById('mTHead').innerHTML=`<tr>
-    <th class="rn-th" style="width:40px">#<div class="col-resizer"></div></th>
-    <th class="tp" style="min-width:180px;padding:8px 11px;position:relative">QCN<div class="col-resizer"></div></th>
-    ${mkMasterFilterTh('ba','BA','ba')}
-    ${mkMasterFilterTh('hs','HS','hs')}
-    ${mkMasterFilterTh('dma','DMA','dma')}
-    ${mkMasterFilterTh('city','City','city')}
-    ${mkMasterFilterTh('barangay','Barangay','barangay')}
-    ${mkMasterFilterTh('enumerator','Enumerator','enumerator')}
-    ${showChk?mkMasterFilterTh('checkoder','Checkoder','checkoder'):''}
-    <th class="tp" style="min-width:90px;padding:8px 11px;position:relative">Remarks<div class="col-resizer"></div></th>
-    <th class="tp" style="min-width:80px;padding:8px 11px;position:relative">Sheet<div class="col-resizer"></div></th>
-    <th class="tp" style="min-width:110px;padding:8px 11px;position:relative">Received<div class="col-resizer"></div></th>
-    <th class="tp" style="min-width:100px;padding:8px 11px;text-align:center;position:relative">Match<div class="col-resizer"></div></th>
+    <th class="rn-th" style="width:40px;max-width:40px">#<div class="col-resizer"></div></th>
+    <th class="tp" style="min-width:220px;max-width:220px;padding:8px 11px;position:relative">QCN<div class="col-resizer"></div></th>
+    ${mkMasterFilterTh('ba','BA','ba',60)}
+    ${mkMasterFilterTh('hs','HS','hs',60)}
+    ${mkMasterFilterTh('dma','DMA','dma',70)}
+    ${mkMasterFilterTh('city','City','city',90)}
+    ${mkMasterFilterTh('barangay','Barangay','barangay',110)}
+    ${mkMasterFilterTh('enumerator','Enumerator','enumerator',140)}
+    ${showChk?mkMasterFilterTh('checkoder','Checkoder','checkoder',130):''}
+    <th class="tp" style="min-width:220px;padding:8px 11px;position:relative">Remarks<div class="col-resizer"></div></th>
+    ${mkMasterFilterTh('shtSt','Sheet Status','shtSt',110)}
+    ${mkMasterFilterTh('rcv','Received (Y/N)','rcv',120)}
   </tr>`;
-  // Wire up filter header events
   const thead=document.getElementById('mTHead');
   thead.addEventListener('click',handleMasterThClick,{once:false});
-  // build dropdown lists
   const base=getMasterBase();
   ['ba','hs','dma','city','barangay','enumerator',...(showChk?['checkoder']:[])].forEach(col=>{
     const list=document.getElementById(`mddl-${col}`);
-    if(list){const vals=[...new Set(base.map(r=>r[col]).filter(Boolean))].sort();list.innerHTML=buildMDDItems(vals,mF[col]||new Set(),'')}
+    if(list){const allVals=base.map(r=>r[col]);const hasBlank=allVals.some(v=>!v);const vals=[...new Set(allVals.filter(Boolean))].sort();const finalVals=hasBlank?['', ...vals]:vals;list.innerHTML=buildMDDItems(finalVals,mF[col]||new Set(),'')}
   });
-  // Init resize
+  // Sheet Status dropdown — from user snaps
+  const shtStList=document.getElementById('mddl-shtSt');
+  if(shtStList){
+    const shtVals=new Set();let hasBlankSt=false;
+    base.forEach(r=>{const m=findUserByCheckoder(r.checkoder);const row=m?m.snap.allRowsFlat.find(x=>x.qcn===r.qcn):null;const st=row?(row.sheetStatus||row.srcStatus||''):'';if(st)shtVals.add(st);else hasBlankSt=true;});
+    const finalShtVals=hasBlankSt?['',...[...shtVals].sort()]:[...shtVals].sort();
+    shtStList.innerHTML=buildMDDItems(finalShtVals,mF.shtSt||new Set(),'');
+  }
+  // Received dropdown — from user snaps received Map
+  const rcvList=document.getElementById('mddl-rcv');
+  if(rcvList){
+    const rcvVals=new Set();let hasBlankRcv=false;
+    base.forEach(r=>{const m=findUserByCheckoder(r.checkoder);const v=m?(m.snap.received||new Map()).get(r.qcn)||'':'';if(v)rcvVals.add(v);else hasBlankRcv=true;});
+    const finalRcvVals=hasBlankRcv?['',...[...rcvVals].sort()]:[...rcvVals].sort();
+    rcvList.innerHTML=buildMDDItems(finalRcvVals,mF.rcv||new Set(),'');
+  }
   initColResize(document.getElementById('mTbl'));
 }
 
@@ -1327,27 +1597,37 @@ document.getElementById('mFBar').addEventListener('input',e=>{
   const inp=e.target.closest('[data-mdd]');if(!inp)return;
   const col=inp.dataset.mdd;const list=document.getElementById(`mddl-${col}`);
   if(!list)return;const base=getMasterBase();
-  const vals=[...new Set(base.map(r=>r[col]).filter(Boolean))].sort();
-  list.innerHTML=buildMDDItems(vals,mF[col]||new Set(),inp.value);
+  const allVals=base.map(r=>r[col]);const hasBlank=allVals.some(v=>!v);
+  const vals=[...new Set(allVals.filter(Boolean))].sort();
+  const finalVals=hasBlank?['', ...vals]:vals;
+  list.innerHTML=buildMDDItems(finalVals,mF[col]||new Set(),inp.value);
 });
 // Also handle input on mTHead
 document.getElementById('mTHead').addEventListener('input',e=>{
   const inp=e.target.closest('[data-mdd]');if(!inp)return;
   const col=inp.dataset.mdd;const list=document.getElementById(`mddl-${col}`);
   if(!list)return;const base=getMasterBase();
-  const vals=[...new Set(base.map(r=>r[col]).filter(Boolean))].sort();
-  list.innerHTML=buildMDDItems(vals,mF[col]||new Set(),inp.value);
+  const allVals=base.map(r=>r[col]);const hasBlank=allVals.some(v=>!v);
+  const vals=[...new Set(allVals.filter(Boolean))].sort();
+  const finalVals=hasBlank?['', ...vals]:vals;
+  list.innerHTML=buildMDDItems(finalVals,mF[col]||new Set(),inp.value);
 },{passive:true});
 
 function buildMDDItems(vals,selected,search){
-  const filt=search?vals.filter(v=>v.toLowerCase().includes(search.toLowerCase())):vals;
+  const filt=search?vals.filter(v=>v.toLowerCase().includes(search.toLowerCase())||(!v&&'no data'.includes(search.toLowerCase()))):vals;
   if(!filt.length)return`<div class="thdd-item" style="color:var(--muted);font-style:italic">No values</div>`;
-  return filt.map(v=>`<div class="thdd-item${selected.has(v)?' sel':''}" data-mval="${esc(v)}"><span class="chk"><svg width="8" height="8" viewBox="0 0 12 12" fill="none" stroke="white" stroke-width="2.5"><polyline points="2,6 5,9 10,3"/></svg></span><span>${esc(v)}</span></div>`).join('');
+  return filt.map(v=>`<div class="thdd-item${selected.has(v)?' sel':''}" data-mval="${esc(v)}"><span class="chk"><svg width="8" height="8" viewBox="0 0 12 12" fill="none" stroke="white" stroke-width="2.5"><polyline points="2,6 5,9 10,3"/></svg></span><span>${v?esc(v):'<em style="color:var(--muted)">No data</em>'}</span></div>`).join('');
 }
 function toggleMDrop(col){
   const dd=document.getElementById(`mdd-${col}`),btn=document.querySelector(`[data-mcol="${col}"]`);
   if(!dd||!btn)return;const wasOpen=dd.classList.contains('open');
-  closeMDrops();if(!wasOpen){dd.classList.add('open');btn.classList.add('open')}
+  closeMDrops();
+  if(!wasOpen){
+    const rect=btn.getBoundingClientRect();
+    dd.style.top=(rect.bottom+2)+'px';
+    dd.style.left=Math.min(rect.left,window.innerWidth-200)+'px';
+    dd.classList.add('open');btn.classList.add('open');
+  }
 }
 function closeMDrops(){document.querySelectorAll('.thdd.open').forEach(d=>{d.classList.remove('open')});document.querySelectorAll('.thfbtn.open').forEach(b=>b.classList.remove('open'))}
 document.addEventListener('click',e=>{if(!e.target.closest('.thf')&&!e.target.closest('.thdd'))closeMDrops()});
@@ -1370,21 +1650,34 @@ function renderMasterTableBody(){
   const frag=document.createDocumentFragment();
   toRender.forEach((r,idx)=>{
     const mStatus=getQcnMatchStatus(r.qcn,r.checkoder);
-    const tr=document.createElement('tr');tr.className='ro';
+    const userRow=getReceivedData(r.qcn,r.checkoder);
+    // Row color
+    const tr=document.createElement('tr');
+    if(mStatus==='match')tr.className='rm';
+    else if(mStatus==='mismatch')tr.className='rx';
+    else if(mStatus==='not-in-sheet'||mStatus==='not-in-user')tr.className='rn';
+    else tr.className='ro';
+    // Combine master remarks + user sheet remarks
+    const userRemarks=userRow?userRow.remarks||'':'';
+    const masterRemarks=r.remarks||'';
+    const combinedRemarks=[...new Set([masterRemarks,userRemarks].filter(Boolean))].join(' · ');
+    const remarks=esc(combinedRemarks);
+    // Status cells
+    const shtStatusTd=userRow?`<td style="text-align:center">${sPill(userRow.sheetStatus||userRow.srcStatus||'')}</td>`:`<td style="text-align:center;color:var(--muted)">—</td>`;
+    const receivedTd=`<td style="text-align:center">${receivedCell(r.qcn,r.checkoder)}</td>`;
     const cols=[
       `<td class="rn-td">${idx+1}</td>`,
       `<td class="qcopy" data-qcn="${esc(r.qcn)}" style="cursor:pointer;white-space:nowrap"><span class="mono" style="font-size:11px;font-weight:700">${hl(r.qcn,term)}</span><span class="qcp-lbl">Copied!</span></td>`,
-      `<td style="white-space:nowrap">${r.ba?`<span class="pill" style="background:var(--pb-bg);color:var(--pb-t);font-size:9px">${esc(r.ba)}</span>`:'—'}</td>`,
-      `<td style="font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.hs)}">${esc(r.hs)||'—'}</td>`,
-      `<td class="mono" style="font-size:11px;white-space:nowrap">${esc(r.dma)||'—'}</td>`,
-      `<td style="font-size:11px;white-space:nowrap">${esc(r.city)||'—'}</td>`,
-      `<td style="font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.barangay)}">${esc(r.barangay)||'—'}</td>`,
-      `<td style="font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.enumerator)}">${esc(r.enumerator)||'—'}</td>`,
-      ...(showChk?[`<td style="white-space:nowrap"><span class="pill" style="background:var(--pt-bg);color:var(--pt-t);font-size:9px">${esc(r.checkoder)||'—'}</span></td>`]:[]),
-      `<td style="font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.remarks)}">${esc(r.remarks)||'—'}</td>`,
-      `<td><span class="pill" style="background:var(--pt-bg);color:var(--pt-t);font-size:9px">${esc(r.sheetName)}</span></td>`,
-      `<td>${receivedCell(r.qcn,r.checkoder)}</td>`,
-      `<td style="text-align:center">${matchStatusBadge(mStatus)}</td>`,
+      `<td style="text-align:center">${r.ba?`<span class="pill" style="background:var(--pb-bg);color:var(--pb-t);font-size:9px">${esc(r.ba)}</span>`:'—'}</td>`,
+      `<td style="font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center" title="${esc(r.hs)}">${esc(r.hs)||'—'}</td>`,
+      `<td class="mono" style="font-size:11px;white-space:nowrap;text-align:center">${esc(r.dma)||'—'}</td>`,
+      `<td style="font-size:11px;white-space:nowrap;text-align:center">${esc(r.city)||'—'}</td>`,
+      `<td style="font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center" title="${esc(r.barangay)}">${esc(r.barangay)||'—'}</td>`,
+      `<td style="font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center" title="${esc(r.enumerator)}">${esc(r.enumerator)||'—'}</td>`,
+      ...(showChk?[`<td style="text-align:center"><span class="pill" style="background:var(--pt-bg);color:var(--pt-t);font-size:9px">${esc(r.checkoder)||'—'}</span></td>`]:[]),
+      `<td style="font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center" title="${remarks}">${remarks||'—'}</td>`,
+      shtStatusTd,
+      receivedTd,
     ];
     tr.innerHTML=cols.join('');frag.appendChild(tr);
   });
@@ -1395,6 +1688,17 @@ function renderMasterTableBody(){
 }
 
 document.getElementById('mLoadMore').addEventListener('click',()=>{mRenderedCount+=PAGE_SIZE;renderMasterTableBody()});
+// Auto-load more rows when load-more button scrolls into view
+(()=>{
+  const lm=document.getElementById('mLoadMore');
+  if('IntersectionObserver' in window){
+    new IntersectionObserver(entries=>{
+      if(entries[0].isIntersecting&&!lm.classList.contains('hidden')){
+        mRenderedCount+=PAGE_SIZE;renderMasterTableBody();
+      }
+    },{threshold:0.1}).observe(lm);
+  }
+})();
 document.getElementById('mTbody').addEventListener('click',e=>{
   const td=e.target.closest('.qcopy');if(!td)return;
   const qcn=td.dataset.qcn;
@@ -1402,7 +1706,8 @@ document.getElementById('mTbody').addEventListener('click',e=>{
   td.classList.remove('fl');void td.offsetWidth;td.classList.add('fl');
   setTimeout(()=>td.classList.remove('fl'),900);
 });
-document.getElementById('mSrch').addEventListener('input',debounce(function(){mTerm=this.value;mRenderedCount=PAGE_SIZE;renderMasterTableBody()},120));
+const _mSrchDb=debounce(v=>{mTerm=v;mRenderedCount=PAGE_SIZE;renderMasterTableBody();},80);
+document.getElementById('mSrch').addEventListener('input',function(){_mSrchDb(this.value)});
 
 /* ═══════════════════════════════════════════════════════
    MASTER — EXPORT
@@ -1432,36 +1737,57 @@ function initLoad(){
   const saved=ls(SK_RES,{});
   Object.entries(saved).forEach(([id,raw])=>{userSnaps[id]=desSnap(raw);userStatus[id]='done'});
 
-  // Show first user with results immediately from cache
-  const first=users.find(u=>userSnaps[u.id]);
-  if(first)switchToUser(first.id);
-  renderUserChips();updateEmptyState();
+  // Restore UI state (last user, tab, mode)
+  const uiState=restoreUiState();
+  if(uiState){
+    if(uiState.viewMode==='master'){viewMode='master';}
+    if(uiState.mActiveChk)mActiveChk=uiState.mActiveChk;
+    if(uiState.mActiveSheet)mActiveSheet=uiState.mActiveSheet;
+  }
 
-  // Auto-run ALL users that have URL-based data (re-fetch fresh on every load)
-  // File-based users keep their cached snap; URL users always re-run
-  setTimeout(async()=>{
-    const toRun=users.filter(u=>u.sourceUrl||u.sheetUrl);
-    if(toRun.length){
-      dbg('[initLoad] Auto-running URL users',toRun.map(u=>u.name||u.id).join(', '));
-      for(const u of toRun){
-        try{await runComparison(u.id,true)}
-        catch(e){dbg('[initLoad] User run error',`${u.name||u.id}: ${e.message}`)}
-      }
-      const f=users.find(u=>userSnaps[u.id]);
-      if(f&&!activeUid)switchToUser(f.id);
-    }
-  },200);
+  // Restore last user — use saved activeUid or first with results
+  const targetUid=uiState?.activeUid||null;
+  const targetUser=targetUid?users.find(u=>u.id===targetUid&&userSnaps[u.id]):null;
+  const firstUser=users.find(u=>userSnaps[u.id]);
+  const userToShow=targetUser||firstUser;
+  if(userToShow){
+    // restore saved tab for this user before switching
+    if(uiState?.activeUid===userToShow.id&&uiState?.actSheet){actSheet=uiState.actSheet;}
+    switchToUser(userToShow.id);
+  }
+  renderUserChips();updateEmptyState();
 
   restoreMaster();
 
-  // Auto-reload master URL sources on every page load
+  // Restore mode after master is loaded
+  if(uiState?.viewMode==='master'){
+    setTimeout(()=>switchMode('master'),50);
+  }
+
+  // After DOM settles, reload ALL users that have any data configured
   setTimeout(async()=>{
-    const urlSrcs=MD.sources.filter(s=>s.type==='url'&&s.url);
-    if(urlSrcs.length){
-      dbg('[initLoad] Auto-reloading master URL sources',urlSrcs.map(s=>s.name).join(', '));
-      await loadAllMasterSources();
+    const toRun=users.filter(u=>u.sourceUrl||u.sourceFileData||u.sheetUrl||u.sheetFileData);
+    if(toRun.length){
+      for(const u of toRun){
+        try{await runComparison(u.id,true)}
+        catch(e){console.log('[initLoad] User error',`${u.name||u.id}: ${e.message}`)}
+      }
+      // Re-apply saved user/tab after reload
+      const uid2=uiState?.activeUid||users.find(u=>userSnaps[u.id])?.id;
+      if(uid2&&userSnaps[uid2]){
+        if(uiState?.actSheet)actSheet=uiState.actSheet;
+        switchToUser(uid2);
+      }
     }
-  },400);
+    // Also reload all master sources
+    if(MD.sources.length){
+      await loadAllMasterSources();
+      // Re-apply master state
+      if(uiState?.mActiveChk)mActiveChk=uiState.mActiveChk;
+      if(uiState?.mActiveSheet)mActiveSheet=uiState.mActiveSheet;
+      if(viewMode==='master')renderMasterResults();
+    }
+  },300);
 }
 function saveUsers(){
   const t=users.map(u=>({id:u.id,name:u.name,sourceUrl:u.sourceUrl,sourceFileName:u.sourceFileName,sheetUrl:u.sheetUrl,sheetFileName:u.sheetFileName,sourceFileData:u.sourceFileData||null,sheetFileData:u.sheetFileData||null}));
@@ -1508,16 +1834,51 @@ function renderSuForm(id){
   const u=users.find(x=>x.id===id);if(!u)return;
   document.getElementById('sempty').style.display='none';document.getElementById('suform').style.display='flex';
   document.getElementById('sfName').value=u.name||'';
-  document.getElementById('sfSrcUrl').value=u.sourceUrl||'';
-  document.getElementById('sfShtUrl').value=u.sheetUrl||'';
   updFZ('src',u.sourceFileName,u.sourceFileData);updFZ('sht',u.sheetFileName,u.sheetFileData);
   const snap=userSnaps[id];document.getElementById('sfCI').textContent=snap?`Last run: ${snap.runAt?new Date(snap.runAt).toLocaleString():'?'}`:'No results yet';
   document.getElementById('sfErr').style.display='none';
-  document.getElementById('sfSrcUrlStatus').style.display='none';
-  document.getElementById('sfShtUrlStatus').style.display='none';
+  // Source URL: show pill if has GS link, else show input
+  _renderUrlField('src', u.sourceUrl||'');
+  // Sheet URL: show pill if has GS link, else show input
+  _renderUrlField('sht', u.sheetUrl||'');
   // Show Run button only when at least one data source is configured
   const hasSrc=u.sourceUrl||u.sourceFileData,hasSht=u.sheetUrl||u.sheetFileData;
   document.getElementById('sfRun').style.display=(hasSrc||hasSht)?'':'none';
+}
+
+function _renderUrlField(type, url){
+  const isS=type==='src';
+  const rowEl=document.getElementById(isS?'sfSrcUrlRow':'sfShtUrlRow');
+  const inputEl=document.getElementById(isS?'sfSrcUrl':'sfShtUrl');
+  const orDiv=document.getElementById(isS?'sfSrcOrDiv':'sfShtOrDiv');
+  const nameEl=document.getElementById(isS?'sfSrcUrlName':'sfShtUrlName');
+  const statusEl=document.getElementById(isS?'sfSrcUrlStatus':'sfShtUrlStatus');
+  if(url&&isGs(url)){
+    // Show pill row, hide input
+    rowEl.style.display='flex';inputEl.style.display='none';
+    orDiv.style.display='none';
+    nameEl.textContent=url.replace(/^https?:\/\//,'').slice(0,40)+'…';
+    statusEl.textContent='⏳ Checking…';statusEl.style.background='var(--surface2)';statusEl.style.color='var(--muted)';
+    // Async: fetch title + status
+    (async()=>{
+      try{
+        const idM=gsId(url);
+        let title=null;try{title=await fetchGsTitle(idM);}catch(_){}
+        if(title)nameEl.textContent=title;
+        // Quick row count check
+        const rows=await fetchGsViaCsv(idM,gsGid(url));
+        statusEl.textContent=`✓ ${Math.max(0,rows.length-1)} rows`;
+        statusEl.style.background='#0d2e1a';statusEl.style.color='var(--green)';
+      }catch(e){
+        statusEl.textContent='⚠ Not accessible';
+        statusEl.style.background='#2e1008';statusEl.style.color='var(--orange)';
+      }
+    })();
+  }else{
+    // Show input, hide pill row
+    rowEl.style.display='none';inputEl.style.display='';inputEl.value=url||'';
+    orDiv.style.display='';
+  }
 }
 function updFZ(t,fn,fd){
   const [z,l,n,s]=[`sf${t==='src'?'Src':'Sht'}Zone`,`sf${t==='src'?'Src':'Sht'}Loaded`,`sf${t==='src'?'Src':'Sht'}Fn`,`sf${t==='src'?'Src':'Sht'}Fs`];
@@ -1529,56 +1890,23 @@ function sfChg(f,v){
   // Update View/Run button visibility
   renderSuForm(settingUid);
 }
+document.getElementById('sfSrcUrlEdit').addEventListener('click',()=>{
+  const u=users.find(x=>x.id===settingUid);if(!u)return;
+  document.getElementById('sfSrcUrlRow').style.display='none';
+  const inp=document.getElementById('sfSrcUrl');inp.style.display='';inp.value=u.sourceUrl||'';
+  document.getElementById('sfSrcOrDiv').style.display='';inp.focus();
+});
+document.getElementById('sfShtUrlEdit').addEventListener('click',()=>{
+  const u=users.find(x=>x.id===settingUid);if(!u)return;
+  document.getElementById('sfShtUrlRow').style.display='none';
+  const inp=document.getElementById('sfShtUrl');inp.style.display='';inp.value=u.sheetUrl||'';
+  document.getElementById('sfShtOrDiv').style.display='';inp.focus();
+});
 document.getElementById('sfName').addEventListener('input',function(){sfChg('name',this.value)});
-document.getElementById('sfSrcUrl').addEventListener('input',function(){sfChg('sourceUrl',this.value);checkUrlStatus('src',this.value)});
-document.getElementById('sfShtUrl').addEventListener('input',function(){sfChg('sheetUrl',this.value);checkUrlStatus('sht',this.value)});
+document.getElementById('sfSrcUrl').addEventListener('change',function(){sfChg('sourceUrl',this.value);if(this.value&&isGs(this.value)){_renderUrlField('src',this.value);}});
+document.getElementById('sfShtUrl').addEventListener('change',function(){sfChg('sheetUrl',this.value);if(this.value&&isGs(this.value)){_renderUrlField('sht',this.value);}});
 
 // Debounced URL status checker for user settings
-const _urlCheckTimers={};
-function checkUrlStatus(type,url){
-  const statusEl=document.getElementById(type==='src'?'sfSrcUrlStatus':'sfShtUrlStatus');
-  clearTimeout(_urlCheckTimers[type]);
-  if(!url||!url.trim()){statusEl.style.display='none';return}
-  if(!isGs(url.trim())){statusEl.style.display='none';return}
-  statusEl.style.display='';statusEl.style.background='var(--surface2)';statusEl.style.color='var(--muted)';statusEl.textContent='⏳ Checking Google Sheet…';
-  _urlCheckTimers[type]=setTimeout(async()=>{
-    try{
-      const id=gsId(url.trim());
-      if(!id)throw new Error('Could not parse sheet ID from URL');
-      let tabInfo='';
-      // Try XLSX to get tab names and counts
-      try{
-        const xlsxUrl=`https://docs.google.com/spreadsheets/d/${id}/export?format=xlsx`;
-        const resp=await fetch(xlsxUrl,{credentials:'omit'});
-        if(resp.ok){
-          const ct=resp.headers.get('content-type')||'';
-          if(!ct.includes('html')){
-            const buf=await resp.arrayBuffer();
-            const wb=XLSX.read(new Uint8Array(buf),{type:'array'});
-            const tabNames=wb.SheetNames;
-            let rowCount=0;tabNames.forEach(sn=>{rowCount+=XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1}).length-1});
-            const which=type==='src'?'SUMMARY tab → ':type==='sht'?'Last tab ('+tabNames[tabNames.length-1]+') → ':'';
-            tabInfo=` — ${which}${tabNames.length} tab(s), ~${rowCount} rows`;
-          }
-        }
-      }catch(_){}
-      // Fallback: gviz CSV check
-      if(!tabInfo){
-        const rows=await fetchGsViaCsv(id,gsGid(url.trim()));
-        tabInfo=` — ~${Math.max(0,rows.length-1)} rows`;
-      }
-      statusEl.style.background='#0d2e1a';statusEl.style.color='var(--green)';statusEl.textContent='✓ Sheet accessible'+tabInfo;
-    }catch(err){
-      statusEl.style.background='#2e1008';statusEl.style.color='var(--orange)';
-      let msg=err.message||'Unknown error';
-      if(msg.includes('not accessible')||msg.includes('login'))msg='Sheet not publicly accessible — in Google Sheets: Share → "Anyone with the link" → Viewer';
-      else if(msg.includes('403')||msg.includes('401'))msg='Access denied — share the sheet: Google Sheets → Share → "Anyone with the link → Viewer"';
-      else if(msg.includes('404'))msg='Sheet not found — double-check the URL';
-      else if(msg.includes('Failed to fetch')||msg.includes('NetworkError'))msg='Network error — check your connection';
-      statusEl.textContent='⚠ '+msg;
-    }
-  },600);
-}
 document.getElementById('sfSrcFile').addEventListener('change',function(e){
   const f=e.target.files[0];if(!f)return;const r=new FileReader();
   r.onload=ev=>{const u=users.find(x=>x.id===settingUid);if(!u)return;u.sourceFileName=f.name;u.sourceFileData=btoa(unescape(encodeURIComponent(ev.target.result)));saveUsers();updFZ('src',u.sourceFileName,u.sourceFileData);renderSuList();renderSuForm(settingUid)};
@@ -1670,17 +1998,18 @@ async function runViewOnly(uid2){
       if(u.sheetFileData){
         const bin=atob(u.sheetFileData),arr=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i);
         const wb=XLSX.read(arr,{type:'array',cellDates:true});
-        // Distribute: use the last tab
-        const lastSn=wb.SheetNames[wb.SheetNames.length-1];
-        const lastR=XLSX.utils.sheet_to_json(wb.Sheets[lastSn],{header:1,defval:''});
-        if(lastR.length>1)sheets.push({name:lastSn,rows:lastR});
+        // Load ALL tabs from the sheet file
+        wb.SheetNames.forEach(sn=>{
+          const r=XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,defval:''});
+          if(r.length>1)sheets.push({name:sn,rows:r});
+        });
       }else{
-        // Distribute (Google Sheet): fetch as XLSX and use last tab
-        const r=isGs(u.sheetUrl.trim())?await fetchGsTab(u.sheetUrl.trim(),'last'):await fetchCsv(u.sheetUrl.trim());
-        if(r.length<2)throw new Error('Sheet has no data.');sheets=[{name:u.name||'Sheet',rows:r}]
+        // Google Sheet URL: fetch ALL tabs via XLSX proxy, fallback to single gviz tab
+        const fetched=isGs(u.sheetUrl.trim())?await fetchGsAllSheets(u.sheetUrl.trim()):[{name:u.name||'Sheet',rows:await fetchCsv(u.sheetUrl.trim())}];
+        sheets.push(...fetched);
       }
       const _sRM={},_sN=[],_sO=new Map(),_sRN=new Map();
-      const _co=new Map(),_en=new Map(),_rm=new Map(),_ov=new Map(),_sd=new Map();
+      const _co=new Map(),_en=new Map(),_rm=new Map(),_ov=new Map(),_sd=new Map(),_rcv=new Map();
       let gc=0;const _aRF=[];
       sheets.forEach(sh=>{
         const hdr=(sh.rows[0]||[]).map(h=>String(h).toLowerCase().trim());
@@ -1689,10 +2018,12 @@ async function runViewOnly(uid2){
         const ci=hdr.findIndex(h=>h.includes('for correction')||h==='correction');
         const ei=hdr.findIndex(h=>h.includes('enumerator'));
         const ri=hdr.findIndex(h=>h.includes('remarks')||h.includes('remark'));
+        const rcvi=hdr.findIndex(h=>h.includes('received'));
         if(qi!==-1){sh.rows.slice(1).forEach((row,i)=>{
           const qcn=String(row[qi]||'').trim(),st=si!==-1?String(row[si]||'').trim():'';if(!qcn){gc++;return}
           const ec=ci!==-1?String(row[ci]||'').trim():'',ee=ei!==-1?String(row[ei]||'').trim():'',er=ri!==-1?String(row[ri]||'').trim():'';
-          if(ec)_co.set(qcn,ec);if(ee)_en.set(qcn,ee);if(er)_rm.set(qcn,er);
+          const ercv=rcvi!==-1?String(row[rcvi]||'').trim():'';
+          if(ec)_co.set(qcn,ec);if(ee)_en.set(qcn,ee);if(er)_rm.set(qcn,er);if(ercv)_rcv.set(qcn,ercv);
           if(!_sO.has(qcn)){_sO.set(qcn,gc);_sRN.set(qcn,i+1)}
           _aRF.push({type:'sheet-only',qcn,srcStatus:'',sheetStatus:st,sheetName:sh.name});
           if(!_sRM[sh.name])_sRM[sh.name]=[];_sRM[sh.name].push(_aRF[_aRF.length-1]);
@@ -1701,7 +2032,7 @@ async function runViewOnly(uid2){
         _sN.push(sh.name);if(!_sRM[sh.name])_sRM[sh.name]=[];
       });
       const now=nowIso();
-      const snap={allRowsFlat:_aRF,sheetRowMap:_sRM,sheetNames:_sN,sheetOrder:_sO,sheetRowNum:_sRN,corrections:_co,enumerators:_en,remarks:_rm,sheetStatusOverrides:_ov,statusChangeDates:_sd,colIndexMap:{},stats:{matches:0,mismatches:0,notFound:0},runAt:now,viewOnly:true,viewMode:'sheet'};
+      const snap={allRowsFlat:_aRF,sheetRowMap:_sRM,sheetNames:_sN,sheetOrder:_sO,sheetRowNum:_sRN,corrections:_co,enumerators:_en,remarks:_rm,received:_rcv,sheetStatusOverrides:_ov,statusChangeDates:_sd,colIndexMap:{},stats:{matches:0,mismatches:0,notFound:0},runAt:now,viewOnly:true,viewMode:'sheet'};
       userSnaps[uid2]=snap;saveResults();userStatus[uid2]='done';switchToUser(uid2);
     }else if(hasSrc){
       // View source data
@@ -1754,19 +2085,20 @@ async function runComparison(uid2,silent=false){
     if(u.sheetFileData){
       const bin=atob(u.sheetFileData),arr=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i);
       const wb=XLSX.read(arr,{type:'array',cellDates:true});
-      // Distribute: use the last tab
-      const sn=wb.SheetNames[wb.SheetNames.length-1];
-      const r=XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,defval:''});
-      if(r.length>1)sheets.push({name:sn,rows:r});
+      // Load ALL tabs from the sheet file
+      wb.SheetNames.forEach(sn=>{
+        const r=XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,defval:''});
+        if(r.length>1)sheets.push({name:sn,rows:r});
+      });
     }else{
-      // Distribute (Google Sheet): fetch as XLSX and use last tab
-      const r=isGs(u.sheetUrl.trim())?await fetchGsTab(u.sheetUrl.trim(),'last'):await fetchCsv(u.sheetUrl.trim());
-      if(r.length<2)throw new Error('Sheet has no data.');sheets=[{name:u.name||'Sheet',rows:r}]
+      // Google Sheet URL: fetch ALL tabs via XLSX proxy, fallback to single gviz tab
+      const fetched=isGs(u.sheetUrl.trim())?await fetchGsAllSheets(u.sheetUrl.trim()):[{name:u.name||'Sheet',rows:await fetchCsv(u.sheetUrl.trim())}];
+      sheets.push(...fetched);
     }
     if(!sheets.length)throw new Error('No sheet data.');
     const exDates=userSnaps[uid2]?.statusChangeDates||new Map();
     const _sRM={},_sN=[],_sO=new Map(),_sRN=new Map();
-    const _co=new Map(),_en=new Map(),_rm=new Map(),_ov=new Map(),_sd=new Map(exDates),_ci={};
+    const _co=new Map(),_en=new Map(),_rm=new Map(),_ov=new Map(),_sd=new Map(exDates),_ci={},_rcv=new Map();
     const gMap=new Map();let gc=0;
     sheets.forEach(sh2=>{
       const hdr=(sh2.rows[0]||[]).map(h=>String(h).toLowerCase().trim());
@@ -1775,12 +2107,14 @@ async function runComparison(uid2,silent=false){
       const ci=hdr.findIndex(h=>h.includes('for correction')||h==='correction');
       const ei=hdr.findIndex(h=>h.includes('enumerator'));
       const ri=hdr.findIndex(h=>h.includes('remarks')||h.includes('remark'));
+      const rcvi=hdr.findIndex(h=>h.includes('received'));
       const di=hdr.findIndex(h=>h.includes('date')||h.includes('time')||h.includes('updated')||h.includes('changed')||h.includes('modified')||h.includes('timestamp'));
       _ci[sh2.name]={ci,ei,ri,si};
       if(qi!==-1){sh2.rows.slice(1).forEach((row,i)=>{
         const qcn=String(row[qi]||'').trim(),st=si!==-1?String(row[si]||'').trim():'';if(!qcn){gc++;return}
         const ec=ci!==-1?String(row[ci]||'').trim():'',ee=ei!==-1?String(row[ei]||'').trim():'',er=ri!==-1?String(row[ri]||'').trim():'';
-        if(ec)_co.set(qcn,ec);if(ee)_en.set(qcn,ee);if(er)_rm.set(qcn,er);
+        const ercv=rcvi!==-1?String(row[rcvi]||'').trim():'';
+        if(ec)_co.set(qcn,ec);if(ee)_en.set(qcn,ee);if(er)_rm.set(qcn,er);if(ercv)_rcv.set(qcn,ercv);
         if(di!==-1&&!_sd.has(qcn)){const iso=parseXlDate(row[di]);if(iso)_sd.set(qcn,{iso,source:'initial'})}
         if(!_sO.has(qcn)){_sO.set(qcn,gc);_sRN.set(qcn,i+1)}
         gMap.set(qcn,{status:st,sheetName:sh2.name,rowIndex:i+1});gc++;
@@ -1799,7 +2133,7 @@ async function runComparison(uid2,silent=false){
       }else{r={type:'match',qcn,srcStatus:srcSt,sheetStatus:info.status,sheetName:info.sheetName};matches++}
       _aRF.push(r);if(r.sheetName&&_sRM[r.sheetName])_sRM[r.sheetName].push(r);
     });
-    const snap={allRowsFlat:_aRF,sheetRowMap:_sRM,sheetNames:_sN,sheetOrder:_sO,sheetRowNum:_sRN,corrections:_co,enumerators:_en,remarks:_rm,sheetStatusOverrides:_ov,statusChangeDates:_sd,colIndexMap:_ci,stats:{matches,mismatches:mms,notFound:nf},runAt:now,viewOnly:false};
+    const snap={allRowsFlat:_aRF,sheetRowMap:_sRM,sheetNames:_sN,sheetOrder:_sO,sheetRowNum:_sRN,corrections:_co,enumerators:_en,remarks:_rm,received:_rcv,sheetStatusOverrides:_ov,statusChangeDates:_sd,colIndexMap:_ci,stats:{matches,mismatches:mms,notFound:nf},runAt:now,viewOnly:false};
     userSnaps[uid2]=snap;saveResults();userStatus[uid2]='done';switchToUser(uid2);
   }catch(err){userStatus[uid2]='error';renderUserChips();throw err}
   renderUserChips();if(!silent)updateEmptyState();
@@ -1818,37 +2152,164 @@ function switchToUser(id){
   corr.clear();snap.corrections.forEach((v,k)=>corr.set(k,v));
   enums.clear();snap.enumerators.forEach((v,k)=>enums.set(k,v));
   rmks.clear();snap.remarks.forEach((v,k)=>rmks.set(k,v));
+  rcvd.clear();(snap.received||new Map()).forEach((v,k)=>rcvd.set(k,v));
   shtOv.clear();snap.sheetStatusOverrides.forEach((v,k)=>shtOv.set(k,v));
   stDates.clear();snap.statusChangeDates.forEach((v,k)=>stDates.set(k,v));
   Object.keys(cMap).forEach(k=>delete cMap[k]);Object.assign(cMap,snap.colIndexMap);
   actSheet='__ALL__';actFilter='all';qTerm='';qSort='none';
-  Object.keys(cF).forEach(k=>{cF[k].clear();updDotHead(k)});
+  Object.keys(cF).forEach(k=>cF[k].clear());
   document.getElementById('qcnSrch').value='';
-  document.getElementById('thQcnSort').classList.remove('sa','sasc','sdesc');
   const {matches,mismatches,notFound}=snap.stats;
   const isViewOnly=snap.viewOnly;
-  const viewMode2=snap.viewMode||'';
-  const viewBadge=isViewOnly?`<span class="view-only-badge">${viewMode2==='sheet'?'📄 Sheet View':viewMode2==='source'?'📋 Source View':'View Only'}</span>`:'';
-  document.getElementById('qcnCards').innerHTML=isViewOnly?`
-    <div class="stat-card" style="grid-column:1/-1;display:flex;align-items:center;gap:12px;padding:12px 16px">
-      ${viewBadge}
-      <span style="font-size:13px;font-weight:700">${allRows.length.toLocaleString()} rows</span>
-      <span style="font-size:11px;color:var(--muted)">${viewMode2==='sheet'?'Viewing sheet data without source comparison.':viewMode2==='source'?'Viewing source data without sheet comparison.':'View-only mode.'} Add the other data file to enable full comparison.</span>
-    </div>`:`
-    <div class="stat-card"><div style="font-size:24px;font-weight:800">${matches}</div><div style="font-size:10px;margin-top:2px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;color:var(--muted)">✓ Synced</div></div>
-    <div class="stat-card" style="border-color:var(--orange)"><div style="font-size:24px;font-weight:800;color:var(--orange)">${mismatches}</div><div style="font-size:10px;margin-top:2px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;color:var(--orange)">⚡ Mismatch</div></div>
-    <div class="stat-card" style="border-color:var(--purple)"><div style="font-size:24px;font-weight:800;color:var(--purple)">${notFound}</div><div style="font-size:10px;margin-top:2px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;color:var(--purple)">🔍 Not in Sheet</div></div>`;
   document.getElementById('qcnEmpty').style.display='none';
   document.getElementById('qcnResults').classList.remove('hidden');
   document.getElementById('dlRow').classList.remove('hidden');
+  const hasSrc=!snap.viewOnly||(snap.viewMode!=='sheet');
+  buildQcnTHead(hasSrc);
   updateStickyTop();renderUserChips();buildQcnTabs();updateQcnFBar();renderQcnTable();
-  // Init resize on QCN table
+  renderQcnCards();
   setTimeout(()=>initColResize(document.getElementById('qcnTable')),0);
+  saveUiState();
+}
+
+function renderQcnCards(){
+  const snap=userSnaps[activeUid];if(!snap)return;
+  const isViewOnly=snap.viewOnly;
+  const viewMode2=snap.viewMode||'';
+  // Get rows for the currently active tab
+  let tabRows;
+  if(actSheet==='__ALL__')tabRows=allRows;
+  else if(actSheet==='__NF__')tabRows=allRows.filter(r=>r.type==='notfound');
+  else tabRows=[...(sRowMap[actSheet]||[]),...allRows.filter(r=>r.type==='notfound')];
+  document.getElementById('qcnCards').style.display='flex';
+  // Count status values
+  const statusCounts={};
+  tabRows.forEach(r=>{
+    const st=shtOv.has(r.qcn)?shtOv.get(r.qcn):(r.sheetStatus||'');
+    statusCounts[st]=(statusCounts[st]||0)+1;
+  });
+  // Count received Y/N/blank
+  let rcvY=0,rcvN=0,rcvBlank=0;
+  tabRows.forEach(r=>{
+    const v=(rcvd.get(r.qcn)||'').trim().toUpperCase();
+    if(v==='Y'||v==='YES')rcvY++;
+    else if(v==='N'||v==='NO')rcvN++;
+    else rcvBlank++;
+  });
+
+  const mkAccent=cls=>cls==='sc-fe'||cls==='sc-yes'?'var(--green)':cls==='sc-enc'?'var(--teal)':cls==='sc-bs'?'var(--orange)':cls==='sc-rej'||cls==='sc-no'?'var(--red)':'var(--muted)';
+  const stFilterActive=(st)=>cF.sht.size===1&&cF.sht.has(st);
+  const rcvFilterActiveQ=(v)=>cF.rcv.size===1&&cF.rcv.has(v);
+  const noFiltersActive=!Object.values(cF).some(s=>s.size>0)&&actFilter==='all';
+
+  const statusCards=Object.entries(statusCounts).sort((a,b)=>b[1]-a[1]).map(([st,n])=>{
+    const cls=sCls(st);
+    const label=st?st:'Status (No data)';
+    const accent=mkAccent(cls);
+    const isActive=stFilterActive(st);
+    const borderStyle=isActive?`border-color:${accent};`:'';
+    const numColor=isActive?accent:'inherit';
+    return`<div class="stat-card" style="flex:1;min-width:80px;${borderStyle}cursor:pointer" data-sc-st="${esc(st)}" title="Filter by ${esc(label)}"><div style="font-size:22px;font-weight:800;color:${numColor}">${n}</div><div style="font-size:10px;margin-top:2px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;color:${isActive?accent:'var(--muted)'}">  ${esc(label)}</div></div>`;
+  }).join('');
+
+  const rcvYActive=rcvFilterActiveQ('Y')||rcvFilterActiveQ('YES');
+  const rcvNActive=rcvFilterActiveQ('N')||rcvFilterActiveQ('NO');
+  const rcvBlankActive=rcvFilterActiveQ('');
+  const rcvCards=`
+    ${rcvY>0?`<div class="stat-card" style="flex:1;min-width:70px;${rcvYActive?'border-color:var(--green);':''}cursor:pointer" data-sc-rcv="Y"><div style="font-size:22px;font-weight:800;color:${rcvYActive?'var(--green)':'inherit'}">${rcvY}</div><div style="font-size:10px;margin-top:2px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;color:${rcvYActive?'var(--green)':'var(--muted)'}">Received</div></div>`:''}
+    ${rcvN>0?`<div class="stat-card" style="flex:1;min-width:70px;${rcvNActive?'border-color:var(--red);':''}cursor:pointer" data-sc-rcv="N"><div style="font-size:22px;font-weight:800;color:${rcvNActive?'var(--red)':'inherit'}">${rcvN}</div><div style="font-size:10px;margin-top:2px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;color:${rcvNActive?'var(--red)':'var(--muted)'}">Not Received</div></div>`:''}
+    ${rcvBlank>0?`<div class="stat-card" style="flex:1;min-width:70px;${rcvBlankActive?'border-color:var(--muted);':''}cursor:pointer" data-sc-rcv=""><div style="font-size:22px;font-weight:800;color:${rcvBlankActive?'var(--muted)':'inherit'}">${rcvBlank}</div><div style="font-size:10px;margin-top:2px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;color:var(--muted)">Received (No data)</div></div>`:''}`;
+
+  if(isViewOnly){
+    document.getElementById('qcnCards').innerHTML=`
+    <div class="stat-card" style="flex:1;${noFiltersActive?'border-color:var(--teal);':''}cursor:pointer" data-sc-total="1"><div style="font-size:24px;font-weight:800;color:var(--teal)">${tabRows.length}</div><div style="font-size:10px;margin-top:2px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;color:var(--muted)">Total Rows</div></div>
+    ${rcvCards}${statusCards}`;
+  }else{
+    const tabMatches=tabRows.filter(r=>r.type==='match').length;
+    const tabMismatches=tabRows.filter(r=>r.type==='mismatch').length;
+    const matchActive=actFilter==='match'&&!Object.values(cF).some(s=>s.size>0);
+    const mismatchActive=actFilter==='mismatch'&&!Object.values(cF).some(s=>s.size>0);
+    document.getElementById('qcnCards').innerHTML=`
+    <div class="stat-card" style="flex:1;${noFiltersActive?'border-color:var(--teal);':''}cursor:pointer" data-sc-total="1"><div style="font-size:24px;font-weight:800;color:var(--teal)">${tabRows.length}</div><div style="font-size:10px;margin-top:2px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;color:var(--muted)">Total QCNs</div></div>
+    <div class="stat-card" style="flex:1;${matchActive?'border-color:var(--green);':''}cursor:pointer" data-sc-type="match"><div style="font-size:24px;font-weight:800;color:${matchActive?'var(--green)':'inherit'}">${tabMatches}</div><div style="font-size:10px;margin-top:2px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;color:${matchActive?'var(--green)':'var(--muted)'}">✓ Synced</div></div>
+    <div class="stat-card" style="flex:1;${mismatchActive?'border-color:var(--orange);':''}cursor:pointer" data-sc-type="mismatch"><div style="font-size:24px;font-weight:800;color:${mismatchActive?'var(--orange)':'inherit'}">${tabMismatches}</div><div style="font-size:10px;margin-top:2px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;color:${mismatchActive?'var(--orange)':'var(--muted)'}">⚡ Mismatch</div></div>
+    ${rcvCards}${statusCards}`;
+  }
+  // Wire clicks
+  document.getElementById('qcnCards').querySelectorAll('[data-sc-st]').forEach(card=>{
+    card.addEventListener('click',()=>{
+      const st=card.dataset.scSt;
+      if(cF.sht.size===1&&cF.sht.has(st)){cF.sht.clear();}
+      else{cF.sht.clear();cF.sht.add(st);}
+      updDotHead('sht');renderQcnTable();renderQcnCards();
+    });
+  });
+  document.getElementById('qcnCards').querySelectorAll('[data-sc-type]').forEach(card=>{
+    card.addEventListener('click',()=>{
+      const t=card.dataset.scType;
+      if(actFilter===t){actFilter='all';}
+      else{actFilter=t;}
+      Object.keys(cF).forEach(k=>cF[k].clear());updateQcnFBar();renderQcnTable();renderQcnCards();
+    });
+  });
+  document.getElementById('qcnCards').querySelectorAll('[data-sc-rcv]').forEach(card=>{
+    card.addEventListener('click',()=>{
+      const v=card.dataset.scRcv;
+      if(cF.rcv.size===1&&cF.rcv.has(v)){cF.rcv.clear();}
+      else{cF.rcv.clear();cF.rcv.add(v);}
+      updDotHead('rcv');renderQcnTable();renderQcnCards();
+    });
+  });
+  const totalCard=document.getElementById('qcnCards').querySelector('[data-sc-total]');
+  if(totalCard){
+    totalCard.addEventListener('click',()=>{
+      actFilter='all';Object.keys(cF).forEach(k=>cF[k].clear());
+      Object.keys(cF).forEach(k=>updDotHead(k));
+      updateQcnFBar();renderQcnTable();renderQcnCards();
+    });
+  }
 }
 function updateEmptyState(){
   const has=Object.keys(userSnaps).length>0;
   document.getElementById('qcnEmpty').style.display=(has||activeUid)?'none':'';
   if(!has&&!activeUid)document.getElementById('qcnResults').classList.add('hidden');
+}
+
+/* ═══════════════════════════════════════════════════════
+   QCN TABLE HEADER (dynamic — rebuilt per user)
+═══════════════════════════════════════════════════════ */
+function buildQcnTHead(hasSrc){
+  // QCN col gets a consistent min-width so data is always visible
+  const cg=document.getElementById('qcnColgroup');
+  const cols=[
+    'width:38px;max-width:38px',                        // #
+    'min-width:200px;max-width:200px',                  // QCN
+    ...(hasSrc?['min-width:110px;max-width:110px']:[]), // Source Status
+    'min-width:120px;max-width:120px',                  // Sheet Status
+    '',                                                  // Enumerator — auto-fit
+    'min-width:110px;max-width:110px',                  // For Correction
+    'min-width:200px',                                  // Remarks — flexible
+    'min-width:110px;max-width:110px',                  // Received (Y/N)
+    ...(hasSrc?['min-width:110px;max-width:110px']:[]), // Result
+  ];
+  cg.innerHTML=cols.map(w=>`<col${w?` style="${w}"`:''}>` ).join('');
+
+  const filterTh=(id,col,label,dotId)=>`
+    <th class="thf" id="${id}"><button class="thfbtn" data-col="${col}"><span>${label}</span><span class="adot hidden" id="${dotId}"></span><svg class="chev" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></button><div class="thdd" id="dd-${col}"><div class="thdd-srch"><input type="text" placeholder="Filter…" data-dd="${col}"/></div><div class="thdd-list" id="ddl-${col}"></div><div class="thdd-clr"><button data-clr="${col}">✕ Clear</button></div></div><div class="col-resizer"></div></th>`;
+
+  document.getElementById('qcnThead').innerHTML=`<tr>
+    <th class="rn-th">#<div class="col-resizer"></div></th>
+    <th style="padding:0"><button class="thsort" id="thQcnSort"><span>QCN</span><span class="l5b">last 5</span><span class="sico"><span class="au"></span><span class="ad"></span></span></button><div class="col-resizer"></div></th>
+    ${hasSrc?filterTh('thSS','ss','Source Status','dot-ss'):''}
+    ${filterTh('thSHT','sht','Sheet Status','dot-sht')}
+    ${filterTh('thEnum','enum','Enumerator','dot-enum')}
+    <th class="tp">For Correction<div class="col-resizer"></div></th>
+    <th class="tp">Remarks<div class="col-resizer"></div></th>
+    ${filterTh('thRCV','rcv','Received (Y/N)','dot-rcv')}
+    ${hasSrc?filterTh('thRES','res','Result','dot-res'):''}
+  </tr>`;
+
+  // sort and filter events are handled by the existing delegation listener on qcnThead
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -1865,9 +2326,21 @@ function sortQRows(rows){
   return[...rows].sort((a,b)=>(sOrder.get(a.qcn)??Infinity)-(sOrder.get(b.qcn)??Infinity));
 }
 function getQBase(){
-  let r=actSheet==='__ALL__'?allRows:actSheet==='__NF__'?allRows.filter(r2=>r2.type==='notfound'):(sRowMap[actSheet]||[]);
+  // When searching, always scan ALL rows regardless of active tab
+  let r;
+  if(qTerm.trim()){
+    r=allRows;
+  }else if(actSheet==='__ALL__'){
+    r=allRows;
+  }else if(actSheet==='__NF__'){
+    r=allRows.filter(r2=>r2.type==='notfound');
+  }else{
+    const tabRows=sRowMap[actSheet]||[];
+    const nfRows=allRows.filter(r2=>r2.type==='notfound');
+    r=[...tabRows,...nfRows];
+  }
   if(actFilter!=='all')r=r.filter(r2=>r2.type===actFilter);
-  if(qTerm.trim())r=r.filter(r2=>r2.qcn.toLowerCase().includes(qTerm.trim().toLowerCase()));
+  if(qTerm.trim()){r=r.filter(r2=>qMatchesTerm(r2,qTerm.trim()));}
   return sortQRows(r);
 }
 function getQFiltered(){
@@ -1875,15 +2348,18 @@ function getQFiltered(){
   if(cF.ss.size)r=r.filter(x=>cF.ss.has(x.srcStatus||''));
   if(cF.sht.size)r=r.filter(x=>cF.sht.has(shtOv.has(x.qcn)?shtOv.get(x.qcn):(x.sheetStatus||'')));
   if(cF.enum.size)r=r.filter(x=>cF.enum.has(enums.get(x.qcn)||''));
+  if(cF.rcv.size)r=r.filter(x=>cF.rcv.has(rcvd.get(x.qcn)||''));
+  if(cF.res.size)r=r.filter(x=>cF.res.has(x.type||''));
   return r;
 }
 const renderQcnTable=debounce(function(){_renderQcnTable()},30);
 function _renderQcnTable(){
   const tbody=document.getElementById('qcnTbody'),rows=getQFiltered(),term=qTerm.trim();
   document.getElementById('qcnRC').textContent=rows.length+' rows';
-  if(!rows.length){tbody.innerHTML=`<tr><td colspan="8" style="text-align:center;padding:36px;color:var(--muted);font-style:italic">No matching rows.</td></tr>`;return}
   const snap=userSnaps[activeUid];
-  const isViewOnly=snap&&snap.viewOnly;
+  const hasSrc=!snap?.viewOnly||(snap?.viewMode!=='sheet');
+  const numCols=hasSrc?9:7; // #,QCN,[src],sht,enum,corr,rmk,recv,[result]
+  if(!rows.length){tbody.innerHTML=`<tr><td colspan="${numCols}" style="text-align:center;padding:36px;color:var(--muted);font-style:italic">No matching rows.</td></tr>`;return}
   const frag=document.createDocumentFragment();
   rows.forEach(r=>{
     const tr=document.createElement('tr');
@@ -1893,25 +2369,34 @@ function _renderQcnTable(){
     else if(r.type==='sheet-only')tr.className='rsh';
     else if(r.type==='source-only')tr.className='rns';
     else tr.className='ro';
-    const co2=esc(corr.get(r.qcn)||''),en2=esc(enums.get(r.qcn)||''),rm2=esc(rmks.get(r.qcn)||'');
+    const co2=esc(corr.get(r.qcn)||''),en2=esc(enums.get(r.qcn)||'');
     const rn2=sRowNum.has(r.qcn)?`<span style="font-size:10px">${sRowNum.get(r.qcn)+1}</span>`:`<span style="color:var(--muted)">—</span>`;
     const shtTd=(r.type!=='notfound'&&r.type!=='source-only')?`<td style="padding:4px 7px">${shtStatCell(r.qcn,r.sheetStatus)}</td>`:`<td style="color:var(--muted);font-size:11px">—</td>`;
-    const srcTd=r.type==='sheet-only'?`<td style="color:var(--muted);font-size:11px">—</td>`:`<td style="text-align:center">${sPill(r.srcStatus)}</td>`;
-    let resPill;
-    if(r.type==='match')resPill=`<span class="pill sc-fe">✓ Match</span>`;
-    else if(r.type==='mismatch')resPill=`<span class="pill" style="background:var(--po-bg);color:var(--po-t)">⚡ Mismatch</span>`;
-    else if(r.type==='notfound')resPill=`<span class="pill" style="background:var(--pp-bg);color:var(--pp-t)">🔍 Not Found</span>`;
-    else if(r.type==='sheet-only')resPill=`<span class="pill" style="background:var(--pb-bg);color:var(--pb-t)">📄 Sheet Only</span>`;
-    else if(r.type==='source-only')resPill=`<span class="pill" style="background:var(--rn-bg);color:var(--rn-t)">📋 Source Only</span>`;
-    else resPill=`<span class="pill" style="background:var(--surface2);color:var(--muted)">—</span>`;
+    const srcTd=hasSrc?(r.type==='sheet-only'?`<td style="color:var(--muted);font-size:11px">—</td>`:`<td style="text-align:center">${sPill(r.srcStatus)}</td>`):'';
+    // Received: from sheet data "RECEIVED" column
+    const rcvVal=rcvd.get(r.qcn)||'';
+    const rcvTd=`<td style="text-align:center">${rcvVal?sPill(rcvVal):`<span style="color:var(--muted)">—</span>`}</td>`;
+    // Remarks: show up to 50 chars, full value in title
+    const rm2full=rmks.get(r.qcn)||'';
+    const rm2disp=rm2full.length>50?esc(rm2full.slice(0,50))+'…':esc(rm2full);
+    let resPill='';
+    if(hasSrc){
+      if(r.type==='match')resPill=`<span class="pill sc-fe">✓ Match</span>`;
+      else if(r.type==='mismatch')resPill=`<span class="pill" style="background:var(--po-bg);color:var(--po-t)">⚡ Mismatch</span>`;
+      else if(r.type==='notfound')resPill=`<span class="pill" style="background:var(--pp-bg);color:var(--pp-t)">🔍 Not Found</span>`;
+      else if(r.type==='sheet-only')resPill=`<span class="pill" style="background:var(--pb-bg);color:var(--pb-t)">📄 Sheet Only</span>`;
+      else if(r.type==='source-only')resPill=`<span class="pill" style="background:var(--rn-bg);color:var(--rn-t)">📋 Source Only</span>`;
+      else resPill=`<span class="pill" style="background:var(--surface2);color:var(--muted)">—</span>`;
+    }
     tr.innerHTML=`<td class="rn-td">${rn2}</td>
       <td class="qcopy" data-qcn="${esc(r.qcn)}" style="cursor:pointer;white-space:nowrap"><span class="mono" style="font-size:11px;font-weight:700">${hl(r.qcn,term)}</span><span class="qcp-lbl">Copied!</span></td>
       ${srcTd}
       ${shtTd}
-      <td style="overflow:hidden;text-overflow:ellipsis;max-width:0;white-space:nowrap"><span class="mono" style="font-size:11px;color:${enums.get(r.qcn)?'var(--text)':'var(--muted)'};">${en2||'—'}</span></td>
+      <td style="white-space:nowrap"><span class="mono" style="font-size:11px;color:${enums.get(r.qcn)?'var(--text)':'var(--muted)'};">${en2||'—'}</span></td>
       <td><input class="fin-inp${corr.get(r.qcn)?' hv':''}" data-fld="corr" data-qcn="${esc(r.qcn)}" value="${co2}" placeholder="—"/></td>
-      <td><input class="fin-inp${rmks.get(r.qcn)?' hv':''}" data-fld="rmk" data-qcn="${esc(r.qcn)}" value="${rm2}" placeholder="—"/></td>
-      <td style="text-align:center">${resPill}</td>`;
+      <td title="${esc(rm2full)}" style="font-size:11px;color:var(--muted)">${rm2disp||'—'}</td>
+      ${rcvTd}
+      ${hasSrc?`<td style="text-align:center">${resPill}</td>`:''}`;
     frag.appendChild(tr);
   });
   tbody.innerHTML='';tbody.appendChild(frag);
@@ -1953,21 +2438,35 @@ function syncSnap(q,f,v){
    QCN COLUMN FILTERS
 ═══════════════════════════════════════════════════════ */
 function getColVals(col){
-  const rows=getQBase(),set=new Set();
+  const rows=getQBase(),vals=[];
   rows.forEach(r=>{
-    const v=col==='ss'?(r.srcStatus||''):col==='sht'?(shtOv.has(r.qcn)?shtOv.get(r.qcn):(r.sheetStatus||'')):col==='enum'?(enums.get(r.qcn)||''):'';
-    if(v)set.add(v);
-  });return[...set].sort();
+    let v;
+    if(col==='ss')v=r.srcStatus||'';
+    else if(col==='sht')v=shtOv.has(r.qcn)?shtOv.get(r.qcn):(r.sheetStatus||'');
+    else if(col==='enum')v=enums.get(r.qcn)||'';
+    else if(col==='rcv')v=rcvd.get(r.qcn)||'';
+    else if(col==='res')v=r.type||'';
+    else v='';
+    vals.push(v);
+  });
+  // Include blanks as a distinct value if any row has blank
+  const uniq=[...new Set(vals)].sort((a,b)=>{if(!a)return 1;if(!b)return -1;return a.localeCompare(b);});
+  return uniq;
 }
 function buildDDList(col,search=''){
-  const list=document.getElementById(`ddl-${col}`),vals=getColVals(col),sel=cF[col],low=search.toLowerCase();
-  const filt=low?vals.filter(v=>v.toLowerCase().includes(low)):vals;
+  const list=document.getElementById(`ddl-${col}`);if(!list)return;
+  const vals=getColVals(col),sel=cF[col]||new Set(),low=search.toLowerCase();
+  const filt=low?vals.filter(v=>v.toLowerCase().includes(low)||(v===''&&'(blank)'.includes(low))):vals;
   if(!filt.length){list.innerHTML=`<div class="thdd-item" style="color:var(--muted);font-style:italic">No values</div>`;return}
-  list.innerHTML=filt.map(v=>`<div class="thdd-item${sel.has(v)?' sel':''}" data-col="${col}" data-val="${esc(v)}"><span class="chk"><svg width="8" height="8" viewBox="0 0 12 12" fill="none" stroke="white" stroke-width="2.5"><polyline points="2,6 5,9 10,3"/></svg></span><span>${esc(v)}</span></div>`).join('');
+  list.innerHTML=filt.map(v=>`<div class="thdd-item${sel.has(v)?' sel':''}" data-col="${col}" data-val="${esc(v)}"><span class="chk"><svg width="8" height="8" viewBox="0 0 12 12" fill="none" stroke="white" stroke-width="2.5"><polyline points="2,6 5,9 10,3"/></svg></span><span>${v?esc(v):'<em style="color:var(--muted)">No data</em>'}</span></div>`).join('');
 }
-function updDotHead(col){document.getElementById(`dot-${col}`)?.classList.toggle('hidden',!cF[col].size);document.querySelector(`#thSS,#thSHT,#thEnum`)?.classList.toggle('af',cF[col].size>0)}
+function updDotHead(col){
+  document.getElementById(`dot-${col}`)?.classList.toggle('hidden',!(cF[col]?.size));
+  const idMap={ss:'SS',sht:'SHT',rcv:'RCV',res:'RES',enum:'Enum'};
+  document.getElementById(`th${idMap[col]||col}`)?.classList.toggle('af',!!(cF[col]?.size));
+}
 function closeAllDD(){document.querySelectorAll('.thdd.open').forEach(d=>d.classList.remove('open'));document.querySelectorAll('.thfbtn.open').forEach(b=>b.classList.remove('open'))}
-function togDD(col){const dd=document.getElementById(`dd-${col}`);const btn=document.querySelector(`[data-col="${col}"]`);if(!dd||!btn)return;const was=dd.classList.contains('open');closeAllDD();if(!was){dd.classList.add('open');btn.classList.add('open');const si=dd.querySelector('input[type=text]');if(si)si.value='';buildDDList(col,'')}}
+function togDD(col){const dd=document.getElementById(`dd-${col}`);const btn=document.querySelector(`[data-col="${col}"]`);if(!dd||!btn)return;const was=dd.classList.contains('open');closeAllDD();if(!was){const rect=btn.getBoundingClientRect();dd.style.top=(rect.bottom+2)+'px';dd.style.left=Math.min(rect.left,window.innerWidth-200)+'px';dd.classList.add('open');btn.classList.add('open');const si=dd.querySelector('input[type=text]');if(si)si.value='';buildDDList(col,'')}}
 
 document.querySelector('#qcnThead').addEventListener('click',e=>{
   const fb=e.target.closest('.thfbtn[data-col]');if(fb&&!fb.closest('#thQcnSort')){e.stopPropagation();togDD(fb.dataset.col);return}
@@ -1977,6 +2476,18 @@ document.querySelector('#qcnThead').addEventListener('click',e=>{
 });
 document.querySelector('#qcnThead').addEventListener('input',e=>{const inp=e.target.closest('[data-dd]');if(inp)buildDDList(inp.dataset.dd,inp.value)});
 document.getElementById('qcnSrch').addEventListener('input',function(){qTerm=this.value;renderQcnTable()});
+function qMatchesTerm(r,term){
+  if(!term)return true;
+  const t=term.toLowerCase();
+  return (r.qcn||'').toLowerCase().includes(t)||
+    (r.srcStatus||'').toLowerCase().includes(t)||
+    (r.sheetStatus||'').toLowerCase().includes(t)||
+    (r.sheetName||'').toLowerCase().includes(t)||
+    (enums.get(r.qcn)||'').toLowerCase().includes(t)||
+    (corr.get(r.qcn)||'').toLowerCase().includes(t)||
+    (rmks.get(r.qcn)||'').toLowerCase().includes(t)||
+    (shtOv.get(r.qcn)||'').toLowerCase().includes(t);
+}
 
 /* ═══════════════════════════════════════════════════════
    QCN TABS & FILTER BAR
@@ -1984,19 +2495,60 @@ document.getElementById('qcnSrch').addEventListener('input',function(){qTerm=thi
 function buildQcnTabs(){
   const bar=document.getElementById('qcnTabs');bar.innerHTML='';
   const nf=allRows.filter(r=>r.type==='notfound').length;
-  const tabs=[{key:'__ALL__',label:'All Sheets',issues:allRows.filter(r=>r.type!=='match'&&r.type!=='sheet-only'&&r.type!=='source-only').length},...sNames.map(n=>({key:n,label:n,issues:(sRowMap[n]||[]).filter(r=>r.type!=='match'&&r.type!=='sheet-only'&&r.type!=='source-only').length})),...(nf>0?[{key:'__NF__',label:'Not Found',issues:nf}]:[])];
+  const snap=userSnaps[activeUid];
+  const hasSrc=!snap?.viewOnly||(snap?.viewMode!=='sheet');
+  const allIssues=allRows.filter(r=>r.type!=='match'&&r.type!=='sheet-only'&&r.type!=='source-only').length;
+  // Default to last tab (most recent) when on ALL
+  if(actSheet==='__ALL__'&&sNames.length>0){actSheet=sNames[sNames.length-1];}
+  // Reverse named tabs so newest (last loaded) appears first
+  const reversedNames=[...sNames].reverse();
+
+  // Helper: count warn-worthy rows for a tab (only received blank/N, not source-data issues)
+  function tabWarnCount(rows){
+    return rows.filter(r=>{
+      const v=(rcvd.get(r.qcn)||'').trim().toUpperCase();
+      const isRcvWarn=!v||(v==='N'||v==='NO');
+      return isRcvWarn;
+    }).length;
+  }
+
+  const tabs=[
+    {key:'__ALL__',label:'All Sheets',issues:allIssues},
+    ...reversedNames.map(n=>{
+      const tabRows=sRowMap[n]||[];
+      const warns=tabWarnCount(tabRows);
+      return{key:n,label:n,warns,hasData:true};
+    }),
+    ...(hasSrc&&nf>0?[{key:'__NF__',label:'Not Found',issues:nf}]:[])
+  ];
   tabs.forEach(t=>{
     const btn=document.createElement('button');btn.className='stab'+(t.key===actSheet?' active':'');btn.dataset.key=t.key;
-    btn.innerHTML=`<span>${esc(t.label)}</span>${t.issues>0?`<span class="badge" style="background:var(--po-bg);color:var(--po-t)">${t.issues}⚡</span>`:`<span class="badge" style="background:var(--pg-bg);color:var(--pg-t)">✓</span>`}`;
-    btn.addEventListener('click',()=>{actSheet=t.key;actFilter='all';qTerm='';Object.keys(cF).forEach(k=>{cF[k].clear();updDotHead(k)});document.getElementById('qcnSrch').value='';document.querySelectorAll('.stab').forEach(b=>b.classList.toggle('active',b.dataset.key===t.key));updateQcnFBar();renderQcnTable()});
+    let badge;
+    if(t.key==='__ALL__'){
+      badge=hasSrc&&t.issues>0
+        ?`<span class="badge" style="background:var(--po-bg);color:var(--po-t)">${t.issues}⚡</span>`
+        :`<span class="badge" style="background:var(--pg-bg);color:var(--pg-t)">${allRows.length}</span>`;
+    }else if(t.key==='__NF__'){
+      badge=`<span class="badge" style="background:var(--pp-bg);color:var(--pp-t)">${t.issues}</span>`;
+    }else{
+      // Named tabs: warn only if there are received-blank or received-N rows
+      badge=t.warns>0
+        ?`<span class="badge" style="background:var(--po-bg);color:var(--po-t)">${t.warns}⚡</span>`
+        :`<span class="badge" style="background:var(--pg-bg);color:var(--pg-t)">${(sRowMap[t.key]||[]).length}</span>`;
+    }
+    btn.innerHTML=`<span>${esc(t.label)}</span>${badge}`;
+    btn.addEventListener('click',()=>{actSheet=t.key;actFilter='all';qTerm='';Object.keys(cF).forEach(k=>{cF[k].clear();updDotHead(k)});document.getElementById('qcnSrch').value='';document.querySelectorAll('.stab').forEach(b=>b.classList.toggle('active',b.dataset.key===t.key));updateQcnFBar();renderQcnTable();renderQcnCards();saveUiState()});
     bar.appendChild(btn);
   });
 }
 function updateQcnFBar(){
   const bar=document.getElementById('qcnFilterBar');bar.innerHTML='';
-  const rows=actSheet==='__ALL__'?allRows:actSheet==='__NF__'?allRows.filter(r=>r.type==='notfound'):(sRowMap[actSheet]||[]);
+  let rows;
+  if(actSheet==='__ALL__') rows=allRows;
+  else if(actSheet==='__NF__') rows=allRows.filter(r=>r.type==='notfound');
+  else rows=[...(sRowMap[actSheet]||[]),...allRows.filter(r=>r.type==='notfound')];
   const c={all:rows.length,match:rows.filter(r=>r.type==='match').length,mismatch:rows.filter(r=>r.type==='mismatch').length,notfound:rows.filter(r=>r.type==='notfound').length,'sheet-only':rows.filter(r=>r.type==='sheet-only').length,'source-only':rows.filter(r=>r.type==='source-only').length};
-  const filters=[{key:'all',label:'All'},{key:'match',label:'✓ Match'},{key:'mismatch',label:'⚡ Mismatch'},{key:'notfound',label:'🔍 Not Found'},{key:'sheet-only',label:'📄 Sheet Only'},{key:'source-only',label:'📋 Source Only'}];
+  const filters=[{key:'all',label:'All'},{key:'match',label:'✓ Match'},{key:'mismatch',label:'⚡ Mismatch'},{key:'notfound',label:'🔍 Not Found'},{key:'source-only',label:'📋 Source Only'}];
   filters.forEach(d=>{
     if(d.key!=='all'&&!c[d.key])return;
     const btn=document.createElement('button');btn.className='tpill'+(actFilter===d.key?' active':'');
@@ -2013,8 +2565,7 @@ document.getElementById('dlBtn').addEventListener('click',()=>{
   const wb=XLSX.utils.book_new();const user=users.find(u=>u.id===activeUid);const label=user?.name||'Results';
   const hdr=['Row #','QCN','Source Status','Sheet Status','Enumerator','For Correction','Remarks','Result'];
   const rows=[hdr,...allRows.map(r=>{
-    const md=getMasterDataForQcn(r.qcn);
-    return[sRowNum.has(r.qcn)?sRowNum.get(r.qcn)+1:'',r.qcn,r.srcStatus,shtOv.has(r.qcn)?shtOv.get(r.qcn):(r.sheetStatus||''),md?md.enumerator:'',enums.get(r.qcn)||'',corr.get(r.qcn)||'',rmks.get(r.qcn)||'',r.type==='match'?'Match':r.type==='mismatch'?'Mismatch':r.type==='notfound'?'Not Found':r.type==='sheet-only'?'Sheet Only':r.type==='source-only'?'Source Only':''];
+    return[sRowNum.has(r.qcn)?sRowNum.get(r.qcn)+1:'',r.qcn,r.srcStatus,shtOv.has(r.qcn)?shtOv.get(r.qcn):(r.sheetStatus||''),enums.get(r.qcn)||'',corr.get(r.qcn)||'',rmks.get(r.qcn)||'',r.type==='match'?'Match':r.type==='mismatch'?'Mismatch':r.type==='notfound'?'Not Found':r.type==='sheet-only'?'Sheet Only':r.type==='source-only'?'Source Only':''];
   })];
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rows),'QCN Results');
   XLSX.writeFile(wb,`qcn_${label.replace(/[^a-z0-9]/gi,'_')}_${new Date().toISOString().slice(0,10)}.xlsx`);
@@ -2039,17 +2590,6 @@ initLoad();
 updateStickyTop();
 </script>
 
-<!-- ── DEBUG PANEL ── -->
-<div id="dbgPanel" class="hidden" style="position:fixed;bottom:0;left:0;right:0;height:280px;background:var(--surface);border-top:2px solid var(--orange);z-index:9999;display:flex;flex-direction:column;font-family:'Inter',monospace">
-  <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 12px;background:var(--surface2);border-bottom:1px solid var(--border);flex-shrink:0">
-    <span style="font-size:11px;font-weight:700;color:var(--orange)">🔍 Fetch Diagnostics</span>
-    <div style="display:flex;gap:8px">
-      <button onclick="navigator.clipboard&&navigator.clipboard.writeText(_dbgLog.map(e=>e.t+' '+e.msg+(e.data?' | '+e.data:'')).join('\n'))" style="font-size:10px;padding:2px 8px;background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--text);cursor:pointer">Copy All</button>
-      <button onclick="toggleDebug()" style="font-size:10px;padding:2px 8px;background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--text);cursor:pointer">✕ Close</button>
-    </div>
-  </div>
-  <div id="dbgBody" style="overflow-y:auto;flex:1;padding:6px 12px;font-size:10px;line-height:1.6"></div>
-</div>
-<button onclick="toggleDebug()" title="Toggle fetch diagnostics" style="position:fixed;bottom:12px;right:12px;z-index:9998;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:4px 9px;font-size:10px;cursor:pointer;font-family:'Inter',sans-serif">🔍 Debug</button>
+
 </body>
 </html>
