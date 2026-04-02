@@ -82,6 +82,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .sbody{flex:1;display:flex;min-height:0}
 .ssbar{width:200px;background:var(--ss-sidebar);border-right:1px solid var(--ss-border);display:flex;flex-direction:column;flex-shrink:0}
 .ssbar-hdr{padding:12px 14px 8px;border-bottom:1px solid var(--ss-border)}
+.ssbar-srch{padding:7px 10px;border-bottom:1px solid var(--ss-border);position:relative;display:flex;align-items:center}
+.ssbar-srch svg{position:absolute;left:17px;color:var(--ss-text);opacity:.4;pointer-events:none}
+.ssbar-srch input{width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:var(--ss-text);border-radius:6px;padding:5px 8px 5px 26px;font-size:11px;font-family:'Inter',sans-serif;transition:border-color .15s,background .15s}
+.ssbar-srch input::placeholder{color:var(--ss-text);opacity:.35}
+.ssbar-srch input:focus{outline:none;border-color:var(--ss-act);background:rgba(255,255,255,.1)}
 .ssbar-ttl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--ss-text);opacity:.5}
 .sulist{flex:1;overflow-y:auto;padding:5px 0}
 .suitem{display:flex;align-items:center;gap:7px;padding:8px 14px;cursor:pointer;color:var(--ss-text);font-size:12px;font-weight:500;transition:background .1s}
@@ -321,6 +326,10 @@ html.dark .res-missing{background:#500724;color:#f9a8d4}
     <div class="sbody">
       <div class="ssbar">
         <div class="ssbar-hdr"><div class="ssbar-ttl">Users</div></div>
+        <div class="ssbar-srch">
+          <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          <input id="suSrch" type="text" placeholder="Search users…" autocomplete="off"/>
+        </div>
         <div id="sulist" class="sulist"></div>
         <div class="su-add">
           <button id="sAddUser" class="btn-addu">
@@ -2017,14 +2026,19 @@ function closeSettings(){
   }
 }
 function renderSuList(){
-  document.getElementById('sulist').innerHTML=users.map(u=>{
-    const ok=u.sourceUrl||u.sourceFileData,sht=u.sheetUrl||u.sheetFileData;
-    return`<div class="suitem${u.id===settingUid?' active':''}" data-suid="${u.id}">
-      <span class="sidot${ok&&sht?' ok':ok||sht?' warn':' warn'}"></span>
-      <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;${!u.name.trim()?'opacity:.4;font-style:italic':''}">${esc(u.name.trim()||'Unnamed')}</span>
-    </div>`;
-  }).join('');
+  const term=(document.getElementById('suSrch')?.value||'').toLowerCase().trim();
+  const filtered=term?users.filter(u=>(u.name||'').toLowerCase().includes(term)):users;
+  document.getElementById('sulist').innerHTML=filtered.length
+    ? filtered.map(u=>{
+        const ok=u.sourceUrl||u.sourceFileData,sht=u.sheetUrl||u.sheetFileData;
+        return`<div class="suitem${u.id===settingUid?' active':''}" data-suid="${u.id}">
+          <span class="sidot${ok&&sht?' ok':ok||sht?' warn':' warn'}"></span>
+          <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;${!u.name.trim()?'opacity:.4;font-style:italic':''}">${esc(u.name.trim()||'Unnamed')}</span>
+        </div>`;
+      }).join('')
+    : `<div style="padding:14px;font-size:11px;color:var(--ss-text);opacity:.4;font-style:italic">No users found</div>`;
 }
+document.addEventListener('input',e=>{if(e.target.id==='suSrch')renderSuList()});
 document.getElementById('sulist').addEventListener('click',e=>{const i=e.target.closest('[data-suid]');if(i)selectSU(i.dataset.suid)});
 function selectSU(id){settingUid=id;document.querySelectorAll('.suitem').forEach(el=>el.classList.toggle('active',el.dataset.suid===id));renderSuForm(id)}
 function renderSuForm(id){
