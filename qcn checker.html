@@ -1005,7 +1005,7 @@ document.getElementById('mAddUrl2').addEventListener('click',async()=>{
     if(isGs(url)){const t=await fetchGsTitle(gsId(url));if(t)src.sheetTitle=t;}
     console.log(`[Master] Loaded ${src.count} rows from "${src.sheetTitle||src.name}"`);
   }catch(e){src.status='error';src.err=e.message;console.error('[Master] Load error',e.message)}
-  renderMSourceList2();rebuildMasterAllRows();saveMasterSources();updateMasterStatusBar();
+  renderMSourceList2();rebuildMasterAllRows();autoAddMissingUsers();saveMasterSources();updateMasterStatusBar();
   if(MD.allRows.length){document.getElementById('mDlRow').style.display='';renderMasterChips();renderMasterResults()}
 });
 document.getElementById('mSrcUrl2').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('mAddUrl2').click()});
@@ -1032,7 +1032,7 @@ document.getElementById('mAddXlsx2').addEventListener('change',function(e){
         });
         src.status='loaded';src.count=src.rows.length;
       }catch(e){src.status='error';src.err=e.message}
-      renderMSourceList2();rebuildMasterAllRows();saveMasterSources();updateMasterStatusBar();
+      renderMSourceList2();rebuildMasterAllRows();autoAddMissingUsers();saveMasterSources();updateMasterStatusBar();
       if(MD.allRows.length){document.getElementById('mDlRow').style.display='';renderMasterChips();renderMasterResults()}
     };reader.readAsArrayBuffer(file);
   });
@@ -1656,6 +1656,7 @@ function masterHasSourceData(){
 }
 function buildMasterTHead(){
   const showChk=mActiveChk==='__ALL__';
+  const hasSrc=masterHasSourceData();
   document.getElementById('mTHead').innerHTML=`<tr>
     <th class="rn-th" style="width:36px">#<div class="col-resizer"></div></th>
     <th class="tp" style="min-width:160px;padding:8px 11px;position:relative">QCN<div class="col-resizer"></div></th>
@@ -1667,6 +1668,7 @@ function buildMasterTHead(){
     ${mkMasterFilterTh('enumerator','Enumerator','enumerator',120)}
     ${showChk?mkMasterFilterTh('checkoder','Checkoder','checkoder',110):''}
     <th class="tp" style="min-width:120px;padding:8px 11px;position:relative;overflow:hidden">Remarks<div class="col-resizer"></div></th>
+    ${hasSrc?`<th class="tp" style="min-width:110px;padding:8px 11px;position:relative;overflow:hidden">Source Status<div class="col-resizer"></div></th>`:''}
     ${mkMasterFilterTh('shtSt','Sheet Status','shtSt',100)}
     ${mkMasterFilterTh('rcv','Received','rcv',100)}
   </tr>`;
@@ -1761,6 +1763,7 @@ function renderMasterTableBody(){
     document.getElementById('mLoadMore').classList.add('hidden');return;
   }
   const frag=document.createDocumentFragment();
+  const hasSrc=masterHasSourceData();
   toRender.forEach((r,idx)=>{
     const mStatus=getQcnMatchStatus(r.qcn,r.checkoder);
     const userRow=getReceivedData(r.qcn,r.checkoder);
@@ -1790,6 +1793,7 @@ function renderMasterTableBody(){
       `<td style="font-size:11px;white-space:nowrap;text-align:center" title="${esc(r.enumerator)}">${esc(r.enumerator)||'—'}</td>`,
       ...(showChk?[`<td style="text-align:center"><span class="pill" style="background:var(--pt-bg);color:var(--pt-t);font-size:9px;white-space:nowrap" title="${esc(r.checkoder)}">${esc(r.checkoder)||'—'}</span></td>`]:[]),
       `<td style="font-size:11px;white-space:normal;word-break:break-word;text-align:left" title="${remarks}">${remarks||'—'}</td>`,
+      ...(hasSrc?[`<td style="text-align:center">${userRow?sPill(userRow.srcStatus||''):`<span style="color:var(--muted2);font-size:11px">—</span>`}</td>`]:[]),
       shtStatusTd,
       receivedTd,
     ];
@@ -1884,8 +1888,9 @@ function openMasterRowDetail(r){
 
   const userLabel=matchedUser?`👤 User Data — ${esc(matchedUser.user.name)}`:'👤 User Data';
   const rcvColor=rcvUpper==='Y'||rcvUpper==='YES'?'var(--green)':rcvUpper==='N'||rcvUpper==='NO'?'var(--red)':'';
+  const userHasSrc=matchedUser&&(!matchedUser.snap.viewOnly||matchedUser.snap.viewMode!=='sheet');
   const userSection=section(userLabel,`
-    ${f('Source Status',userRow?esc(userRow.srcStatus||''):'No user data',{color:userRow?'':'var(--muted)'})}
+    ${userHasSrc?f('Source Status',userRow?esc(userRow.srcStatus||''):'—',{color:userRow&&userRow.srcStatus?'':'var(--muted)'}):''}
     ${f('Sheet Status',userSheetSt?esc(userSheetSt)+(shtOvVal!==undefined?' ✏':''):'—',{color:shtOvVal!==undefined?'var(--orange)':''})}
     ${f('Received',rcvVal?esc(rcvVal):'No Data',{color:rcvColor||'var(--muted)'})}
     ${corrVal?f('For Correction',esc(corrVal)):''}
@@ -2876,9 +2881,12 @@ function updateQcnFBar(){
   if(actSheet==='__ALL__') rows=allRows;
   else if(actSheet==='__NF__') rows=allRows.filter(r=>r.type==='notfound');
   else rows=[...(sRowMap[actSheet]||[]),...allRows.filter(r=>r.type==='notfound')];
+  const snap=userSnaps[activeUid];
+  const hasSrc=!snap?.viewOnly||(snap?.viewMode!=='sheet');
   const c={all:rows.length,match:rows.filter(r=>r.type==='match').length,mismatch:rows.filter(r=>r.type==='mismatch').length,notfound:rows.filter(r=>r.type==='notfound').length,'sheet-only':rows.filter(r=>r.type==='sheet-only').length,'source-only':rows.filter(r=>r.type==='source-only').length};
   const filters=[{key:'all',label:'All'},{key:'match',label:'✓ Match'},{key:'mismatch',label:'⚡ Mismatch'},{key:'notfound',label:'🔍 Not Found'},{key:'sheet-only',label:'📋 Not in Source'},{key:'source-only',label:'📋 Source Only'}];
   filters.forEach(d=>{
+    if(d.key==='sheet-only'&&!hasSrc)return;
     if(d.key!=='all'&&!c[d.key])return;
     const btn=document.createElement('button');btn.className='tpill'+(actFilter===d.key?' active':'');
     btn.innerHTML=`${d.label} <span style="opacity:.7">(${c[d.key]})</span>`;
