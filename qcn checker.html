@@ -1578,8 +1578,15 @@ function buildMTabs(){
   // Reverse so newest tab appears first
   const reversedPresent=[...present].reverse();
 
-  // Warn only for received blank or N/No — not for no source data
-  function mTabWarnCount(rows){
+  // Mismatch rows: QCN status doesn't match between master and user sheet
+  function mTabMismatchCount(rows){
+    return rows.filter(r=>{
+      const s=getQcnMatchStatus(r.qcn,r.checkoder);
+      return s==='mismatch'||s==='not-in-user'||s==='not-in-sheet';
+    }).length;
+  }
+  // Not-received rows: received value is blank, N, or NO
+  function mTabNoRcvCount(rows){
     return rows.filter(r=>{
       const m=findUserByCheckoder(r.checkoder);
       const v=m?(m.snap.received||new Map()).get(r.qcn)||'':'';
@@ -1595,10 +1602,12 @@ function buildMTabs(){
       badge=`<span class="badge" style="background:var(--pt-bg);color:var(--pt-t)">${t.count}</span>`;
     }else{
       const tabRows=base.filter(r=>r.sheetName===t.key);
-      const warns=mTabWarnCount(tabRows);
-      badge=warns>0
-        ?`<span class="badge" style="background:var(--po-bg);color:var(--po-t)">${warns}⚡</span>`
-        :`<span class="badge" style="background:var(--pt-bg);color:var(--pt-t)">${t.count}</span>`;
+      const mismatches=mTabMismatchCount(tabRows);
+      const noRcv=mTabNoRcvCount(tabRows);
+      const parts=[];
+      if(mismatches>0)parts.push(`<span class="badge" style="background:var(--po-bg);color:var(--po-t)">${mismatches}⚡</span>`);
+      if(noRcv>0)parts.push(`<span class="badge" style="background:var(--pb-bg);color:var(--pb-t)">${noRcv}🚫</span>`);
+      badge=parts.length?parts.join(''):`<span class="badge" style="background:var(--pt-bg);color:var(--pt-t)">${t.count}</span>`;
     }
     btn.innerHTML=`<span>${esc(t.label)}</span>${badge}`;
     btn.addEventListener('click',()=>{mActiveSheet=t.key;mTerm='';mActiveFilter='all';Object.keys(mF).forEach(k=>mF[k].clear());document.getElementById('mSrch').value='';document.querySelectorAll('[data-mdt]').forEach(b=>b.classList.toggle('active',b.dataset.mdt===t.key));buildMasterTHead();mRenderedCount=PAGE_SIZE;renderMasterTableBody();renderMCards();buildMasterFBar();updateMismatchBadge();saveUiState()});
@@ -2188,15 +2197,51 @@ document.getElementById('runAllBtn').addEventListener('click',async()=>{
   if(runningAll)return;
   const toRun=users.filter(u=>(u.sourceUrl||u.sourceFileData||u.sheetUrl||u.sheetFileData));
   if(!toRun.length){openSettings();return}
-  runningAll=true;document.getElementById('raT').textContent='Loading…';document.getElementById('raSp').classList.remove('hidden');document.getElementById('runAllBtn').disabled=true;
+  runningAll=true;
+  const reloadBtn=document.getElementById('runAllBtn');
+  document.getElementById('raT').textContent='Loading…';document.getElementById('raSp').classList.remove('hidden');reloadBtn.disabled=true;
   const prog=document.getElementById('raProgress'),fill=document.getElementById('raPF'),lbl=document.getElementById('raPL');prog.style.display='flex';
-  for(let i=0;i<toRun.length;i++){
-    const u=toRun[i];lbl.textContent=`${u.name||'User '+(i+1)} (${i+1}/${toRun.length})`;fill.style.width=(i/toRun.length*100)+'%';
-    try{await runComparison(u.id,true)}catch(_){}
+
+  const finishUI=()=>{
+    fill.style.width='100%';setTimeout(()=>{prog.style.display='none';fill.style.width='0%'},2500);
+    runningAll=false;document.getElementById('raT').textContent='Reload';document.getElementById('raSp').classList.add('hidden');reloadBtn.disabled=false;
+  };
+
+  if(viewMode==='master'){
+    // Master view: load master sources first, then all users sequentially
+    if(MD.sources.length){
+      lbl.textContent='Loading master…';fill.style.width='0%';
+      await loadAllMasterSources();
+    }
+    for(let i=0;i<toRun.length;i++){
+      const u=toRun[i];lbl.textContent=`${u.name||'User '+(i+1)} (${i+1}/${toRun.length})`;fill.style.width=(i/toRun.length*100)+'%';
+      try{await runComparison(u.id,true)}catch(_){}
+    }
+    finishUI();
+    if(MD.allRows.length){renderMasterChips();renderMasterTableBody();updateMismatchBadge()}
+  }else{
+    // QCN (user) view: load active user first and show results immediately,
+    // then silently load the rest in the background
+    const activeUser=toRun.find(u=>u.id===activeUid);
+    const otherUsers=toRun.filter(u=>u.id!==activeUid);
+    if(activeUser){
+      lbl.textContent=`${activeUser.name||'User'} (1/${toRun.length})`;fill.style.width='0%';
+      try{await runComparison(activeUser.id,true);switchToUser(activeUser.id);}catch(_){}
+    }
+    // Release the UI so the user can interact while others load in the background
+    finishUI();
+    (async()=>{
+      for(const u of otherUsers){
+        try{await runComparison(u.id,true);}catch(_){}
+      }
+      // Silently refresh master data last
+      if(MD.sources.length){
+        await loadAllMasterSources();
+        if(viewMode==='master'&&MD.allRows.length){renderMasterChips();renderMasterTableBody();updateMismatchBadge();}
+      }
+      renderUserChips();
+    })();
   }
-  fill.style.width='100%';setTimeout(()=>{prog.style.display='none';fill.style.width='0%'},2500);
-  runningAll=false;document.getElementById('raT').textContent='Reload';document.getElementById('raSp').classList.add('hidden');document.getElementById('runAllBtn').disabled=false;
-  if(viewMode==='master'&&MD.allRows.length){renderMasterChips();renderMasterTableBody();updateMismatchBadge()}
 });
 
 /* ═══════════════════════════════════════════════════════
@@ -2415,7 +2460,7 @@ function renderQcnCards(){
   let tabRows;
   if(actSheet==='__ALL__')tabRows=allRows;
   else if(actSheet==='__NF__')tabRows=allRows.filter(r=>r.type==='notfound');
-  else tabRows=[...(sRowMap[actSheet]||[]),...allRows.filter(r=>r.type==='notfound')];
+  else tabRows=[...(sRowMap[actSheet]||[])];
   document.getElementById('qcnCards').style.display='flex';
   // Count status values
   const statusCounts={};
@@ -2467,7 +2512,7 @@ function renderQcnCards(){
     document.getElementById('qcnCards').innerHTML=`
     <div class="stat-card" style="flex:1;${noFiltersActive?'border-color:var(--teal);':''}cursor:pointer" data-sc-total="1"><div style="font-size:24px;font-weight:800;color:var(--teal)">${tabRows.length}</div><div style="font-size:10px;margin-top:2px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;color:var(--muted)">Total QCNs</div></div>
     <div class="stat-card" style="flex:1;${matchActive?'border-color:var(--green);':''}cursor:pointer" data-sc-type="match"><div style="font-size:24px;font-weight:800;color:${matchActive?'var(--green)':'inherit'}">${tabMatches}</div><div style="font-size:10px;margin-top:2px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;color:${matchActive?'var(--green)':'var(--muted)'}">✓ Synced</div></div>
-    <div class="stat-card" style="flex:1;${mismatchActive?'border-color:var(--orange);':''}cursor:pointer" data-sc-type="mismatch"><div style="font-size:24px;font-weight:800;color:${mismatchActive?'var(--orange)':'inherit'}">${tabMismatches}</div><div style="font-size:10px;margin-top:2px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;color:${mismatchActive?'var(--orange)':'var(--muted)'}">⚡ Mismatch</div></div>
+    ${tabMismatches>0?`<div class="stat-card" style="flex:1;${mismatchActive?'border-color:var(--orange);':''}cursor:pointer" data-sc-type="mismatch"><div style="font-size:24px;font-weight:800;color:${mismatchActive?'var(--orange)':'inherit'}">${tabMismatches}</div><div style="font-size:10px;margin-top:2px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;color:${mismatchActive?'var(--orange)':'var(--muted)'}">⚡ Mismatch</div></div>`:''}
     ${rcvCards}${statusCards}`;
   }
   // Wire clicks
@@ -2568,9 +2613,7 @@ function getQBase(){
   }else if(actSheet==='__NF__'){
     r=allRows.filter(r2=>r2.type==='notfound');
   }else{
-    const tabRows=sRowMap[actSheet]||[];
-    const nfRows=allRows.filter(r2=>r2.type==='notfound');
-    r=[...tabRows,...nfRows];
+    r=[...(sRowMap[actSheet]||[])];
   }
   if(actFilter!=='all')r=r.filter(r2=>r2.type===actFilter);
   if(qTerm.trim()){r=r.filter(r2=>qMatchesTerm(r2,qTerm.trim()));}
@@ -2836,11 +2879,16 @@ function buildQcnTabs(){
   // Reverse named tabs so newest (last loaded) appears first
   const reversedNames=[...sNames].reverse();
 
-  // Helper: count warn-worthy rows for a tab (received blank/N AND not-in-source rows)
-  // sheet-only rows only count as warns when source data is present
-  function tabWarnCount(rows){
+  // Mismatch rows: type=mismatch or sheet-only (discrepancy with source)
+  function tabMismatchCount(rows){
     return rows.filter(r=>{
       if(r.type==='sheet-only')return hasSrc;
+      return r.type==='mismatch';
+    }).length;
+  }
+  // Not-received rows: received value is blank, N, or NO
+  function tabNoRcvCount(rows){
+    return rows.filter(r=>{
       const v=(rcvd.get(r.qcn)||'').trim().toUpperCase();
       return !v||(v==='N'||v==='NO');
     }).length;
@@ -2850,8 +2898,9 @@ function buildQcnTabs(){
     {key:'__ALL__',label:'All Sheets',issues:allIssues},
     ...reversedNames.map(n=>{
       const tabRows=sRowMap[n]||[];
-      const warns=tabWarnCount(tabRows);
-      return{key:n,label:n,warns,hasData:true};
+      const mismatches=tabMismatchCount(tabRows);
+      const noRcv=tabNoRcvCount(tabRows);
+      return{key:n,label:n,mismatches,noRcv,hasData:true};
     }),
     ...(hasSrc&&nf>0?[{key:'__NF__',label:'Not Found',issues:nf}]:[])
   ];
@@ -2865,10 +2914,11 @@ function buildQcnTabs(){
     }else if(t.key==='__NF__'){
       badge=`<span class="badge" style="background:var(--pp-bg);color:var(--pp-t)">${t.issues}</span>`;
     }else{
-      // Named tabs: warn only if there are received-blank or received-N rows
-      badge=t.warns>0
-        ?`<span class="badge" style="background:var(--po-bg);color:var(--po-t)">${t.warns}⚡</span>`
-        :`<span class="badge" style="background:var(--pg-bg);color:var(--pg-t)">${(sRowMap[t.key]||[]).length}</span>`;
+      // Named tabs: ⚡ for mismatches, ○ for not-received — show both if applicable
+      const parts=[];
+      if(t.mismatches>0)parts.push(`<span class="badge" style="background:var(--po-bg);color:var(--po-t)">${t.mismatches}⚡</span>`);
+      if(t.noRcv>0)parts.push(`<span class="badge" style="background:var(--pb-bg);color:var(--pb-t)">${t.noRcv}🚫</span>`);
+      badge=parts.length?parts.join(''):`<span class="badge" style="background:var(--pg-bg);color:var(--pg-t)">${(sRowMap[t.key]||[]).length}</span>`;
     }
     btn.innerHTML=`<span>${esc(t.label)}</span>${badge}`;
     btn.addEventListener('click',()=>{actSheet=t.key;actFilter='all';qTerm='';Object.keys(cF).forEach(k=>{cF[k].clear();updDotHead(k)});document.getElementById('qcnSrch').value='';document.querySelectorAll('.stab').forEach(b=>b.classList.toggle('active',b.dataset.key===t.key));updateQcnFBar();renderQcnTable();renderQcnCards();saveUiState()});
@@ -2880,7 +2930,7 @@ function updateQcnFBar(){
   let rows;
   if(actSheet==='__ALL__') rows=allRows;
   else if(actSheet==='__NF__') rows=allRows.filter(r=>r.type==='notfound');
-  else rows=[...(sRowMap[actSheet]||[]),...allRows.filter(r=>r.type==='notfound')];
+  else rows=[...(sRowMap[actSheet]||[])];
   const snap=userSnaps[activeUid];
   const hasSrc=!snap?.viewOnly||(snap?.viewMode!=='sheet');
   const c={all:rows.length,match:rows.filter(r=>r.type==='match').length,mismatch:rows.filter(r=>r.type==='mismatch').length,notfound:rows.filter(r=>r.type==='notfound').length,'sheet-only':rows.filter(r=>r.type==='sheet-only').length,'source-only':rows.filter(r=>r.type==='source-only').length};
