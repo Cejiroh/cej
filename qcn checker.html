@@ -208,6 +208,7 @@ html.dark .btn-del:hover{background:#450a0a;color:#fca5a5}
 .thsort.sdesc .sico .au{opacity:.25}
 .l5b{font-size:8px;padding:1px 4px;border-radius:3px;background:var(--pb-bg);color:var(--pb-t);font-weight:700;opacity:0;transition:opacity .15s;white-space:nowrap}
 .thsort.sa .l5b{opacity:1}
+.thfbtn.sa .l5b{opacity:1}
 .pill{display:inline-flex;align-items:center;padding:2px 7px;border-radius:14px;font-size:10px;font-weight:600;white-space:nowrap}
 .badge{display:inline-flex;align-items:center;justify-content:center;min-width:17px;height:17px;padding:0 4px;border-radius:8px;font-size:9px;font-weight:700}
 .sc-bs{background:#fef08a;color:#854d0e}
@@ -220,6 +221,30 @@ html.dark .btn-del:hover{background:#450a0a;color:#fca5a5}
 html.dark .sc-bs{background:#713f12;color:#fde047}
 html.dark .sc-rej{background:#450a0a;color:#fca5a5}
 .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;text-align:center;box-shadow:var(--shadow)}
+/* Analytics panel */
+.ana-panel{background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:14px;overflow:hidden;box-shadow:var(--shadow)}
+.ana-hdr{display:flex;align-items:center;justify-content:space-between;padding:9px 14px;border-bottom:1px solid var(--border);background:var(--hbg);cursor:pointer;user-select:none}
+.ana-hdr-left{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:700;color:var(--text)}
+.ana-hdr-right{display:flex;align-items:center;gap:8px}
+.ana-toggle{font-size:10px;color:var(--muted);font-weight:600;display:flex;align-items:center;gap:3px;transition:color .12s}
+.ana-hdr:hover .ana-toggle{color:var(--text)}
+.ana-body{overflow:hidden;transition:max-height .25s cubic-bezier(.4,0,.2,1)}
+.ana-body.collapsed{max-height:0!important}
+.ana-table{width:100%;border-collapse:collapse;font-size:11px}
+.ana-table thead th{padding:6px 12px;text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);border-bottom:1px solid var(--border);background:var(--hbg);white-space:nowrap}
+.ana-table thead th.r{text-align:right}
+.ana-table thead th.c{text-align:center}
+.ana-table tbody tr{cursor:pointer;transition:background .1s}
+.ana-table tbody tr:hover td{background:var(--surface2)}
+.ana-table tbody tr.ana-active td{background:var(--pt-bg)!important}
+.ana-table tbody td{padding:7px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+.ana-table tbody tr:last-child td{border-bottom:none}
+.ana-name{font-weight:600;color:var(--text);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ana-num{font-weight:700;font-family:'Nunito',sans-serif;font-size:12px;text-align:right;white-space:nowrap}
+.ana-bar-wrap{width:120px;height:6px;background:var(--border);border-radius:3px;overflow:hidden;display:inline-flex;gap:0}
+.ana-seg{height:100%;flex-shrink:0;transition:width .3s}
+.ana-pill{display:inline-flex;align-items:center;justify-content:center;min-width:28px;padding:1px 5px;border-radius:8px;font-size:9px;font-weight:700;font-family:'Nunito',sans-serif}
+.ana-no-user{font-size:10px;color:var(--muted2);font-style:italic}
 .fin-inp{background:var(--in-bg);border:1px solid var(--in-bd);color:var(--text);border-radius:5px;padding:3px 7px;font-size:11px;width:100%;font-family:'Inter',sans-serif;transition:border-color .15s}
 .fin-inp:focus{outline:none;border-color:var(--blue);background:var(--surface)}
 .fin-inp.hv{border-color:var(--green)}
@@ -555,6 +580,8 @@ html.dark .res-missing{background:#500724;color:#f9a8d4}
     </div>
   </div>
 
+  <div id="mAnalytics" style="display:none"></div>
+
   <div id="mResults" style="display:none">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
       <div id="mCards" style="display:flex;gap:8px;flex-wrap:wrap"></div>
@@ -614,8 +641,8 @@ let allRows=[], sRowMap={}, sNames=[];
 let sOrder=new Map(), sRowNum=new Map();
 const corr=new Map(), enums=new Map(), rmks=new Map(), rcvd=new Map();
 const shtOv=new Map(), stDates=new Map();
-let cMap={}, actSheet='__ALL__', actFilter='all', qTerm='', qSort='none';
-const cF={ss:new Set(),sht:new Set(),enum:new Set(),rcv:new Set(),res:new Set()};
+let cMap={}, actSheet='__ALL__', actFilter='all', qTerm='', qSort='none', stDateSort='none';
+const cF={ss:new Set(),sht:new Set(),enum:new Set(),rcv:new Set(),res:new Set(),stDate:new Set(),qcn:new Set()};
 
 // Master state
 const MD={
@@ -626,7 +653,8 @@ const MD={
   sheetNames:[],
 };
 let mActiveChk='__ALL__', mActiveSheet='__ALL__', mTerm='', mChkSearch='', mActiveFilter='all';
-const mF={ba:new Set(),hs:new Set(),dma:new Set(),city:new Set(),barangay:new Set(),enumerator:new Set(),checkoder:new Set(),shtSt:new Set(),rcv:new Set()};
+let mQcnSort='none', mStDateSort='none';
+const mF={ba:new Set(),hs:new Set(),dma:new Set(),city:new Set(),barangay:new Set(),enumerator:new Set(),checkoder:new Set(),shtSt:new Set(),rcv:new Set(),stDate:new Set(),qcn:new Set()};
 let mRenderedCount=PAGE_SIZE;
 let mObserver=null;
 let mismatchSrchTerm='';
@@ -1457,6 +1485,25 @@ function getMasterVisibleSync(){
     const rcvVal=m?(m.snap.received||new Map()).get(r.qcn)||'':'';
     return mF.rcv.has(rcvVal);
   });
+  if(mF.stDate.size)rows=rows.filter(r=>{
+    const m=findUserByCheckoder(r.checkoder);
+    const sd=m?(m.snap.statusChangeDates||new Map()).get(r.qcn):null;
+    const dStr=sd?.iso?new Date(sd.iso).toLocaleDateString([],{year:'numeric',month:'short',day:'numeric'}):'';
+    return mF.stDate.has(dStr);
+  });
+  if(mF.qcn.size)rows=rows.filter(r=>{const parts=(r.qcn||'').split('-');const pfx=parts.length>=2?parts[0]+'-'+parts[1]:r.qcn||'';return mF.qcn.has(pfx);});
+  // Sort
+  if(mStDateSort!=='none'){
+    rows=[...rows].sort((a,b)=>{
+      const ma=findUserByCheckoder(a.checkoder),mb=findUserByCheckoder(b.checkoder);
+      const da=ma?(ma.snap.statusChangeDates||new Map()).get(a.qcn)?.iso||'':'';
+      const db=mb?(mb.snap.statusChangeDates||new Map()).get(b.qcn)?.iso||'':'';
+      if(!da&&!db)return 0;if(!da)return 1;if(!db)return-1;
+      const cmp=da<db?-1:da>db?1:0;return mStDateSort==='asc'?cmp:-cmp;
+    });
+  }else if(mQcnSort!=='none'){
+    rows=[...rows].sort((a,b)=>{const cmp=last5(a.qcn).localeCompare(last5(b.qcn),undefined,{numeric:true,sensitivity:'base'});return mQcnSort==='asc'?cmp:-cmp;});
+  }
   return rows;
 }
 
@@ -1464,10 +1511,144 @@ function getMasterVisibleSync(){
    MASTER — RENDER RESULTS
 ═══════════════════════════════════════════════════════ */
 function renderMasterResults(){
-  if(!MD.allRows.length){document.getElementById('mResults').style.display='none';return}
+  if(!MD.allRows.length){document.getElementById('mResults').style.display='none';document.getElementById('mAnalytics').style.display='none';return}
   document.getElementById('mResults').style.display='';
-  renderMCards();buildMTabs();buildMasterFBar();buildMasterTHead();renderMasterTableBody();
+  renderAnalyticsPanel();renderMCards();buildMTabs();buildMasterFBar();buildMasterTHead();renderMasterTableBody();
   updateStickyTop();updateMismatchBadge();
+}
+
+/* ═══════════════════════════════════════════════════════
+   MASTER — ANALYTICS PANEL
+═══════════════════════════════════════════════════════ */
+let anaCollapsed=false;
+function renderAnalyticsPanel(){
+  const el=document.getElementById('mAnalytics');
+  if(!MD.checkoders.length){el.style.display='none';return}
+  el.style.display='';
+
+  // Build per-checkoder stats across ALL dates/sheets (not just current filter)
+  const rows=MD.allRows;
+  const stats={};
+  MD.checkoders.forEach(c=>{stats[c]={total:0,match:0,mismatch:0,notInUser:0,rcvY:0,rcvN:0,rcvBlank:0,hasUser:false,shtSt:{}}});
+
+  rows.forEach(r=>{
+    const c=r.checkoder;if(!c||!stats[c])return;
+    const s=stats[c];
+    s.total++;
+    const m=findUserByCheckoder(c);
+    if(m){
+      s.hasUser=true;
+      const ms=getQcnMatchStatus(r.qcn,c);
+      if(ms==='match')s.match++;
+      else if(ms==='mismatch'||ms==='not-in-user'||ms==='not-in-sheet')s.mismatch++;
+      else s.notInUser++;
+      const rv=(m.snap.received||new Map()).get(r.qcn)||'';
+      const rvu=rv.trim().toUpperCase();
+      if(rvu==='Y'||rvu==='YES')s.rcvY++;
+      else if(rvu==='N'||rvu==='NO')s.rcvN++;
+      else s.rcvBlank++;
+      // Sheet status
+      const shtOvVal=m.snap.sheetStatusOverrides.get(r.qcn);
+      const uRow=m.snap.allRowsFlat.find(x=>x.qcn===r.qcn);
+      const st=shtOvVal!==undefined?shtOvVal:(uRow?(uRow.sheetStatus||uRow.srcStatus||''):'');
+      if(st)s.shtSt[st]=(s.shtSt[st]||0)+1;
+    }
+  });
+
+  const sorted=[...MD.checkoders].sort((a,b)=>{
+    // Sort: has-user first, then by encoded count desc, then name
+    const sa=stats[a],sb=stats[b];
+    if(sa.hasUser!==sb.hasUser)return sa.hasUser?-1:1;
+    return((sb.shtSt['Encoded']||0)-(sa.shtSt['Encoded']||0))||a.localeCompare(b);
+  });
+
+  const overallTotal=rows.length;
+  const overallRcvY=sorted.reduce((s,ch)=>s+stats[ch].rcvY,0);
+  const overallRcvN=sorted.reduce((s,ch)=>s+(stats[ch].rcvN+stats[ch].rcvBlank),0);
+  const overallShtSt={};sorted.forEach(ch=>{Object.entries(stats[ch].shtSt).forEach(([st,n])=>{overallShtSt[st]=(overallShtSt[st]||0)+n;});});
+  // Ordered status columns: fixed order + any extras
+  const FIXED_ST=['For Encoding','Encoded','Bad Sheet','Reject'];
+  const extraSt=Object.keys(overallShtSt).filter(s=>!FIXED_ST.includes(s)).sort();
+  const allSt=[...FIXED_ST.filter(s=>overallShtSt[s]>0),...extraSt.filter(s=>overallShtSt[s]>0)];
+  const stShort=s=>s==='For Encoding'?'For Enc':s==='Encoded'?'Encoded':s==='Bad Sheet'?'Bad Sheet':s==='Reject'?'Reject':s;
+  const stPill=(st,n,dimZero=false)=>{const cls=sCls(st);if(dimZero&&!n)return`<span style="color:var(--muted2);font-size:10px">—</span>`;return`<span class="ana-pill ${cls}">${n}</span>`;};
+  const pct=(n,t)=>t>0?Math.round(n/t*100):0;
+
+  // Status colors for progress bar — match pill background colors
+  const ST_COLORS={'Encoded':'var(--pb-t)','For Encoding':'var(--pg-t)','Bad Sheet':'#854d0e','Reject':'#991b1b'};
+  const barSeg=(pctVal,color)=>pctVal>0?`<span class="ana-seg" style="width:${pctVal}%;background:${color}"></span>`:'';
+  const stBar=(shtSt,total)=>FIXED_ST.filter(s=>ST_COLORS[s]).map(s=>barSeg(pct(shtSt[s]||0,total),ST_COLORS[s])).join('')||(barSeg(100,'var(--border)'));
+
+  const totalsRow=`<tr style="background:var(--hbg)">
+    <td class="ana-name" style="font-weight:800;color:var(--teal)">All Checkoders</td>
+    <td class="ana-num" style="color:var(--teal)">${overallTotal.toLocaleString()}</td>
+    <td><div class="ana-bar-wrap">${stBar(overallShtSt,overallTotal)}</div></td>
+    ${allSt.map(st=>`<td class="ana-num">${stPill(st,overallShtSt[st]||0)}</td>`).join('')}
+    <td class="ana-num"><span class="ana-pill sc-yes">${overallRcvY.toLocaleString()}</span></td>
+    <td class="ana-num"><span class="ana-pill sc-no">${overallRcvN.toLocaleString()}</span></td>
+  </tr>`;
+
+  const chkRows=sorted.map(c=>{
+    const s=stats[c];
+    const isActive=mActiveChk===c;
+    return`<tr data-ana-chk="${esc(c)}" class="${isActive?'ana-active':''}">
+      <td><span class="ana-name" title="${esc(c)}">${esc(c)}</span></td>
+      <td class="ana-num">${s.total.toLocaleString()}</td>
+      <td><div class="ana-bar-wrap">${s.hasUser?stBar(s.shtSt,s.total):'<span class="ana-seg" style="width:100%;background:var(--border)"></span>'}</div></td>
+      ${allSt.map(st=>`<td class="ana-num">${s.hasUser?stPill(st,s.shtSt[st]||0,true):'<span style="color:var(--muted2);font-size:10px">—</span>'}</td>`).join('')}
+      <td class="ana-num">${s.hasUser?`<span class="ana-pill sc-yes">${s.rcvY}</span>`:'<span style="color:var(--muted2);font-size:10px">—</span>'}</td>
+      <td class="ana-num">${s.hasUser?(s.rcvN+s.rcvBlank)>0?`<span class="ana-pill sc-no">${s.rcvN+s.rcvBlank}</span>`:`<span class="ana-pill sc-yes">0</span>`:'<span style="color:var(--muted2);font-size:10px">—</span>'}</td>
+    </tr>`;
+  }).join('');
+
+  const chevron=anaCollapsed
+    ?`<svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>`
+    :`<svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M18 15l-6-6-6 6"/></svg>`;
+
+  el.innerHTML=`<div class="ana-panel">
+    <div class="ana-hdr" id="anaHdr">
+      <div class="ana-hdr-left">
+        <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" style="color:var(--teal)"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+        Summary by Checkoder
+        <span style="font-size:9px;font-weight:600;padding:1px 6px;border-radius:8px;background:var(--pt-bg);color:var(--pt-t)">${MD.checkoders.length}</span>
+      </div>
+      <div class="ana-hdr-right">
+        <span style="font-size:10px;color:var(--muted)">Click a row to filter</span>
+        <div class="ana-toggle" id="anaToggle">${anaCollapsed?'Show':'Hide'} ${chevron}</div>
+      </div>
+    </div>
+    <div class="ana-body${anaCollapsed?' collapsed':''}" id="anaBody" style="max-height:${anaCollapsed?'0':Math.min(sorted.length*41+42,420)}px">
+      <table class="ana-table">
+        <thead><tr>
+          <th style="min-width:140px">Checkoder</th>
+          <th class="r" style="min-width:60px">Total</th>
+          <th style="min-width:130px">Progress</th>
+          ${allSt.map(st=>`<th class="r" style="min-width:65px">${esc(stShort(st))}</th>`).join('')}
+          <th class="r" style="min-width:55px">Rcv Y</th>
+          <th class="r" style="min-width:55px">Rcv N</th>
+        </tr></thead>
+        <tbody>${totalsRow}${chkRows}</tbody>
+      </table>
+    </div>
+  </div>`;
+
+  // Toggle collapse
+  document.getElementById('anaHdr').addEventListener('click',()=>{
+    anaCollapsed=!anaCollapsed;
+    renderAnalyticsPanel();
+  });
+
+  // Row click → filter by checkoder
+  el.querySelectorAll('[data-ana-chk]').forEach(tr=>{
+    tr.addEventListener('click',()=>{
+      const c=tr.dataset.anaChk;
+      mActiveChk=mActiveChk===c?'__ALL__':c;
+      mActiveSheet='__ALL__';mTerm='';mActiveFilter='all';
+      Object.keys(mF).forEach(k=>mF[k].clear());
+      document.getElementById('mSrch').value='';
+      renderMasterChips();buildMTabs();renderMasterResults();saveUiState();
+    });
+  });
 }
 function renderMCards(){
   const base=getMasterBase();
@@ -1578,15 +1759,8 @@ function buildMTabs(){
   // Reverse so newest tab appears first
   const reversedPresent=[...present].reverse();
 
-  // Mismatch rows: QCN status doesn't match between master and user sheet
-  function mTabMismatchCount(rows){
-    return rows.filter(r=>{
-      const s=getQcnMatchStatus(r.qcn,r.checkoder);
-      return s==='mismatch'||s==='not-in-user'||s==='not-in-sheet';
-    }).length;
-  }
-  // Not-received rows: received value is blank, N, or NO
-  function mTabNoRcvCount(rows){
+  // Warn only for received blank or N/No — not for no source data
+  function mTabWarnCount(rows){
     return rows.filter(r=>{
       const m=findUserByCheckoder(r.checkoder);
       const v=m?(m.snap.received||new Map()).get(r.qcn)||'':'';
@@ -1602,12 +1776,10 @@ function buildMTabs(){
       badge=`<span class="badge" style="background:var(--pt-bg);color:var(--pt-t)">${t.count}</span>`;
     }else{
       const tabRows=base.filter(r=>r.sheetName===t.key);
-      const mismatches=mTabMismatchCount(tabRows);
-      const noRcv=mTabNoRcvCount(tabRows);
-      const parts=[];
-      if(mismatches>0)parts.push(`<span class="badge" style="background:var(--po-bg);color:var(--po-t)">${mismatches}⚡</span>`);
-      if(noRcv>0)parts.push(`<span class="badge" style="background:var(--pb-bg);color:var(--pb-t)">${noRcv}🚫</span>`);
-      badge=parts.length?parts.join(''):`<span class="badge" style="background:var(--pt-bg);color:var(--pt-t)">${t.count}</span>`;
+      const warns=mTabWarnCount(tabRows);
+      badge=warns>0
+        ?`<span class="badge" style="background:var(--po-bg);color:var(--po-t)">${warns}⚡</span>`
+        :`<span class="badge" style="background:var(--pt-bg);color:var(--pt-t)">${t.count}</span>`;
     }
     btn.innerHTML=`<span>${esc(t.label)}</span>${badge}`;
     btn.addEventListener('click',()=>{mActiveSheet=t.key;mTerm='';mActiveFilter='all';Object.keys(mF).forEach(k=>mF[k].clear());document.getElementById('mSrch').value='';document.querySelectorAll('[data-mdt]').forEach(b=>b.classList.toggle('active',b.dataset.mdt===t.key));buildMasterTHead();mRenderedCount=PAGE_SIZE;renderMasterTableBody();renderMCards();buildMasterFBar();updateMismatchBadge();saveUiState()});
@@ -1665,10 +1837,17 @@ function masterHasSourceData(){
 }
 function buildMasterTHead(){
   const showChk=mActiveChk==='__ALL__';
-  const hasSrc=masterHasSourceData();
+  const mStDateActive=mF.stDate&&mF.stDate.size>0;
+  const mQcnActive=mF.qcn&&mF.qcn.size>0;
   document.getElementById('mTHead').innerHTML=`<tr>
     <th class="rn-th" style="width:36px">#<div class="col-resizer"></div></th>
-    <th class="tp" style="min-width:160px;padding:8px 11px;position:relative">QCN<div class="col-resizer"></div></th>
+    <th class="thf" id="mth-qcn" style="min-width:160px;overflow:visible">
+      <button class="thfbtn${mQcnActive?' af':''}" data-mcol="qcn" id="mthQcnBtn" style="padding:8px 24px 8px 11px">
+        <span>QCN</span>${mQcnActive?'<span class="adot" id="mdot-qcn"></span>':'<span class="adot hidden" id="mdot-qcn"></span>'}
+        <svg class="chev" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="thdd" id="mdd-qcn"><div class="thdd-srch"><input type="text" placeholder="Filter prefix…" data-mdd="qcn"/></div><div class="thdd-list" id="mddl-qcn"></div><div class="thdd-clr"><button data-mclr="qcn">✕ Clear</button></div></div>
+      <div class="col-resizer"></div></th>
     ${mkMasterFilterTh('ba','BA','ba',48)}
     ${mkMasterFilterTh('hs','HS','hs',48)}
     ${mkMasterFilterTh('dma','DMA','dma',58)}
@@ -1677,9 +1856,15 @@ function buildMasterTHead(){
     ${mkMasterFilterTh('enumerator','Enumerator','enumerator',120)}
     ${showChk?mkMasterFilterTh('checkoder','Checkoder','checkoder',110):''}
     <th class="tp" style="min-width:120px;padding:8px 11px;position:relative;overflow:hidden">Remarks<div class="col-resizer"></div></th>
-    ${hasSrc?`<th class="tp" style="min-width:110px;padding:8px 11px;position:relative;overflow:hidden">Source Status<div class="col-resizer"></div></th>`:''}
     ${mkMasterFilterTh('shtSt','Sheet Status','shtSt',100)}
     ${mkMasterFilterTh('rcv','Received','rcv',100)}
+    <th class="thf" id="mth-stDate" style="min-width:140px;overflow:visible">
+      <button class="thfbtn${mStDateActive?' af':''}" data-mcol="stDate" id="mthStDateBtn" style="padding:8px 24px 8px 11px">
+        <span>Status Updated</span>${mStDateActive?'<span class="adot" id="mdot-stDate"></span>':'<span class="adot hidden" id="mdot-stDate"></span>'}
+        <svg class="chev" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="thdd" id="mdd-stDate"><div class="thdd-srch"><input type="text" placeholder="Filter date…" data-mdd="stDate"/></div><div class="thdd-list" id="mddl-stDate"></div><div class="thdd-clr"><button data-mclr="stDate">✕ Clear</button></div></div>
+      <div class="col-resizer"></div></th>
   </tr>`;
   const thead=document.getElementById('mTHead');
   thead.addEventListener('click',handleMasterThClick,{once:false});
@@ -1688,6 +1873,12 @@ function buildMasterTHead(){
     const list=document.getElementById(`mddl-${col}`);
     if(list){const allVals=base.map(r=>r[col]);const hasBlank=allVals.some(v=>!v);const vals=[...new Set(allVals.filter(Boolean))].sort();const finalVals=hasBlank?['', ...vals]:vals;list.innerHTML=buildMDDItems(finalVals,mF[col]||new Set(),'')}
   });
+  // QCN prefix dropdown
+  const mQcnList=document.getElementById('mddl-qcn');
+  if(mQcnList){const pfxSet=new Set();let hasBQ=false;base.forEach(r=>{const parts=(r.qcn||'').split('-');const pfx=parts.length>=2?parts[0]+'-'+parts[1]:r.qcn||'';if(pfx)pfxSet.add(pfx);else hasBQ=true;});const sorted=[...pfxSet].sort();const finalQ=hasBQ?['',...sorted]:sorted;mQcnList.innerHTML=buildMDDItems(finalQ,mF.qcn||new Set(),'');}
+  // Restore sort-indicator classes after head rebuild
+  const mSDB=document.getElementById('mthStDateBtn');if(mSDB){mSDB.classList.toggle('sa',mStDateSort!=='none');mSDB.classList.toggle('sasc',mStDateSort==='asc');mSDB.classList.toggle('sdesc',mStDateSort==='desc');}
+  const mQSB=document.getElementById('mthQcnBtn');if(mQSB){mQSB.classList.toggle('sa',mQcnSort!=='none');mQSB.classList.toggle('sasc',mQcnSort==='asc');mQSB.classList.toggle('sdesc',mQcnSort==='desc');}
   // Sheet Status dropdown — from user snaps
   const shtStList=document.getElementById('mddl-shtSt');
   if(shtStList){
@@ -1704,12 +1895,33 @@ function buildMasterTHead(){
     const finalRcvVals=hasBlankRcv?['',...[...rcvVals].sort()]:[...rcvVals].sort();
     rcvList.innerHTML=buildMDDItems(finalRcvVals,mF.rcv||new Set(),'');
   }
+  // Status Updated dropdown — date strings from user statusChangeDates, newest first
+  const stDateList=document.getElementById('mddl-stDate');
+  if(stDateList){
+    const stDateVals=new Set();let hasBlankStDate=false;
+    base.forEach(r=>{
+      const m=findUserByCheckoder(r.checkoder);
+      const sd=m?(m.snap.statusChangeDates||new Map()).get(r.qcn):null;
+      const dStr=sd?.iso?new Date(sd.iso).toLocaleDateString([],{year:'numeric',month:'short',day:'numeric'}):'';
+      if(dStr)stDateVals.add(dStr);else hasBlankStDate=true;
+    });
+    const sorted=[...stDateVals].sort((a,b)=>new Date(b)-new Date(a));
+    const finalStDateVals=hasBlankStDate?['',...sorted]:sorted;
+    stDateList.innerHTML=buildMDDItems(finalStDateVals,mF.stDate||new Set(),'');
+  }
   initColResize(document.getElementById('mTbl'));
 }
 
 function handleMasterThClick(e){
   const fbtn=e.target.closest('[data-mcol]');
-  if(fbtn){e.stopPropagation();const col=fbtn.dataset.mcol;toggleMDrop(col);return}
+  if(fbtn){e.stopPropagation();const col=fbtn.dataset.mcol;
+    if(col==='stDate'||col==='qcn'){
+      if(e.target.closest('svg.chev')){toggleMDrop(col);return;}
+      if(col==='stDate'){mStDateSort=mStDateSort==='none'?'desc':mStDateSort==='desc'?'asc':'none';mQcnSort='none';}
+      else{mQcnSort=mQcnSort==='none'?'asc':mQcnSort==='asc'?'desc':'none';mStDateSort='none';}
+      mRenderedCount=PAGE_SIZE;buildMasterTHead();renderMasterTableBody();return;
+    }
+    toggleMDrop(col);return}
   const item=e.target.closest('[data-mval]');
   if(item){e.stopPropagation();const dd=item.closest('.thdd');const col=dd.id.replace('mdd-','');const val=item.dataset.mval;
     const key=col;if(mF[key]){if(mF[key].has(val))mF[key].delete(val);else mF[key].add(val);mRenderedCount=PAGE_SIZE;buildMasterTHead();renderMasterTableBody();buildMasterFBar();}return}
@@ -1721,6 +1933,14 @@ document.getElementById('mFBar').addEventListener('input',e=>{
   const inp=e.target.closest('[data-mdd]');if(!inp)return;
   const col=inp.dataset.mdd;const list=document.getElementById(`mddl-${col}`);
   if(!list)return;const base=getMasterBase();
+  if(col==='stDate'){
+    const stDateVals=new Set();let hasBlank=false;
+    base.forEach(r=>{const m=findUserByCheckoder(r.checkoder);const sd=m?(m.snap.statusChangeDates||new Map()).get(r.qcn):null;const dStr=sd?.iso?new Date(sd.iso).toLocaleDateString([],{year:'numeric',month:'short',day:'numeric'}):'';if(dStr)stDateVals.add(dStr);else hasBlank=true;});
+    const sorted=[...stDateVals].sort((a,b)=>new Date(b)-new Date(a));
+    const finalVals=hasBlank?['',...sorted]:sorted;
+    list.innerHTML=buildMDDItems(finalVals.filter(v=>!inp.value||v.toLowerCase().includes(inp.value.toLowerCase())||(v===''&&'no data'.includes(inp.value.toLowerCase()))),mF.stDate||new Set(),'');
+    return;
+  }
   const allVals=base.map(r=>r[col]);const hasBlank=allVals.some(v=>!v);
   const vals=[...new Set(allVals.filter(Boolean))].sort();
   const finalVals=hasBlank?['', ...vals]:vals;
@@ -1731,6 +1951,15 @@ document.getElementById('mTHead').addEventListener('input',e=>{
   const inp=e.target.closest('[data-mdd]');if(!inp)return;
   const col=inp.dataset.mdd;const list=document.getElementById(`mddl-${col}`);
   if(!list)return;const base=getMasterBase();
+  if(col==='stDate'){
+    const stDateVals=new Set();let hasBlank=false;
+    base.forEach(r=>{const m=findUserByCheckoder(r.checkoder);const sd=m?(m.snap.statusChangeDates||new Map()).get(r.qcn):null;const dStr=sd?.iso?new Date(sd.iso).toLocaleDateString([],{year:'numeric',month:'short',day:'numeric'}):'';if(dStr)stDateVals.add(dStr);else hasBlank=true;});
+    const sorted=[...stDateVals].sort((a,b)=>new Date(b)-new Date(a));
+    const finalVals=hasBlank?['',...sorted]:sorted;
+    list.innerHTML=buildMDDItems(finalVals.filter(v=>!inp.value||v.toLowerCase().includes(inp.value.toLowerCase())||(v===''&&'no data'.includes(inp.value.toLowerCase()))),mF.stDate||new Set(),'');
+    return;
+  }
+  if(col==='qcn'){const pfxSet=new Set();base.forEach(r=>{const parts=(r.qcn||'').split('-');const pfx=parts.length>=2?parts[0]+'-'+parts[1]:r.qcn||'';pfxSet.add(pfx);});const sv=[...pfxSet].sort().filter(v=>!inp.value||v.toLowerCase().includes(inp.value.toLowerCase()));list.innerHTML=buildMDDItems(sv,mF.qcn||new Set(),'');return;}
   const allVals=base.map(r=>r[col]);const hasBlank=allVals.some(v=>!v);
   const vals=[...new Set(allVals.filter(Boolean))].sort();
   const finalVals=hasBlank?['', ...vals]:vals;
@@ -1772,7 +2001,6 @@ function renderMasterTableBody(){
     document.getElementById('mLoadMore').classList.add('hidden');return;
   }
   const frag=document.createDocumentFragment();
-  const hasSrc=masterHasSourceData();
   toRender.forEach((r,idx)=>{
     const mStatus=getQcnMatchStatus(r.qcn,r.checkoder);
     const userRow=getReceivedData(r.qcn,r.checkoder);
@@ -1791,6 +2019,11 @@ function renderMasterTableBody(){
     // Status cells
     const shtStatusTd=userRow?`<td style="text-align:center">${sPill(userRow.sheetStatus||userRow.srcStatus||'')}</td>`:`<td style="text-align:center;color:var(--muted)">—</td>`;
     const receivedTd=`<td style="text-align:center">${receivedCell(r.qcn,r.checkoder)}</td>`;
+    // Status Changed date from matched user snap
+    const matchedUserForDate=findUserByCheckoder(r.checkoder);
+    const stDM=matchedUserForDate?(matchedUserForDate.snap.statusChangeDates||new Map()).get(r.qcn):null;
+    const stDMStr=stDM?.iso?new Date(stDM.iso).toLocaleString():'';
+    const stChangedTd=stDMStr?`<td style="font-size:10px;color:var(--muted);white-space:nowrap">📅 ${esc(stDMStr)}</td>`:`<td style="color:var(--muted);text-align:center">—</td>`;
     const cols=[
       `<td class="rn-td">${idx+1}</td>`,
       `<td class="qcopy" data-qcn="${esc(r.qcn)}" style="cursor:pointer;white-space:nowrap" title="${esc(r.qcn)}"><span class="mono" style="font-size:11px;font-weight:700">${hl(r.qcn,term)}</span><span class="qcp-lbl">Copied!</span></td>`,
@@ -1802,9 +2035,9 @@ function renderMasterTableBody(){
       `<td style="font-size:11px;white-space:nowrap;text-align:center" title="${esc(r.enumerator)}">${esc(r.enumerator)||'—'}</td>`,
       ...(showChk?[`<td style="text-align:center"><span class="pill" style="background:var(--pt-bg);color:var(--pt-t);font-size:9px;white-space:nowrap" title="${esc(r.checkoder)}">${esc(r.checkoder)||'—'}</span></td>`]:[]),
       `<td style="font-size:11px;white-space:normal;word-break:break-word;text-align:left" title="${remarks}">${remarks||'—'}</td>`,
-      ...(hasSrc?[`<td style="text-align:center">${userRow?sPill(userRow.srcStatus||''):`<span style="color:var(--muted2);font-size:11px">—</span>`}</td>`]:[]),
       shtStatusTd,
       receivedTd,
+      stChangedTd,
     ];
     tr.innerHTML=cols.join('');frag.appendChild(tr);
   });
@@ -1897,9 +2130,8 @@ function openMasterRowDetail(r){
 
   const userLabel=matchedUser?`👤 User Data — ${esc(matchedUser.user.name)}`:'👤 User Data';
   const rcvColor=rcvUpper==='Y'||rcvUpper==='YES'?'var(--green)':rcvUpper==='N'||rcvUpper==='NO'?'var(--red)':'';
-  const userHasSrc=matchedUser&&(!matchedUser.snap.viewOnly||matchedUser.snap.viewMode!=='sheet');
   const userSection=section(userLabel,`
-    ${userHasSrc?f('Source Status',userRow?esc(userRow.srcStatus||''):'—',{color:userRow&&userRow.srcStatus?'':'var(--muted)'}):''}
+    ${f('Source Status',userRow?esc(userRow.srcStatus||''):'No user data',{color:userRow?'':'var(--muted)'})}
     ${f('Sheet Status',userSheetSt?esc(userSheetSt)+(shtOvVal!==undefined?' ✏':''):'—',{color:shtOvVal!==undefined?'var(--orange)':''})}
     ${f('Received',rcvVal?esc(rcvVal):'No Data',{color:rcvColor||'var(--muted)'})}
     ${corrVal?f('For Correction',esc(corrVal)):''}
@@ -1924,14 +2156,15 @@ document.getElementById('mSrch').addEventListener('input',function(){_mSrchDb(th
 document.getElementById('mDlBtn').addEventListener('click',()=>{
   const wb=XLSX.utils.book_new();
   const rows=getMasterVisibleSync();
-  const hdr=['Sheet','ID','QCN','BA','HS','DMA','City','Barangay','Enumerator','CHECKODER','Remarks','Received','Match Status'];
-  const data=[hdr,...rows.map(r=>[r.sheetName,r.id,r.qcn,r.ba,r.hs,r.dma,r.city,r.barangay,r.enumerator,r.checkoder,r.remarks,getQcnMatchStatus(r.qcn,r.checkoder)!=='no-user'?'Yes':'No',getQcnMatchStatus(r.qcn,r.checkoder)])];
+  const hdr=['Sheet','ID','QCN','BA','HS','DMA','City','Barangay','Enumerator','CHECKODER','Remarks','Received','Status Changed','Match Status'];
+  const getStDate=r=>{const m=findUserByCheckoder(r.checkoder);const sd=m?(m.snap.statusChangeDates||new Map()).get(r.qcn):null;return sd?.iso?new Date(sd.iso).toLocaleString()+(sd.source?` (${sd.source})`:''):'';};
+  const data=[hdr,...rows.map(r=>[r.sheetName,r.id,r.qcn,r.ba,r.hs,r.dma,r.city,r.barangay,r.enumerator,r.checkoder,r.remarks,getQcnMatchStatus(r.qcn,r.checkoder)!=='no-user'?'Yes':'No',getStDate(r),getQcnMatchStatus(r.qcn,r.checkoder)])];
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(data),'Master');
   if(mActiveChk==='__ALL__'){
     MD.checkoders.forEach(c=>{
       const cr=MD.allRows.filter(r=>r.checkoder===c);if(!cr.length)return;
       const sn=c.slice(0,31).replace(/[\\/?*[\]:]/g,'_');
-      XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([hdr,...cr.map(r=>[r.sheetName,r.id,r.qcn,r.ba,r.hs,r.dma,r.city,r.barangay,r.enumerator,r.checkoder,r.remarks,getQcnMatchStatus(r.qcn,r.checkoder)!=='no-user'?'Yes':'No',getQcnMatchStatus(r.qcn,r.checkoder)])]),sn);
+      XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([hdr,...cr.map(r=>[r.sheetName,r.id,r.qcn,r.ba,r.hs,r.dma,r.city,r.barangay,r.enumerator,r.checkoder,r.remarks,getQcnMatchStatus(r.qcn,r.checkoder)!=='no-user'?'Yes':'No',getStDate(r),getQcnMatchStatus(r.qcn,r.checkoder)])]),sn);
     });
   }
   XLSX.writeFile(wb,`master_export_${new Date().toISOString().slice(0,10)}.xlsx`);
@@ -2197,51 +2430,15 @@ document.getElementById('runAllBtn').addEventListener('click',async()=>{
   if(runningAll)return;
   const toRun=users.filter(u=>(u.sourceUrl||u.sourceFileData||u.sheetUrl||u.sheetFileData));
   if(!toRun.length){openSettings();return}
-  runningAll=true;
-  const reloadBtn=document.getElementById('runAllBtn');
-  document.getElementById('raT').textContent='Loading…';document.getElementById('raSp').classList.remove('hidden');reloadBtn.disabled=true;
+  runningAll=true;document.getElementById('raT').textContent='Loading…';document.getElementById('raSp').classList.remove('hidden');document.getElementById('runAllBtn').disabled=true;
   const prog=document.getElementById('raProgress'),fill=document.getElementById('raPF'),lbl=document.getElementById('raPL');prog.style.display='flex';
-
-  const finishUI=()=>{
-    fill.style.width='100%';setTimeout(()=>{prog.style.display='none';fill.style.width='0%'},2500);
-    runningAll=false;document.getElementById('raT').textContent='Reload';document.getElementById('raSp').classList.add('hidden');reloadBtn.disabled=false;
-  };
-
-  if(viewMode==='master'){
-    // Master view: load master sources first, then all users sequentially
-    if(MD.sources.length){
-      lbl.textContent='Loading master…';fill.style.width='0%';
-      await loadAllMasterSources();
-    }
-    for(let i=0;i<toRun.length;i++){
-      const u=toRun[i];lbl.textContent=`${u.name||'User '+(i+1)} (${i+1}/${toRun.length})`;fill.style.width=(i/toRun.length*100)+'%';
-      try{await runComparison(u.id,true)}catch(_){}
-    }
-    finishUI();
-    if(MD.allRows.length){renderMasterChips();renderMasterTableBody();updateMismatchBadge()}
-  }else{
-    // QCN (user) view: load active user first and show results immediately,
-    // then silently load the rest in the background
-    const activeUser=toRun.find(u=>u.id===activeUid);
-    const otherUsers=toRun.filter(u=>u.id!==activeUid);
-    if(activeUser){
-      lbl.textContent=`${activeUser.name||'User'} (1/${toRun.length})`;fill.style.width='0%';
-      try{await runComparison(activeUser.id,true);switchToUser(activeUser.id);}catch(_){}
-    }
-    // Release the UI so the user can interact while others load in the background
-    finishUI();
-    (async()=>{
-      for(const u of otherUsers){
-        try{await runComparison(u.id,true);}catch(_){}
-      }
-      // Silently refresh master data last
-      if(MD.sources.length){
-        await loadAllMasterSources();
-        if(viewMode==='master'&&MD.allRows.length){renderMasterChips();renderMasterTableBody();updateMismatchBadge();}
-      }
-      renderUserChips();
-    })();
+  for(let i=0;i<toRun.length;i++){
+    const u=toRun[i];lbl.textContent=`${u.name||'User '+(i+1)} (${i+1}/${toRun.length})`;fill.style.width=(i/toRun.length*100)+'%';
+    try{await runComparison(u.id,true)}catch(_){}
   }
+  fill.style.width='100%';setTimeout(()=>{prog.style.display='none';fill.style.width='0%'},2500);
+  runningAll=false;document.getElementById('raT').textContent='Reload';document.getElementById('raSp').classList.add('hidden');document.getElementById('runAllBtn').disabled=false;
+  if(viewMode==='master'&&MD.allRows.length){renderMasterChips();renderMasterTableBody();updateMismatchBadge()}
 });
 
 /* ═══════════════════════════════════════════════════════
@@ -2306,16 +2503,18 @@ async function runViewOnly(uid2,silent=false){
       if(srcRows.length<2)throw new Error('Source has no data.');
       const sh=srcRows[0].map(h=>h.toLowerCase().trim());
       const sqIdx=sh.findIndex(h=>h.includes('qcn')||h.includes('control number'));
-      const ssIdx=sh.findIndex(h=>h.includes('status'));
+      const ssIdx=sh.findIndex(h=>h.includes('status')&&!h.includes('updated'));
+      const suIdx=sh.findIndex(h=>h.includes('status updated')||h.includes('status_updated')||h.includes('statusupdated')||h==='updated'||h==='date updated'||h==='date_updated');
       if(sqIdx===-1)throw new Error('No QCN column in source.');
-      const _sO=new Map(),_sRN=new Map();let gc=0;const _aRF=[];
+      const _sO=new Map(),_sRN=new Map(),_sd=new Map();let gc=0;const _aRF=[];
       srcRows.slice(1).forEach((row,i)=>{
         const qcn=String(row[sqIdx]||'').trim(),srcSt=ssIdx!==-1?String(row[ssIdx]||'').trim():'';if(!qcn)return;
+        if(suIdx!==-1){const iso=parseXlDate(row[suIdx]);if(iso)_sd.set(qcn,{iso,source:'status_updated'});}
         if(!_sO.has(qcn)){_sO.set(qcn,gc);_sRN.set(qcn,i+1)}
         _aRF.push({type:'source-only',qcn,srcStatus:srcSt,sheetStatus:'',sheetName:'Source'});gc++;
       });
       const now=nowIso();
-      const snap={allRowsFlat:_aRF,sheetRowMap:{Source:_aRF},sheetNames:['Source'],sheetOrder:_sO,sheetRowNum:_sRN,corrections:new Map(),enumerators:new Map(),remarks:new Map(),sheetStatusOverrides:new Map(),statusChangeDates:new Map(),colIndexMap:{},stats:{matches:0,mismatches:0,notFound:0},runAt:now,viewOnly:true,viewMode:'source'};
+      const snap={allRowsFlat:_aRF,sheetRowMap:{Source:_aRF},sheetNames:['Source'],sheetOrder:_sO,sheetRowNum:_sRN,corrections:new Map(),enumerators:new Map(),remarks:new Map(),sheetStatusOverrides:new Map(),statusChangeDates:_sd,colIndexMap:{},stats:{matches:0,mismatches:0,notFound:0},runAt:now,viewOnly:true,viewMode:'source'};
       userSnaps[uid2]=snap;saveResults();userStatus[uid2]='done';
       if(!silent||uid2===activeUid)switchToUser(uid2,silent&&uid2===activeUid);
     }
@@ -2342,7 +2541,8 @@ async function runComparison(uid2,silent=false){
     if(srcRows.length<2)throw new Error('Source has no data.');
     const sh=srcRows[0].map(h=>h.toLowerCase().trim());
     const sqIdx=sh.findIndex(h=>h.includes('qcn')||h.includes('control number'));
-    const ssIdx=sh.findIndex(h=>h.includes('status'));
+    const ssIdx=sh.findIndex(h=>h.includes('status')&&!h.includes('updated'));
+    const suIdx=sh.findIndex(h=>h.includes('status updated')||h.includes('status_updated')||h.includes('statusupdated')||h==='updated'||h==='date updated'||h==='date_updated');
     if(sqIdx===-1)throw new Error('No QCN column in source.');
     const srcRecs=srcRows.slice(1);
     let sheets=[];
@@ -2390,12 +2590,13 @@ async function runComparison(uid2,silent=false){
     srcRecs.forEach(row=>{
       const qcn=String(row[sqIdx]||'').trim(),srcSt=ssIdx!==-1?String(row[ssIdx]||'').trim():'';if(!qcn)return;
       srcMatchedQcns.add(qcn);
+      // Status Updated from source column — highest priority
+      if(suIdx!==-1){const iso=parseXlDate(row[suIdx]);if(iso)_sd.set(qcn,{iso,source:'status_updated'});}
       const info=gMap.get(qcn);let r;
       if(!info){r={type:'notfound',qcn,srcStatus:srcSt,sheetStatus:null,sheetName:null};nf++}
       else if(info.status!==srcSt){
         r={type:'mismatch',qcn,srcStatus:srcSt,sheetStatus:info.status,sheetName:info.sheetName};mms++;
-        if(!_sd.has(qcn)){_sd.set(qcn,{iso:now,source:'mismatch'})}
-        else{const ex=_sd.get(qcn);if(ex.source==='initial')_sd.set(qcn,{iso:now,source:'mismatch'})}
+        if(!_sd.has(qcn)||_sd.get(qcn).source==='mismatch'){_sd.set(qcn,{iso:now,source:'mismatch'})}
       }else{r={type:'match',qcn,srcStatus:srcSt,sheetStatus:info.status,sheetName:info.sheetName};matches++}
       _aRF.push(r);if(r.sheetName&&_sRM[r.sheetName])_sRM[r.sheetName].push(r);
     });
@@ -2460,7 +2661,7 @@ function renderQcnCards(){
   let tabRows;
   if(actSheet==='__ALL__')tabRows=allRows;
   else if(actSheet==='__NF__')tabRows=allRows.filter(r=>r.type==='notfound');
-  else tabRows=[...(sRowMap[actSheet]||[])];
+  else tabRows=[...(sRowMap[actSheet]||[]),...allRows.filter(r=>r.type==='notfound')];
   document.getElementById('qcnCards').style.display='flex';
   // Count status values
   const statusCounts={};
@@ -2512,7 +2713,7 @@ function renderQcnCards(){
     document.getElementById('qcnCards').innerHTML=`
     <div class="stat-card" style="flex:1;${noFiltersActive?'border-color:var(--teal);':''}cursor:pointer" data-sc-total="1"><div style="font-size:24px;font-weight:800;color:var(--teal)">${tabRows.length}</div><div style="font-size:10px;margin-top:2px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;color:var(--muted)">Total QCNs</div></div>
     <div class="stat-card" style="flex:1;${matchActive?'border-color:var(--green);':''}cursor:pointer" data-sc-type="match"><div style="font-size:24px;font-weight:800;color:${matchActive?'var(--green)':'inherit'}">${tabMatches}</div><div style="font-size:10px;margin-top:2px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;color:${matchActive?'var(--green)':'var(--muted)'}">✓ Synced</div></div>
-    ${tabMismatches>0?`<div class="stat-card" style="flex:1;${mismatchActive?'border-color:var(--orange);':''}cursor:pointer" data-sc-type="mismatch"><div style="font-size:24px;font-weight:800;color:${mismatchActive?'var(--orange)':'inherit'}">${tabMismatches}</div><div style="font-size:10px;margin-top:2px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;color:${mismatchActive?'var(--orange)':'var(--muted)'}">⚡ Mismatch</div></div>`:''}
+    <div class="stat-card" style="flex:1;${mismatchActive?'border-color:var(--orange);':''}cursor:pointer" data-sc-type="mismatch"><div style="font-size:24px;font-weight:800;color:${mismatchActive?'var(--orange)':'inherit'}">${tabMismatches}</div><div style="font-size:10px;margin-top:2px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;color:${mismatchActive?'var(--orange)':'var(--muted)'}">⚡ Mismatch</div></div>
     ${rcvCards}${statusCards}`;
   }
   // Wire clicks
@@ -2570,6 +2771,7 @@ function buildQcnTHead(hasSrc){
     'min-width:110px;max-width:110px',                  // For Correction — keep flexible/wrapped
     'min-width:200px',                                  // Remarks — flexible
     'min-width:90px',                                   // Received — auto-fit
+    ...(hasSrc?['min-width:130px']:[]),                 // Status Updated — only with source
     ...(hasSrc?['min-width:100px']:[]),                 // Result — auto-fit
   ];
   cg.innerHTML=cols.map(w=>`<col${w?` style="${w}"`:''}>` ).join('');
@@ -2579,13 +2781,14 @@ function buildQcnTHead(hasSrc){
 
   document.getElementById('qcnThead').innerHTML=`<tr>
     <th class="rn-th">#<div class="col-resizer"></div></th>
-    <th style="padding:0"><button class="thsort" id="thQcnSort"><span>QCN</span><span class="l5b">last 5</span><span class="sico"><span class="au"></span><span class="ad"></span></span></button><div class="col-resizer"></div></th>
+    <th class="thf" id="thQCN" style="overflow:visible"><button class="thfbtn" data-col="qcn" id="thQcnSortBtn" style="padding:8px 24px 8px 11px"><span>QCN</span><span class="l5b">last 5</span><span class="adot hidden" id="dot-qcn"></span><svg class="chev" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></button><div class="thdd" id="dd-qcn"><div class="thdd-srch"><input type="text" placeholder="Filter prefix…" data-dd="qcn"/></div><div class="thdd-list" id="ddl-qcn"></div><div class="thdd-clr"><button data-clr="qcn">✕ Clear</button></div></div><div class="col-resizer"></div></th>
     ${hasSrc?filterTh('thSS','ss','Source Status','dot-ss'):''}
     ${filterTh('thSHT','sht','Sheet Status','dot-sht')}
     ${filterTh('thEnum','enum','Enumerator','dot-enum')}
     <th class="tp">For Correction<div class="col-resizer"></div></th>
     <th class="tp">Remarks<div class="col-resizer"></div></th>
     ${filterTh('thRCV','rcv','Received (Y/N)','dot-rcv')}
+    ${hasSrc?`<th class="thf" id="thSTDATE" style="overflow:visible"><button class="thfbtn" data-col="stDate" id="thStDateBtn" style="padding:8px 24px 8px 11px"><span>Status Updated</span><span class="adot hidden" id="dot-stDate"></span><svg class="chev" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></button><div class="thdd" id="dd-stDate"><div class="thdd-srch"><input type="text" placeholder="Filter date…" data-dd="stDate"/></div><div class="thdd-list" id="ddl-stDate"></div><div class="thdd-clr"><button data-clr="stDate">✕ Clear</button></div></div><div class="col-resizer"></div></th>`:''}
     ${hasSrc?filterTh('thRES','res','Result','dot-res'):''}
   </tr>`;
 
@@ -2602,6 +2805,13 @@ function shtStatCell(qcn,orig){
   return`<div class="ss-wrap ${cls}" style="position:relative"><select class="ss-sel" data-fld="sht" data-qcn="${esc(qcn)}" data-orig="${esc(orig||'')}"><option value=""${!cur?' selected':''}>—</option>${opts}</select><svg class="ss-caret" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>${ch?`<span class="ss-dot"></span>`:''}</div>`;
 }
 function sortQRows(rows){
+  if(stDateSort!=='none'){
+    return[...rows].sort((a,b)=>{
+      const da=stDates.get(a.qcn)?.iso||'';const db=stDates.get(b.qcn)?.iso||'';
+      if(!da&&!db)return 0;if(!da)return 1;if(!db)return-1;
+      const c=da<db?-1:da>db?1:0;return stDateSort==='asc'?c:-c;
+    });
+  }
   if(qSort!=='none')return[...rows].sort((a,b)=>{const c=last5(a.qcn).localeCompare(last5(b.qcn),undefined,{numeric:true,sensitivity:'base'});return qSort==='asc'?c:-c});
   return[...rows].sort((a,b)=>(sOrder.get(a.qcn)??Infinity)-(sOrder.get(b.qcn)??Infinity));
 }
@@ -2613,7 +2823,9 @@ function getQBase(){
   }else if(actSheet==='__NF__'){
     r=allRows.filter(r2=>r2.type==='notfound');
   }else{
-    r=[...(sRowMap[actSheet]||[])];
+    const tabRows=sRowMap[actSheet]||[];
+    const nfRows=allRows.filter(r2=>r2.type==='notfound');
+    r=[...tabRows,...nfRows];
   }
   if(actFilter!=='all')r=r.filter(r2=>r2.type===actFilter);
   if(qTerm.trim()){r=r.filter(r2=>qMatchesTerm(r2,qTerm.trim()));}
@@ -2621,11 +2833,13 @@ function getQBase(){
 }
 function getQFiltered(){
   let r=getQBase();
+  if(cF.qcn.size)r=r.filter(x=>{const parts=(x.qcn||'').split('-');const pfx=parts.length>=2?parts[0]+'-'+parts[1]:x.qcn||'';return cF.qcn.has(pfx);});
   if(cF.ss.size)r=r.filter(x=>cF.ss.has(x.srcStatus||''));
   if(cF.sht.size)r=r.filter(x=>cF.sht.has(shtOv.has(x.qcn)?shtOv.get(x.qcn):(x.sheetStatus||'')));
   if(cF.enum.size)r=r.filter(x=>cF.enum.has(enums.get(x.qcn)||''));
   if(cF.rcv.size)r=r.filter(x=>cF.rcv.has(rcvd.get(x.qcn)||''));
   if(cF.res.size)r=r.filter(x=>cF.res.has(x.type||''));
+  if(cF.stDate.size)r=r.filter(x=>{const sd=stDates.get(x.qcn);const dStr=sd?.iso?new Date(sd.iso).toLocaleDateString([],{year:'numeric',month:'short',day:'numeric'}):'';return cF.stDate.has(dStr);});
   return r;
 }
 const renderQcnTable=debounce(function(){_renderQcnTable()},30);
@@ -2634,7 +2848,7 @@ function _renderQcnTable(){
   document.getElementById('qcnRC').textContent=rows.length+' rows';
   const snap=userSnaps[activeUid];
   const hasSrc=!snap?.viewOnly||(snap?.viewMode!=='sheet');
-  const numCols=hasSrc?9:7; // #,QCN,[src],sht,enum,corr,rmk,recv,[result]
+  const numCols=hasSrc?10:8; // #,QCN,[src],sht,enum,corr,rmk,recv,[stDate],[result]
   if(!rows.length){tbody.innerHTML=`<tr><td colspan="${numCols}" style="text-align:center;padding:36px;color:var(--muted);font-style:italic">No matching rows.</td></tr>`;return}
   const frag=document.createDocumentFragment();
   rows.forEach(r=>{
@@ -2660,6 +2874,12 @@ function _renderQcnTable(){
     const rcvTd=`<td style="text-align:center">${rcvBadge}</td>`;
     // Remarks: show full value with word-wrap
     const rm2full=rmks.get(r.qcn)||'';
+    // Status Updated date from source
+    const stD=stDates.get(r.qcn);
+    const stDStr=stD?.iso
+      ?`<span style="font-size:10px">📅 ${esc(new Date(stD.iso).toLocaleString())}</span>`
+      :`<span style="color:var(--muted)">—</span>`;
+    const stDTd=hasSrc?`<td style="text-align:${stD?.iso?'left':'center'};white-space:nowrap">${stDStr}</td>`:'';
     let resPill='';
     if(hasSrc){
       if(r.type==='match')resPill=`<span class="pill res-match"><svg width="9" height="9" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg> Match</span>`;
@@ -2679,6 +2899,7 @@ function _renderQcnTable(){
       <td class="td-wrap" style="font-size:11px;${co2?'':'color:var(--muted);'}white-space:normal;word-break:break-word">${co2||'—'}</td>
       <td class="td-wrap" style="font-size:11px;color:var(--muted);white-space:normal;word-break:break-word">${esc(rm2full)||'—'}</td>
       ${rcvTd}
+      ${stDTd}
       ${hasSrc?`<td style="text-align:center">${resPill}</td>`:''}`;
     frag.appendChild(tr);
   });
@@ -2812,10 +3033,16 @@ function getColVals(col){
     else if(col==='enum')v=enums.get(r.qcn)||'';
     else if(col==='rcv')v=rcvd.get(r.qcn)||'';
     else if(col==='res')v=r.type||'';
+    else if(col==='qcn'){const parts=(r.qcn||'').split('-');v=parts.length>=2?parts[0]+'-'+parts[1]:r.qcn||'';}
+    else if(col==='stDate'){const sd=stDates.get(r.qcn);v=sd?.iso?new Date(sd.iso).toLocaleDateString([],{year:'numeric',month:'short',day:'numeric'}):''}
     else v='';
     vals.push(v);
   });
-  // Include blanks as a distinct value if any row has blank
+  // Sort dates descending (newest first), blanks last
+  if(col==='stDate'){
+    const uniq=[...new Set(vals)];
+    return uniq.sort((a,b)=>{if(!a)return 1;if(!b)return-1;return new Date(b)-new Date(a);});
+  }
   const uniq=[...new Set(vals)].sort((a,b)=>{if(!a)return 1;if(!b)return -1;return a.localeCompare(b);});
   return uniq;
 }
@@ -2828,17 +3055,33 @@ function buildDDList(col,search=''){
 }
 function updDotHead(col){
   document.getElementById(`dot-${col}`)?.classList.toggle('hidden',!(cF[col]?.size));
-  const idMap={ss:'SS',sht:'SHT',rcv:'RCV',res:'RES',enum:'Enum'};
+  const idMap={ss:'SS',sht:'SHT',rcv:'RCV',res:'RES',enum:'Enum',stDate:'STDATE',qcn:'QCN'};
   document.getElementById(`th${idMap[col]||col}`)?.classList.toggle('af',!!(cF[col]?.size));
 }
 function closeAllDD(){document.querySelectorAll('.thdd.open').forEach(d=>d.classList.remove('open'));document.querySelectorAll('.thfbtn.open').forEach(b=>b.classList.remove('open'))}
 function togDD(col){const dd=document.getElementById(`dd-${col}`);const btn=document.querySelector(`[data-col="${col}"]`);if(!dd||!btn)return;const was=dd.classList.contains('open');closeAllDD();if(!was){const rect=btn.getBoundingClientRect();dd.style.top=(rect.bottom+2)+'px';dd.style.left=Math.min(rect.left,window.innerWidth-200)+'px';dd.classList.add('open');btn.classList.add('open');const si=dd.querySelector('input[type=text]');if(si)si.value='';buildDDList(col,'')}}
 
 document.querySelector('#qcnThead').addEventListener('click',e=>{
-  const fb=e.target.closest('.thfbtn[data-col]');if(fb&&!fb.closest('#thQcnSort')){e.stopPropagation();togDD(fb.dataset.col);return}
+  const fb=e.target.closest('.thfbtn[data-col]');if(fb){e.stopPropagation();const col=fb.dataset.col;
+    if(col==='stDate'){
+      if(e.target.closest('svg.chev')){togDD('stDate');return;}
+      stDateSort=stDateSort==='none'?'desc':stDateSort==='desc'?'asc':'none';qSort='none';
+      const btn=document.getElementById('thStDateBtn');
+      if(btn){btn.classList.toggle('sa',stDateSort!=='none');btn.classList.toggle('sasc',stDateSort==='asc');btn.classList.toggle('sdesc',stDateSort==='desc');}
+      const qBtn=document.getElementById('thQcnSortBtn');if(qBtn){qBtn.classList.remove('sa','sasc','sdesc');}
+      renderQcnTable();return;
+    }
+    if(col==='qcn'){
+      if(e.target.closest('svg.chev')){togDD('qcn');return;}
+      qSort=qSort==='none'?'asc':qSort==='asc'?'desc':'none';stDateSort='none';
+      const stBtn=document.getElementById('thStDateBtn');if(stBtn){stBtn.classList.remove('sa','sasc','sdesc');}
+      const btn=document.getElementById('thQcnSortBtn');
+      if(btn){btn.classList.toggle('sa',qSort!=='none');btn.classList.toggle('sasc',qSort==='asc');btn.classList.toggle('sdesc',qSort==='desc');}
+      renderQcnTable();return;
+    }
+    togDD(col);return}
   const it=e.target.closest('.thdd-item[data-col]');if(it){e.stopPropagation();const col=it.dataset.col,val=it.dataset.val;if(cF[col].has(val))cF[col].delete(val);else cF[col].add(val);updDotHead(col);buildDDList(col,it.closest('.thdd').querySelector('input')?.value||'');renderQcnTable();return}
   const cb=e.target.closest('[data-clr]');if(cb){e.stopPropagation();const col=cb.dataset.clr;cF[col].clear();updDotHead(col);buildDDList(col,'');renderQcnTable();return}
-  const sb=e.target.closest('#thQcnSort');if(sb){qSort=qSort==='none'?'asc':qSort==='asc'?'desc':'none';sb.classList.toggle('sa',qSort!=='none');sb.classList.toggle('sasc',qSort==='asc');sb.classList.toggle('sdesc',qSort==='desc');renderQcnTable()}
 });
 document.querySelector('#qcnThead').addEventListener('input',e=>{const inp=e.target.closest('[data-dd]');if(inp)buildDDList(inp.dataset.dd,inp.value)});
 document.getElementById('qcnSrch').addEventListener('input',function(){qTerm=this.value;renderQcnTable()});
@@ -2879,16 +3122,11 @@ function buildQcnTabs(){
   // Reverse named tabs so newest (last loaded) appears first
   const reversedNames=[...sNames].reverse();
 
-  // Mismatch rows: type=mismatch or sheet-only (discrepancy with source)
-  function tabMismatchCount(rows){
+  // Helper: count warn-worthy rows for a tab (received blank/N AND not-in-source rows)
+  // sheet-only rows only count as warns when source data is present
+  function tabWarnCount(rows){
     return rows.filter(r=>{
       if(r.type==='sheet-only')return hasSrc;
-      return r.type==='mismatch';
-    }).length;
-  }
-  // Not-received rows: received value is blank, N, or NO
-  function tabNoRcvCount(rows){
-    return rows.filter(r=>{
       const v=(rcvd.get(r.qcn)||'').trim().toUpperCase();
       return !v||(v==='N'||v==='NO');
     }).length;
@@ -2898,9 +3136,8 @@ function buildQcnTabs(){
     {key:'__ALL__',label:'All Sheets',issues:allIssues},
     ...reversedNames.map(n=>{
       const tabRows=sRowMap[n]||[];
-      const mismatches=tabMismatchCount(tabRows);
-      const noRcv=tabNoRcvCount(tabRows);
-      return{key:n,label:n,mismatches,noRcv,hasData:true};
+      const warns=tabWarnCount(tabRows);
+      return{key:n,label:n,warns,hasData:true};
     }),
     ...(hasSrc&&nf>0?[{key:'__NF__',label:'Not Found',issues:nf}]:[])
   ];
@@ -2914,11 +3151,10 @@ function buildQcnTabs(){
     }else if(t.key==='__NF__'){
       badge=`<span class="badge" style="background:var(--pp-bg);color:var(--pp-t)">${t.issues}</span>`;
     }else{
-      // Named tabs: ⚡ for mismatches, ○ for not-received — show both if applicable
-      const parts=[];
-      if(t.mismatches>0)parts.push(`<span class="badge" style="background:var(--po-bg);color:var(--po-t)">${t.mismatches}⚡</span>`);
-      if(t.noRcv>0)parts.push(`<span class="badge" style="background:var(--pb-bg);color:var(--pb-t)">${t.noRcv}🚫</span>`);
-      badge=parts.length?parts.join(''):`<span class="badge" style="background:var(--pg-bg);color:var(--pg-t)">${(sRowMap[t.key]||[]).length}</span>`;
+      // Named tabs: warn only if there are received-blank or received-N rows
+      badge=t.warns>0
+        ?`<span class="badge" style="background:var(--po-bg);color:var(--po-t)">${t.warns}⚡</span>`
+        :`<span class="badge" style="background:var(--pg-bg);color:var(--pg-t)">${(sRowMap[t.key]||[]).length}</span>`;
     }
     btn.innerHTML=`<span>${esc(t.label)}</span>${badge}`;
     btn.addEventListener('click',()=>{actSheet=t.key;actFilter='all';qTerm='';Object.keys(cF).forEach(k=>{cF[k].clear();updDotHead(k)});document.getElementById('qcnSrch').value='';document.querySelectorAll('.stab').forEach(b=>b.classList.toggle('active',b.dataset.key===t.key));updateQcnFBar();renderQcnTable();renderQcnCards();saveUiState()});
@@ -2930,7 +3166,7 @@ function updateQcnFBar(){
   let rows;
   if(actSheet==='__ALL__') rows=allRows;
   else if(actSheet==='__NF__') rows=allRows.filter(r=>r.type==='notfound');
-  else rows=[...(sRowMap[actSheet]||[])];
+  else rows=[...(sRowMap[actSheet]||[]),...allRows.filter(r=>r.type==='notfound')];
   const snap=userSnaps[activeUid];
   const hasSrc=!snap?.viewOnly||(snap?.viewMode!=='sheet');
   const c={all:rows.length,match:rows.filter(r=>r.type==='match').length,mismatch:rows.filter(r=>r.type==='mismatch').length,notfound:rows.filter(r=>r.type==='notfound').length,'sheet-only':rows.filter(r=>r.type==='sheet-only').length,'source-only':rows.filter(r=>r.type==='source-only').length};
@@ -2950,9 +3186,11 @@ function updateQcnFBar(){
 ═══════════════════════════════════════════════════════ */
 document.getElementById('dlBtn').addEventListener('click',()=>{
   const wb=XLSX.utils.book_new();const user=users.find(u=>u.id===activeUid);const label=user?.name||'Results';
-  const hdr=['Row #','QCN','Source Status','Sheet Status','Enumerator','For Correction','Remarks','Result'];
+  const hdr=['Row #','QCN','Source Status','Sheet Status','Enumerator','For Correction','Remarks','Received','Status Changed','Result'];
   const rows=[hdr,...allRows.map(r=>{
-    return[sRowNum.has(r.qcn)?sRowNum.get(r.qcn)+1:'',r.qcn,r.srcStatus,shtOv.has(r.qcn)?shtOv.get(r.qcn):(r.sheetStatus||''),enums.get(r.qcn)||'',corr.get(r.qcn)||'',rmks.get(r.qcn)||'',r.type==='match'?'Match':r.type==='mismatch'?'Mismatch':r.type==='notfound'?'Not Found':r.type==='sheet-only'?'Sheet Only':r.type==='source-only'?'Source Only':''];
+    const stD=stDates.get(r.qcn);
+    const stDStr=stD?.iso?new Date(stD.iso).toLocaleString()+(stD.source?` (${stD.source})`:''):'';
+    return[sRowNum.has(r.qcn)?sRowNum.get(r.qcn)+1:'',r.qcn,r.srcStatus,shtOv.has(r.qcn)?shtOv.get(r.qcn):(r.sheetStatus||''),enums.get(r.qcn)||'',corr.get(r.qcn)||'',rmks.get(r.qcn)||'',rcvd.get(r.qcn)||'',stDStr,r.type==='match'?'Match':r.type==='mismatch'?'Mismatch':r.type==='notfound'?'Not Found':r.type==='sheet-only'?'Sheet Only':r.type==='source-only'?'Source Only':''];
   })];
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rows),'QCN Results');
   XLSX.writeFile(wb,`qcn_${label.replace(/[^a-z0-9]/gi,'_')}_${new Date().toISOString().slice(0,10)}.xlsx`);
