@@ -544,14 +544,18 @@ kbd+kbd{margin-left:3px;}
         </div>
         <input type="color" id="toolColor" class="w-7 h-7 rounded-full cursor-pointer border-none bg-transparent">
         <div class="flex items-center gap-2 px-2 border-r border-slate-200 pr-3">
-          <span id="sizeLbl" class="text-[10px] font-bold text-slate-400">SIZE</span>
-          <input type="range" id="sizeSlider" min="1" max="100" value="5" class="w-20 h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer">
-          <span id="sizeVal" class="text-xs font-bold text-blue-600 w-6">5</span>
+          <span id="sizeLbl" class="text-[10px] font-bold text-slate-400 cursor-pointer hover:text-blue-600 transition-colors">SIZE</span>
+          <div id="sizeSliderContainer" class="hidden items-center gap-2">
+            <input type="range" id="sizeSlider" min="1" max="100" value="5" class="w-20 h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer">
+            <span id="sizeVal" class="text-xs font-bold text-blue-600 w-6">5</span>
+          </div>
         </div>
         <div id="txtSizeWrap" class="hidden flex items-center gap-2 px-2 border-r border-slate-200 pr-3">
-          <span class="text-[10px] font-bold text-slate-400">TEXT</span>
-          <input type="range" id="txtSizeSlider" min="8" max="120" value="24" class="w-20 h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer">
-          <span id="txtSizeVal" class="text-xs font-bold text-purple-600 w-8">24px</span>
+          <span id="textSizeLbl" class="text-[10px] font-bold text-slate-400 cursor-pointer hover:text-purple-600 transition-colors">TEXT</span>
+          <div id="textSizeSliderContainer" class="hidden items-center gap-2">
+            <input type="range" id="txtSizeSlider" min="8" max="120" value="24" class="w-20 h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer">
+            <span id="txtSizeVal" class="text-xs font-bold text-purple-600 w-8">24px</span>
+          </div>
         </div>
         <div id="fontWrap" class="hidden items-center gap-2 px-2">
           <span class="text-[10px] font-bold text-slate-400">FONT</span>
@@ -564,9 +568,11 @@ kbd+kbd{margin-left:3px;}
           </select>
           <button id="italicBtn" title="Italic" class="p-1 rounded text-xs font-bold italic text-slate-500 hover:bg-slate-100 border border-slate-200 w-6 h-6 flex items-center justify-center transition">I</button>
           <div class="flex items-center gap-2 px-2 border-l border-slate-200">
-            <span class="text-[10px] font-bold text-slate-400">SPACING</span>
-            <input type="range" id="charSpacingSlider" min="-50" max="500" value="0" class="w-16 h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer">
-            <span id="charSpacingVal" class="text-xs font-bold text-slate-600 w-8">0</span>
+            <span id="spacingLbl" class="text-[10px] font-bold text-slate-400 cursor-pointer hover:text-green-600 transition-colors">SPACING</span>
+            <div id="spacingSliderContainer" class="hidden items-center gap-2">
+              <input type="range" id="charSpacingSlider" min="-50" max="500" value="0" class="w-16 h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer">
+              <span id="charSpacingVal" class="text-xs font-bold text-slate-600 w-8">0</span>
+            </div>
           </div>
           <div class="flex items-center gap-2 px-2 border-l border-slate-200" title="Fixed-width cells for form filling">
             <input type="checkbox" id="fixedWidthBtn" class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer">
@@ -583,9 +589,11 @@ kbd+kbd{margin-left:3px;}
       </div>
       <!-- Opacity control -->
       <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-1 rounded-xl flex-shrink-0">
-        <span class="text-[10px] font-bold text-slate-400">OPACITY</span>
-        <input type="range" id="opacitySlider" min="5" max="100" value="100" class="w-16 h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer">
-        <span id="opacityVal" class="text-xs font-bold text-slate-500 w-8">100%</span>
+        <span id="opacityLbl" class="text-[10px] font-bold text-slate-400 cursor-pointer hover:text-orange-600 transition-colors">OPACITY</span>
+        <div id="opacitySliderContainer" class="hidden items-center gap-2">
+          <input type="range" id="opacitySlider" min="5" max="100" value="100" class="w-16 h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer">
+          <span id="opacityVal" class="text-xs font-bold text-slate-500 w-8">100%</span>
+        </div>
       </div>
       <!-- Zoom control — always visible in toolbar -->
       <div id="zoomControl" class="ml-auto flex-shrink-0">
@@ -1291,6 +1299,10 @@ const D={
   charSpacingSlider:$('charSpacingSlider'),
   charSpacingVal:$('charSpacingVal'),
   fixedWidthBtn:$('fixedWidthBtn'),
+  sizeLbl:$('sizeLbl'),
+  textSizeLbl:$('textSizeLbl'),
+  spacingLbl:$('spacingLbl'),
+  opacityLbl:$('opacityLbl'),
   clearCacheBtn:$('clearCacheBtn'),
   exportOverlay:$('exportOverlay'),
   exportSpinner:$('exportSpinner'),
@@ -3029,6 +3041,69 @@ D.charSpacingSlider.addEventListener('mousedown',e=>e.stopPropagation());
 if(D.fixedWidthBtn){D.fixedWidthBtn.onchange=applySettings;}
 const _opSlider=$('opacitySlider');
 if(_opSlider){ _opSlider.oninput=applySettings; _opSlider.addEventListener('mousedown',e=>e.stopPropagation()); }
+
+// Slider toggle functionality
+function toggleSlider(containerId, labelId) {
+  const container = $(containerId);
+  const label = $(labelId);
+  if (!container || !label) return;
+  
+  const isHidden = container.classList.contains('hidden');
+  
+  // Hide all sliders first
+  ['sizeSliderContainer', 'textSizeSliderContainer', 'spacingSliderContainer', 'opacitySliderContainer'].forEach(id => {
+    const el = $(id);
+    if (el) el.classList.add('hidden');
+  });
+  
+  // Reset all label colors
+  ['sizeLbl', 'textSizeLbl', 'spacingLbl', 'opacityLbl'].forEach(id => {
+    const el = $(id);
+    if (el) {
+      el.classList.remove('text-blue-600', 'text-purple-600', 'text-green-600', 'text-orange-600');
+      el.classList.add('text-slate-400');
+    }
+  });
+  
+  // Show selected slider and update label color
+  if (isHidden) {
+    container.classList.remove('hidden');
+    container.classList.add('flex');
+    
+    // Update label color based on slider type
+    if (labelId === 'sizeLbl') {
+      label.classList.remove('text-slate-400');
+      label.classList.add('text-blue-600');
+    } else if (labelId === 'textSizeLbl') {
+      label.classList.remove('text-slate-400');
+      label.classList.add('text-purple-600');
+    } else if (labelId === 'spacingLbl') {
+      label.classList.remove('text-slate-400');
+      label.classList.add('text-green-600');
+    } else if (labelId === 'opacityLbl') {
+      label.classList.remove('text-slate-400');
+      label.classList.add('text-orange-600');
+    }
+  }
+}
+
+// Add click handlers to control labels
+if (D.sizeLbl) {
+  D.sizeLbl.addEventListener('click', () => toggleSlider('sizeSliderContainer', 'sizeLbl'));
+  D.sizeLbl.addEventListener('mousedown', e => e.stopPropagation());
+}
+if (D.textSizeLbl) {
+  D.textSizeLbl.addEventListener('click', () => toggleSlider('textSizeSliderContainer', 'textSizeLbl'));
+  D.textSizeLbl.addEventListener('mousedown', e => e.stopPropagation());
+}
+if (D.spacingLbl) {
+  D.spacingLbl.addEventListener('click', () => toggleSlider('spacingSliderContainer', 'spacingLbl'));
+  D.spacingLbl.addEventListener('mousedown', e => e.stopPropagation());
+}
+if (D.opacityLbl) {
+  D.opacityLbl.addEventListener('click', () => toggleSlider('opacitySliderContainer', 'opacityLbl'));
+  D.opacityLbl.addEventListener('mousedown', e => e.stopPropagation());
+}
 
 function applySettings(){
   const color=D.toolColor.value,size=parseInt(D.sizeSlider.value),fontSize=parseInt(D.txtSizeSlider.value);
