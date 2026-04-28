@@ -13,7 +13,7 @@ body{font-family:'Inter',sans-serif;height:100vh;display:flex;flex-direction:col
 .tool-btn.active{background:#3b82f6 !important;color:white !important;}
 .tool-btn.active svg{color:white !important;}
 .tool-btn:not(.active)[data-tool="select"]{color:#64748b;}
-#workspace-scroll-area{scroll-behavior:auto;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y;}
+#workspace-scroll-area{scroll-behavior:smooth;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y;}
 #annot-container{display:flex;flex-direction:column;align-items:center;min-width:100%;width:max-content;}
 .canvas-wrapper{margin:0 auto 30px auto;box-shadow:0 20px 25px -5px rgba(0,0,0,.1),0 10px 10px -5px rgba(0,0,0,.04);background:white;background-size:contain;background-repeat:no-repeat;position:relative;overflow:hidden;flex-shrink:0;}
 .color-swatch{width:24px;height:24px;border-radius:4px;cursor:pointer;border:2px solid transparent;transition:transform .1s;position:relative;}
@@ -141,8 +141,7 @@ input[type=range]{cursor:pointer;}
   #addFilesBtn { padding: 5px 10px !important; font-size: 12px !important; }
   #saveOptions { gap: 4px !important; }
   /* Hide text labels, keep icons on save buttons */
-  #savePdfBtn .sr-mob, #mergeAllBtn .sr-mob, #exportPdfBtn .sr-mob, #exportJpgBtn .sr-mob, #saveTabJpgBtn .sr-mob { display: none !important; }
-  #clipResizeHandle { display: none !important; }
+  #savePdfBtn .sr-mob, #mergeAllBtn .sr-mob, #exportPdfBtn .sr-mob, #exportJpgBtn .sr-mob { display: none !important; }
 
   /* Tab bar */
   #tabBar { padding-left: 6px !important; padding-right: 6px !important; }
@@ -432,25 +431,6 @@ kbd+kbd{margin-left:3px;}
   pointer-events:none !important;
   transform:none !important;
 }
-/* ── Clipboard resize handle ─────────────────────────────────────────────── */
-#clipResizeHandle{
-  position:absolute;left:0;top:0;bottom:0;width:6px;
-  cursor:ew-resize;z-index:20;
-  background:transparent;
-  transition:background .15s;
-}
-#clipResizeHandle:hover,#clipResizeHandle.dragging{
-  background:rgba(59,130,246,0.25);
-}
-#clipResizeHandle::after{
-  content:'';
-  position:absolute;top:50%;left:1px;transform:translateY(-50%);
-  width:3px;height:28px;border-radius:2px;
-  background:#cbd5e1;transition:background .15s;
-}
-#clipResizeHandle:hover::after,#clipResizeHandle.dragging::after{
-  background:#3b82f6;
-}
 </style>
 </head>
 <body class="bg-slate-50">
@@ -488,10 +468,6 @@ kbd+kbd{margin-left:3px;}
       <button id="savePdfBtn" class="bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition flex items-center gap-1.5">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
         Save<span class="sr-mob"> PDF</span>
-      </button>
-      <button id="saveTabJpgBtn" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition flex items-center gap-1.5" title="Save current tab as JPG(s)">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-        JPG<span class="sr-mob"> (Tab)</span>
       </button>
       <button id="mergeAllBtn" class="bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition flex items-center gap-1.5">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round"/><path d="M17 21v-8H7v8M7 3v5h8" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -558,15 +534,6 @@ kbd+kbd{margin-left:3px;}
             <option value="Playfair Display">Playfair Display</option>
           </select>
           <button id="italicBtn" title="Italic" class="p-1 rounded text-xs font-bold italic text-slate-500 hover:bg-slate-100 border border-slate-200 w-6 h-6 flex items-center justify-center transition">I</button>
-          <div class="flex items-center gap-2 px-2 border-l border-slate-200">
-            <span class="text-[10px] font-bold text-slate-400">SPACING</span>
-            <input type="range" id="charSpacingSlider" min="-50" max="500" value="0" class="w-16 h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer">
-            <span id="charSpacingVal" class="text-xs font-bold text-slate-600 w-8">0</span>
-          </div>
-          <div class="flex items-center gap-2 px-2 border-l border-slate-200" title="Fixed-width cells for form filling">
-            <input type="checkbox" id="fixedWidthBtn" class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer">
-            <span class="text-[10px] font-bold text-slate-400">FIXED</span>
-          </div>
         </div>
         <button id="clearAnnotBtn" title="Clear all annotations on this page" class="ml-1 p-1.5 rounded-lg text-orange-400 hover:bg-orange-50 hover:text-orange-600 transition" style="display:none">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
@@ -635,7 +602,6 @@ kbd+kbd{margin-left:3px;}
         <div id="mobScrollThumb"></div>
       </div>
       <aside id="sidebarClip" style="position:absolute;right:0;top:0;bottom:0;width:192px;z-index:10;display:flex;flex-direction:column;background:white;border-left:1px solid #e2e8f0;">
-        <div id="clipResizeHandle" title="Drag to resize clipboard"></div>
         <div class="p-3 border-b border-slate-100 flex items-center justify-between">
           <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Clipboard</span>
           <div class="flex gap-1">
@@ -717,25 +683,6 @@ kbd+kbd{margin-left:3px;}
   <div id="dbgLines"></div>
 </div>
 <button id="mobDebugToggle" style="display:none;">DEBUG</button>
-
-<!-- Debug Panel -->
-<div id="zoomDebug" style="display:none;position:fixed;top:52px;right:0;width:400px;height:calc(100vh - 52px);background:#0a0f1e;color:#e2e8f0;font-family:monospace;font-size:10px;z-index:99999;border-left:2px solid #1e3a5f;flex-direction:column;box-shadow:-8px 0 32px rgba(0,0,0,0.6);">
-  <!-- header -->
-  <div style="padding:7px 10px;background:#0d1526;border-bottom:1px solid #1e3a5f;display:flex;align-items:center;gap:6px;flex-shrink:0;flex-wrap:wrap;">
-    <span style="font-weight:800;color:#60a5fa;font-size:11px;margin-right:4px;">🔍 DEBUG</span>
-    <button id="zdbg-record" style="font-size:9px;font-weight:700;padding:3px 10px;border-radius:4px;border:none;background:#16a34a;color:#fff;cursor:pointer;pointer-events:all;letter-spacing:.04em;">⏺ RECORD</button>
-    <button id="zdbg-stop"   style="font-size:9px;font-weight:700;padding:3px 10px;border-radius:4px;border:none;background:#374151;color:#9ca3af;cursor:pointer;pointer-events:all;" disabled>⏹ STOP</button>
-    <button id="zdbg-copy"   style="font-size:9px;font-weight:700;padding:3px 10px;border-radius:4px;border:1px solid #3b82f6;background:#1e3a5f;color:#93c5fd;cursor:pointer;pointer-events:all;">📋 COPY</button>
-    <button id="zdbg-clear"  style="font-size:9px;font-weight:700;padding:3px 10px;border-radius:4px;border:1px solid #374151;background:#111827;color:#6b7280;cursor:pointer;pointer-events:all;">🗑 CLEAR</button>
-    <span id="zdbg-status" style="font-size:9px;color:#6b7280;margin-left:auto;">idle</span>
-  </div>
-  <!-- live status bar (always updating) -->
-  <div id="zdbg-live" style="padding:5px 10px;background:#0d1a2e;border-bottom:1px solid #1e3a5f;flex-shrink:0;line-height:1.7;font-size:9.5px;"></div>
-  <!-- recorded log -->
-  <div id="zdbg-log" style="flex:1;overflow-y:auto;padding:6px 10px;line-height:1.65;pointer-events:all;"></div>
-  <!-- entry count -->
-  <div id="zdbg-count" style="padding:4px 10px;background:#0d1526;border-top:1px solid #1e3a5f;font-size:9px;color:#4b5563;flex-shrink:0;"></div>
-</div>
 
 <!-- Mobile floating slider popup -->
 <div id="mobSliderPopup">
@@ -1088,7 +1035,7 @@ function lockTextarea(ta){
   }
 })();
 
-const RENDER_SCALE = 3.0;
+const RENDER_SCALE = 1.5;
 const EXPORT_CONCURRENCY = 4;
 
 // Coordinate patches are on fabric.Canvas.prototype (see script block above _initApp).
@@ -1101,7 +1048,7 @@ const TOOL_DEFAULTS={
   select:    {color:'#2563eb',size:5,  fontSize:24,opacity:100},
   pen:       {color:'#1e293b',size:3,  fontSize:24,opacity:100},
   highlighter:{color:'#fbbf24',size:22,fontSize:24,opacity:100},
-  text:      {color:'#1e293b',size:40, fontSize:24,opacity:100,charSpacing:0,fixedWidth:false},
+  text:      {color:'#1e293b',size:40, fontSize:24,opacity:100},
   arrow:     {color:'#ef4444',size:3,  fontSize:24,opacity:100},
   rect:      {color:'#2563eb',size:3,  fontSize:24,opacity:100},
   roundrect: {color:'#2563eb',size:3,  fontSize:24,opacity:100},
@@ -1245,9 +1192,6 @@ const D={
   fontPicker:$('fontPicker'),
   fontWrap:$('fontWrap'),
   italicBtn:$('italicBtn'),
-  charSpacingSlider:$('charSpacingSlider'),
-  charSpacingVal:$('charSpacingVal'),
-  fixedWidthBtn:$('fixedWidthBtn'),
   clearCacheBtn:$('clearCacheBtn'),
   exportOverlay:$('exportOverlay'),
   exportSpinner:$('exportSpinner'),
@@ -1542,26 +1486,6 @@ async function loadFiles(list){
       }
       const pdfLibDoc = await PDFDocument.load(buf);
       const pdfJsDoc  = await pdfjsLib.getDocument({data: buf}).promise;
-
-      // Restore page labels saved by a previous saveSinglePdf
-      let restoredLabels = {};
-      try {
-        const kw = pdfLibDoc.getKeywords() || '';
-        const kwStr = Array.isArray(kw) ? kw.join(' ') : String(kw);
-        const prefix = 'pdfpro_labels:';
-        const start = kwStr.indexOf(prefix);
-        if(start !== -1){
-          const jsonStr = kwStr.slice(start + prefix.length);
-          // Find the matching closing brace
-          let depth = 0, end = -1;
-          for(let i = 0; i < jsonStr.length; i++){
-            if(jsonStr[i] === '{') depth++;
-            else if(jsonStr[i] === '}'){ depth--; if(depth === 0){ end = i; break; } }
-          }
-          if(end !== -1) restoredLabels = JSON.parse(jsonStr.slice(0, end + 1));
-        }
-      } catch(_) {}
-
       S.files.push({
         id: Math.random().toString(36).slice(2,11),
         name: item.name,
@@ -1569,7 +1493,7 @@ async function loadFiles(list){
         allPages: Array.from({length: pdfLibDoc.getPageCount()}, (_,i)=>i),
         deletedPages: new Set(),
         annotations: {},
-        pageLabels: restoredLabels,
+        pageLabels: {},
         dirty: false,
         pdfLibDoc,
         pdfJsDoc,
@@ -2633,14 +2557,6 @@ function onSel(sel,fc){
       D.italicBtn.classList.toggle('text-blue-600',isItalic);
       D.italicBtn.classList.toggle('border-blue-300',isItalic);
     }
-    if(D.charSpacingSlider && D.charSpacingVal){
-      const spacing=obj.charSpacing||0;
-      D.charSpacingSlider.value=spacing;
-      D.charSpacingVal.innerText=spacing;
-    }
-    if(D.fixedWidthBtn){
-      D.fixedWidthBtn.checked=!!obj.fixedWidth;
-    }
   } else {
     let sw=obj.strokeWidth||0;
     if(obj.type==='curvedArrow'){sw=obj.arrowWidth||3;}
@@ -2671,25 +2587,18 @@ function placeText(fc,f,pi,x,y){
   const fw=sizeToFontWeight(ts.size||40);
   const font=D.fontPicker?D.fontPicker.value:'Inter';
   const italic=D.italicBtn&&D.italicBtn.classList.contains('active')?'italic':'normal';
-  const charSpacing=parseInt(D.charSpacingSlider?.value||0);
-  const fixedWidth=D.fixedWidthBtn&&D.fixedWidthBtn.checked;
-  // For fixed-width mode: use monospace font and add slider spacing to base cell spacing
-  const useFont=fixedWidth?'Courier New':font;
-  const useCharSpacing=fixedWidth?Math.round(fs*0.6)+charSpacing:charSpacing;
   const t=new fabric.IText('Text',{
     left:x, top:y,
     fill:ts.color,
     fontSize:fs,
     fontWeight:fw,
-    fontFamily:useFont,
+    fontFamily:font,
     fontStyle:italic,
-    charSpacing:useCharSpacing,
     editable:true,
     objectCaching:false,
     cursorDelay:0,
     cursorDuration:600,
   });
-  t.fixedWidth=fixedWidth;
   fc.add(t);
   t.initDimensions();
   t.setCoords();
@@ -2759,15 +2668,6 @@ function syncToolUI(){
   D.toolColor.value=ts.color;
   D.sizeSlider.value=ts.size;D.sizeVal.innerText=ts.size;
   D.txtSizeSlider.value=ts.fontSize||24;D.txtSizeVal.innerText=(ts.fontSize||24)+'px';
-  // Restore charSpacing for text tool
-  if(ts.charSpacing!==undefined&&D.charSpacingSlider&&D.charSpacingVal){
-    D.charSpacingSlider.value=ts.charSpacing;
-    D.charSpacingVal.innerText=ts.charSpacing;
-  }
-  // Restore fixedWidth for text tool
-  if(ts.fixedWidth!==undefined&&D.fixedWidthBtn){
-    D.fixedWidthBtn.checked=ts.fixedWidth;
-  }
   // Restore opacity for this tool
   const op=ts.opacity!==undefined?ts.opacity:100;
   const opEl=$('opacitySlider');
@@ -2851,16 +2751,11 @@ D.toolColor.oninput=applySettings;
 D.sizeSlider.oninput=applySettings;
 D.txtSizeSlider.oninput=applySettings;
 D.txtSizeSlider.addEventListener('mousedown',e=>e.stopPropagation());
-D.charSpacingSlider.oninput=applySettings;
-D.charSpacingSlider.addEventListener('mousedown',e=>e.stopPropagation());
-if(D.fixedWidthBtn){D.fixedWidthBtn.onchange=applySettings;}
 const _opSlider=$('opacitySlider');
 if(_opSlider){ _opSlider.oninput=applySettings; _opSlider.addEventListener('mousedown',e=>e.stopPropagation()); }
 
 function applySettings(){
   const color=D.toolColor.value,size=parseInt(D.sizeSlider.value),fontSize=parseInt(D.txtSizeSlider.value);
-  const charSpacing=parseInt(D.charSpacingSlider.value);
-  const fixedWidth=D.fixedWidthBtn&&D.fixedWidthBtn.checked;
   const opEl=$('opacitySlider');
   const opacity=opEl ? parseInt(opEl.value) : 100;
   const opVal=$('opacityVal');
@@ -2875,10 +2770,9 @@ function applySettings(){
   const s=S.toolSettings;
   if(!s[settingsKey])s[settingsKey]={...TOOL_DEFAULTS[settingsKey]||TOOL_DEFAULTS.text};
   s[settingsKey].color=color;s[settingsKey].size=size;s[settingsKey].fontSize=fontSize;
-  s[settingsKey].opacity=opacity;s[settingsKey].charSpacing=charSpacing;s[settingsKey].fixedWidth=fixedWidth;
+  s[settingsKey].opacity=opacity;
   ls.set('pdfpro_ts',s);
   D.sizeVal.innerText=size;D.txtSizeVal.innerText=fontSize+'px';
-  D.charSpacingVal.innerText=charSpacing;
   document.querySelectorAll('.color-swatch').forEach(sw=>sw.classList.toggle('selected',sw.dataset.color&&sw.dataset.color.toLowerCase()===color.toLowerCase()));
   updateToolIconColors();
   updateSizeLbl();
@@ -2886,28 +2780,23 @@ function applySettings(){
   S.activeCanvases.forEach(c=>{
     const objs=c.fc.getActiveObjects();
     if(objs.length)hit=true;
-    objs.forEach(o=>applyPropsToObj(o,color,size,fontSize,opacity,charSpacing,fixedWidth));
+    objs.forEach(o=>applyPropsToObj(o,color,size,fontSize,opacity));
     c.fc.renderAll();
   });
   if(!hit&&S.lastPlaced){
     const{obj,fc}=S.lastPlaced;
-    if(obj&&fc){applyPropsToObj(obj,color,size,fontSize,opacity,charSpacing,fixedWidth);fc.renderAll();}
+    if(obj&&fc){applyPropsToObj(obj,color,size,fontSize,opacity);fc.renderAll();}
   }
   S.activeCanvases.forEach(c=>applyToolToCanvas(c.fc));
 }
 
-function applyPropsToObj(obj, color, size, fontSize, opacity, charSpacing, fixedWidth){
+function applyPropsToObj(obj, color, size, fontSize, opacity){
   const op = (opacity !== undefined) ? Math.max(0, Math.min(1, opacity/100)) : undefined;
   if(op !== undefined) obj.set({opacity: op});
 
   if(obj.type==='i-text'||obj.type==='text'||obj.type==='textbox'){
     const fw=sizeToFontWeight(size);
-    const useFixedWidth=fixedWidth!==undefined?fixedWidth:obj.fixedWidth;
-    const useCharSpacing=useFixedWidth?Math.round(fontSize*0.6)+(charSpacing!==undefined?charSpacing:(obj.charSpacing||0)):(charSpacing!==undefined?charSpacing:obj.charSpacing);
-    const useFont=useFixedWidth?'Courier New':(obj.fontFamily||'Inter');
-    const props={fill:color,fontSize,fontWeight:fw,fontFamily:useFont,charSpacing:useCharSpacing};
-    obj.set(props);
-    obj.fixedWidth=useFixedWidth;
+    obj.set({fill:color,fontSize,fontWeight:fw});
     if(fabric.util.clearFabricFontCache) fabric.util.clearFabricFontCache();
     if(typeof obj.initDimensions==='function') obj.initDimensions();
   } else if(obj.type==='curvedArrow'){
@@ -2925,7 +2814,7 @@ function applyPropsToObj(obj, color, size, fontSize, opacity, charSpacing, fixed
     obj._updateBounds();
     if(obj.canvas){ obj.canvas.clearContext(obj.canvas.getContext()); }
   } else if(obj.type==='activeSelection'||obj.type==='group'){
-    obj.getObjects().forEach(o=>applyPropsToObj(o, color, size, fontSize, opacity, charSpacing, fixedWidth));
+    obj.getObjects().forEach(o=>applyPropsToObj(o, color, size, fontSize, opacity));
   } else {
     const cur=obj.stroke||'';
     const isHighlight=cur.startsWith('rgba')&&parseFloat(cur.split(',')[3])<0.99;
@@ -2981,11 +2870,10 @@ function clearAllAnnotations(){
 D.clearAnnotBtn.onclick=clearAllAnnotations;
 
 async function renderWorkspace(){
-  const renderToken = ++_preloadToken; // cancel stale renders
+  ++_preloadToken; // cancel any in-progress preload before clearing the DOM
   showLoading();
   try{
     flushAnnotations();
-    // Hide all cached file divs
     Object.values(S.fileCanvasCache).forEach(c=>c.domNode.style.display='none');
     Array.from(D.annotCont.children).forEach(ch=>{
       const isCached=Object.values(S.fileCanvasCache).some(c=>c.domNode===ch);
@@ -2993,54 +2881,24 @@ async function renderWorkspace(){
     });
     S.activeCanvases=[];
     const f=getAF();
-    if(!f){buildTabs();hideLoading();return;}
+    if(!f){buildTabs();return;}
     S.canvasOwnerFileId=f.id;
-
     const fileDiv=document.createElement('div');
     fileDiv.className='flex flex-col items-center';
     D.annotCont.appendChild(fileDiv);
-
     const pages=keepPages(f);
-
-    // Clear sidebar immediately so user sees it's loading
-    D.pagesList.innerHTML='';
-    if(!D.pagesList._dragBlockerAdded){
-      D.pagesList._dragBlockerAdded=true;
-      D.pagesList.addEventListener('dragstart',e=>{
-        if(!e.target.closest('.page-row-drag')){e.preventDefault();e.stopPropagation();}
-      },{capture:true});
-    }
-
-    buildTabs();
-    syncToolUI();
-
-    let firstPageDone=false;
-
     for(let i=0;i<pages.length;i++){
-      if(renderToken!==_preloadToken) return; // cancelled — user switched tab
-
       const pi=pages[i];
-
-      // ── Render the page canvas ──────────────────────────────────────────────
       const page=await f.pdfJsDoc.getPage(pi+1);
-      if(renderToken!==_preloadToken) return;
-
       const vp=page.getViewport({scale:RENDER_SCALE});
-      const bgC=document.createElement('canvas');
-      bgC.width=vp.width; bgC.height=vp.height;
+      const bgC=document.createElement('canvas');bgC.width=vp.width;bgC.height=vp.height;
       await page.render({canvasContext:bgC.getContext('2d'),viewport:vp}).promise;
-      if(renderToken!==_preloadToken) return;
-
       const bgUrl=bgC.toDataURL();
-
-      // ── Build canvas wrapper ────────────────────────────────────────────────
       const wrapper=document.createElement('div');
       wrapper.id=`pw-${f.id}-${pi}`;
       wrapper.className='canvas-wrapper mb-10';
-      const cel=document.createElement('canvas');
-      wrapper.appendChild(cel);
+      const cel=document.createElement('canvas');wrapper.appendChild(cel);
       fileDiv.appendChild(wrapper);
-
       const fc=new fabric.Canvas(cel,{width:vp.width,height:vp.height,backgroundColor:'transparent',preserveObjectStacking:true});
       _patchFabricCanvas(fc);
       fc.enableRetinaScaling=false;
@@ -3051,200 +2909,39 @@ async function renderWorkspace(){
       fc.getElement().parentElement.style.backgroundImage=`url(${bgUrl})`;
       fc.getElement().parentElement.style.backgroundSize='contain';
       wireContextMenu(fc,pi,wrapper);
-
       const entry={fc,pageIndex:pi};
       S.activeCanvases.push(entry);
-
-      await loadAnnotations(fc,f,pi,f.annotations[pi]);
+      const saved=f.annotations[pi];
+      await loadAnnotations(fc,f,pi,saved);
       wireDraw(fc,f,pi);
       wireCanvasDrop(wrapper,fc);
-
-      // ── Add sidebar row immediately ─────────────────────────────────────────
-      const thumbCanvas=document.createElement('canvas');
-      try{
-        const tvp=page.getViewport({scale:.18});
-        thumbCanvas.width=tvp.width; thumbCanvas.height=tvp.height;
-        await page.render({canvasContext:thumbCanvas.getContext('2d'),viewport:tvp}).promise;
-      }catch(_){thumbCanvas.width=36;thumbCanvas.height=28;}
-
-      if(renderToken!==_preloadToken) return;
-      buildSidebarRow(f, pi, thumbCanvas, i);
-
-      // ── After first page: show UI, hide loader, apply zoom ──────────────────
-      if(!firstPageDone){
-        firstPageDone=true;
-        hideLoading();
-        D.editorWrap.classList.remove('hidden');
-        D.emptyState.classList.add('hidden');
-        D.tabBar.classList.remove('hidden');
-        D.saveOptions.classList.remove('hidden');
-        applyZoom(S.zoom,false);
-        setupPageObserver(f);
-        setTimeout(()=>fitToScreen('width'),80);
-        // Update clear-annot button visibility
-        const hasAnnot=Object.values(f.annotations).some(v=>{try{const p=JSON.parse(v);return p.objects&&p.objects.length>0;}catch{return false;}});
-        D.clearAnnotBtn.style.display=hasAnnot?'block':'none';
-      }
     }
-
-    // ── All pages done ──────────────────────────────────────────────────────────
-    if(renderToken!==_preloadToken) return;
     S.fileCanvasCache[f.id]={canvases:[...S.activeCanvases],domNode:fileDiv};
-    S.sidebarFileId=f.id;
-    buildTabs(); // refresh dirty indicator etc.
-
-    // Final Fabric coordinate reset
+    await buildSidebar(f);S.sidebarFileId=f.id;
+    buildTabs();
+    syncToolUI();
+    const hasAnnot=Object.values(f.annotations).some(v=>{try{const p=JSON.parse(v);return p.objects&&p.objects.length>0;}catch{return false;}});
+    D.clearAnnotBtn.style.display=hasAnnot?'block':'none';
+    applyZoom(S.zoom,false);
+    setupPageObserver(f);
+    // Auto fit-to-screen on mobile and on first load
+    setTimeout(()=>fitToScreen(), 150);
+    // Force Fabric coordinate reset after layout settles — same internal path
+    // as page rotation, ensures control handles stay aligned at all zoom levels.
     setTimeout(()=>{
-      if(renderToken!==_preloadToken) return;
-      S.activeCanvases.forEach(c=>{c.fc.setWidth(c.fc.width);c.fc.setHeight(c.fc.height);});
-    },300);
-    setTimeout(()=>{if(renderToken===_preloadToken)preloadOtherFiles();},500);
-
+      S.activeCanvases.forEach(c=>{
+        c.fc.setWidth(c.fc.width);
+        c.fc.setHeight(c.fc.height);
+      });
+    }, 300);
+    setTimeout(()=>preloadOtherFiles(),500);
   }catch(err){
     console.error('renderWorkspace error:',err);
     showToast('Error loading file: '+err.message);
+  }finally{
     hideLoading();
   }
 }
-
-// Build and append a single sidebar row for page pi (called as each page streams in)
-function buildSidebarRow(f, pi, thumbCanvas, displayIndex){
-  const del=f.deletedPages.has(pi);
-  const row=document.createElement('div');
-  row.className='page-row'+(del?' deleted':'');
-  row.dataset.pi=pi;
-
-  // drag handle
-  const dragHandle=document.createElement('div');
-  dragHandle.className='page-row-drag';
-  dragHandle.title='Drag to reorder';
-  dragHandle.setAttribute('draggable','true');
-  dragHandle.innerHTML='<svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor"><circle cx="3" cy="2.5" r="1.5"/><circle cx="7" cy="2.5" r="1.5"/><circle cx="3" cy="7" r="1.5"/><circle cx="7" cy="7" r="1.5"/><circle cx="3" cy="11.5" r="1.5"/><circle cx="7" cy="11.5" r="1.5"/></svg>';
-  row.appendChild(dragHandle);
-
-  // thumbnail
-  const thumbWrap=document.createElement('div');
-  thumbWrap.className='page-row-thumb';
-  const im=document.createElement('img');
-  im.src=thumbCanvas.toDataURL();
-  thumbWrap.appendChild(im);
-  row.appendChild(thumbWrap);
-
-  // body
-  const body=document.createElement('div');
-  body.className='page-row-body';
-  const numEl=document.createElement('div');
-  numEl.className='page-row-num';
-  numEl.textContent='Page '+(pi+1)+(del?' · deleted':'');
-  body.appendChild(numEl);
-
-  const labelEl=document.createElement('input');
-  labelEl.type='text';
-  labelEl.className='page-row-label';
-  labelEl.value=f.pageLabels[pi]||'';
-  labelEl.placeholder='Add name…';
-  labelEl.title='Name used for JPG export filename';
-  labelEl.addEventListener('input',e=>{e.stopPropagation();f.pageLabels[pi]=labelEl.value.trim();});
-  labelEl.addEventListener('click',e=>e.stopPropagation());
-  labelEl.addEventListener('mousedown',e=>e.stopPropagation());
-  labelEl.addEventListener('keydown',e=>{
-    if(e.key==='Enter'){e.preventDefault();labelEl.blur();}
-    if(e.key==='ArrowDown'||e.key==='ArrowUp'){
-      e.preventDefault();e.stopPropagation();
-      const rows=Array.from(D.pagesList.querySelectorAll('.page-row:not(.deleted) .page-row-label'));
-      const cur=rows.indexOf(labelEl);
-      const next=e.key==='ArrowDown'?rows[cur+1]:rows[cur-1];
-      if(next){
-        next.focus();next.select();
-        const nextRow=next.closest('.page-row');
-        const idx=Array.from(D.pagesList.querySelectorAll('.page-row:not(.deleted)')).indexOf(nextRow);
-        const targetPi=keepPages(f)[idx];
-        if(targetPi!==undefined){
-          const t=document.getElementById(`pw-${f.id}-${targetPi}`);
-          if(t){const cr=D.workScroll.getBoundingClientRect(),tr=t.getBoundingClientRect();D.workScroll.scrollTo({top:D.workScroll.scrollTop+(tr.top-cr.top)-20,behavior:'smooth'});}
-        }
-        next.closest('.page-row').scrollIntoView({block:'nearest',behavior:'smooth'});
-      }
-    }
-    e.stopPropagation();
-  });
-  body.appendChild(labelEl);
-  row.appendChild(body);
-
-  // click → scroll to page
-  row.addEventListener('click',()=>{
-    if(row.classList.contains('deleted'))return;
-    const t=document.getElementById(`pw-${f.id}-${pi}`);
-    if(t){const cr=D.workScroll.getBoundingClientRect(),tr=t.getBoundingClientRect();D.workScroll.scrollTo({top:D.workScroll.scrollTop+(tr.top-cr.top)-20,behavior:'smooth'});}
-  });
-
-  // drag-to-reorder
-  dragHandle.addEventListener('dragstart',e=>{
-    e.stopPropagation();e.dataTransfer.effectAllowed='move';
-    e.dataTransfer.setData('text/page-reorder',String(pi));
-    setTimeout(()=>row.classList.add('row-dragging'),0);
-  });
-  dragHandle.addEventListener('dragend',()=>{
-    row.classList.remove('row-dragging');
-    D.pagesList.querySelectorAll('.page-row').forEach(r=>r.classList.remove('drag-over-top','drag-over-bot'));
-  });
-  row.addEventListener('dragover',e=>{
-    if(!e.dataTransfer.types.includes('text/page-reorder'))return;
-    e.preventDefault();e.dataTransfer.dropEffect='move';
-    const mid=row.getBoundingClientRect().top+row.getBoundingClientRect().height/2;
-    D.pagesList.querySelectorAll('.page-row').forEach(r=>r.classList.remove('drag-over-top','drag-over-bot'));
-    row.classList.add(e.clientY<mid?'drag-over-top':'drag-over-bot');
-  });
-  row.addEventListener('dragleave',()=>row.classList.remove('drag-over-top','drag-over-bot'));
-  row.addEventListener('drop',e=>{
-    e.preventDefault();row.classList.remove('drag-over-top','drag-over-bot');
-    const fromPi=parseInt(e.dataTransfer.getData('text/page-reorder'));
-    if(isNaN(fromPi)||fromPi===pi)return;
-    const mid=row.getBoundingClientRect().top+row.getBoundingClientRect().height/2;
-    const insertBefore=e.clientY<mid;
-    const fromIdx=f.allPages.indexOf(fromPi);
-    let toIdx=f.allPages.indexOf(pi);
-    if(fromIdx===-1||toIdx===-1)return;
-    f.allPages.splice(fromIdx,1);
-    toIdx=f.allPages.indexOf(pi);
-    f.allPages.splice(insertBefore?toIdx:toIdx+1,0,fromPi);
-    f.dirty=true;
-    const fromRow=D.pagesList.querySelector(`.page-row[data-pi="${fromPi}"]`);
-    if(fromRow){if(insertBefore)D.pagesList.insertBefore(fromRow,row);else row.after(fromRow);}
-    const fileDiv=S.fileCanvasCache[f.id]?.domNode;
-    if(fileDiv){
-      const fromW=document.getElementById(`pw-${f.id}-${fromPi}`);
-      const toW=document.getElementById(`pw-${f.id}-${pi}`);
-      if(fromW&&toW){if(insertBefore)fileDiv.insertBefore(fromW,toW);else toW.after(fromW);}
-    }
-    S.activeCanvases.sort((a,b)=>f.allPages.indexOf(a.pageIndex)-f.allPages.indexOf(b.pageIndex));
-    D.pagesList.querySelectorAll('.page-row').forEach(r=>{
-      const rpi=parseInt(r.dataset.pi);
-      const n=r.querySelector('.page-row-num');
-      if(n&&!r.classList.contains('deleted'))n.textContent='Page '+(rpi+1);
-    });
-  });
-
-  if(!del){
-    const jb=document.createElement('button');
-    jb.className='page-row-jpg';jb.textContent='JPG';jb.title='Save this page as JPG';
-    jb.addEventListener('click',e=>{e.stopPropagation();savePageAsJpg(f,pi);});
-    row.appendChild(jb);
-    const db=document.createElement('button');
-    db.className='page-row-del';db.title='Delete page';db.innerHTML='&times;';
-    db.addEventListener('click',e=>{e.stopPropagation();softDelPage(f,pi);});
-    row.appendChild(db);
-  } else {
-    const rb=document.createElement('button');
-    rb.className='page-row-restore';rb.title='Restore page';
-    rb.innerHTML='<svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M4 4v5h5M4 9a9 9 0 1014.93-3.36" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-    rb.addEventListener('click',e=>{e.stopPropagation();restorePage(f,pi);});
-    row.appendChild(rb);
-  }
-
-  D.pagesList.appendChild(row);
-}
-
 
 let _preloadToken=0; // incremented on every renderWorkspace to cancel stale preloads
 
@@ -3469,9 +3166,9 @@ function setActivePageRow(pi){
   document.querySelectorAll('#pagesList .page-row').forEach(r=>{
     r.classList.toggle('active-page',parseInt(r.dataset.pi)===pi);
   });
+  // auto-scroll the sidebar so the active row stays visible
   const active=document.querySelector('#pagesList .page-row.active-page');
-  if(active) active.scrollIntoView({block:'nearest',behavior:'instant'});
-  if(window._updateZoomDebug) window._updateZoomDebug('sidebar→pg(pi='+pi+')');
+  if(active) active.scrollIntoView({block:'nearest',behavior:'smooth'});
 }
 
 function getActivePiFromScroll(f){
@@ -3492,23 +3189,16 @@ function getActivePiFromScroll(f){
 
 function setupPageObserver(f){
   if(_pageObserver){_pageObserver.disconnect();_pageObserver=null;}
-  let _scrollRaf=null;
+  // Use scroll event for reliable active-page tracking
   const onScroll=()=>{
     if(_zoomInProgress) return;
-    // Debounce via rAF — only update once per paint frame, not per scroll pixel
-    if(_scrollRaf) return;
-    _scrollRaf=requestAnimationFrame(()=>{
-      _scrollRaf=null;
-      if(_zoomInProgress) return;
-      const pi=getActivePiFromScroll(f);
-      if(pi>=0) setActivePageRow(pi);
-    });
+    const pi=getActivePiFromScroll(f);
+    if(pi>=0) setActivePageRow(pi);
   };
   D.workScroll.addEventListener('scroll',onScroll,{passive:true});
-  _pageObserver={disconnect:()=>{
-    D.workScroll.removeEventListener('scroll',onScroll);
-    if(_scrollRaf){cancelAnimationFrame(_scrollRaf);_scrollRaf=null;}
-  }};
+  // Store cleanup on observer slot
+  _pageObserver={disconnect:()=>D.workScroll.removeEventListener('scroll',onScroll)};
+  // Fire immediately for initial state
   requestAnimationFrame(onScroll);
 }
 
@@ -3517,27 +3207,215 @@ let _sidebarToken=0;
 async function buildSidebar(f){
   const token=++_sidebarToken;
   D.pagesList.innerHTML='';
+  // Add dragstart blocker once — only allow drags originating from .page-row-drag handles
   if(!D.pagesList._dragBlockerAdded){
-    D.pagesList._dragBlockerAdded=true;
-    D.pagesList.addEventListener('dragstart',e=>{
-      if(!e.target.closest('.page-row-drag')){e.preventDefault();e.stopPropagation();}
-    },{capture:true});
+    D.pagesList._dragBlockerAdded = true;
+    D.pagesList.addEventListener('dragstart', e=>{
+      if(!e.target.closest('.page-row-drag')){
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    }, {capture:true});
   }
   for(let i=0;i<f.allPages.length;i++){
     if(token!==_sidebarToken)return;
     const pi=f.allPages[i];
-    let thumbCanvas=document.createElement('canvas');
+    const del=f.deletedPages.has(pi);
+
+    // render small thumbnail
+    let tc;
     try{
       const page=await f.pdfJsDoc.getPage(pi+1);
-      const tvp=page.getViewport({scale:.18});
-      thumbCanvas.width=tvp.width;thumbCanvas.height=tvp.height;
-      await page.render({canvasContext:thumbCanvas.getContext('2d'),viewport:tvp}).promise;
-    }catch(_){thumbCanvas.width=36;thumbCanvas.height=28;}
+      const vp=page.getViewport({scale:.18});
+      tc=document.createElement('canvas');tc.width=vp.width;tc.height=vp.height;
+      await page.render({canvasContext:tc.getContext('2d'),viewport:vp}).promise;
+    }catch(thumbErr){
+      console.warn('sidebar thumb error page',pi,thumbErr);
+      tc=document.createElement('canvas');tc.width=36;tc.height=28;
+    }
+
+    const row=document.createElement('div');
+    row.className='page-row'+(del?' deleted':'');
+    row.dataset.pi=pi;
+
+    // drag handle (grab dots)
+    const dragHandle=document.createElement('div');
+    dragHandle.className='page-row-drag';
+    dragHandle.title='Drag to reorder';
+    dragHandle.setAttribute('draggable','true');
+    dragHandle.innerHTML='<svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor"><circle cx="3" cy="2.5" r="1.5"/><circle cx="7" cy="2.5" r="1.5"/><circle cx="3" cy="7" r="1.5"/><circle cx="7" cy="7" r="1.5"/><circle cx="3" cy="11.5" r="1.5"/><circle cx="7" cy="11.5" r="1.5"/></svg>';
+    row.appendChild(dragHandle);
+
+    // thumbnail
+    const thumbWrap=document.createElement('div');
+    thumbWrap.className='page-row-thumb';
+    const im=document.createElement('img');
+    im.src=tc.toDataURL();
+    thumbWrap.appendChild(im);
+    row.appendChild(thumbWrap);
+
+    // body: page number + editable label
+    const body=document.createElement('div');
+    body.className='page-row-body';
+
+    const numEl=document.createElement('div');
+    numEl.className='page-row-num';
+    numEl.textContent='Page '+(pi+1)+(del?' · deleted':'');
+    body.appendChild(numEl);
+
+    const labelEl=document.createElement('input');
+    labelEl.type='text';
+    labelEl.className='page-row-label';
+    labelEl.value=f.pageLabels[pi]||'';
+    labelEl.placeholder='Add name…';
+    labelEl.title='Name used for JPG export filename';
+    labelEl.addEventListener('input',e=>{
+      e.stopPropagation();
+      f.pageLabels[pi]=labelEl.value.trim();
+    });
+    labelEl.addEventListener('click',e=>e.stopPropagation());
+    labelEl.addEventListener('mousedown',e=>e.stopPropagation());
+    labelEl.addEventListener('keydown',e=>{
+      if(e.key==='Enter'){e.preventDefault();labelEl.blur();}
+      if(e.key==='ArrowDown'||e.key==='ArrowUp'){
+        e.preventDefault();
+        e.stopPropagation();
+        const rows=Array.from(D.pagesList.querySelectorAll('.page-row:not(.deleted) .page-row-label'));
+        const cur=rows.indexOf(labelEl);
+        const next=e.key==='ArrowDown'?rows[cur+1]:rows[cur-1];
+        if(next){
+          next.focus();
+          next.select();
+          // scroll workspace to the corresponding page
+          const nextRow=next.closest('.page-row');
+          const idx=Array.from(D.pagesList.querySelectorAll('.page-row:not(.deleted)')).indexOf(nextRow);
+          const targetPi=keepPages(f)[idx];
+          if(targetPi!==undefined){
+            const wid=`pw-${f.id}-${targetPi}`;
+            const t=document.getElementById(wid);
+            if(t){
+              const containerRect=D.workScroll.getBoundingClientRect();
+              const tRect=t.getBoundingClientRect();
+              D.workScroll.scrollTo({top:D.workScroll.scrollTop+(tRect.top-containerRect.top)-20,behavior:'smooth'});
+            }
+          }
+          // also scroll the sidebar row into view
+          next.closest('.page-row').scrollIntoView({block:'nearest',behavior:'smooth'});
+        }
+      }
+      e.stopPropagation();
+    });
+    body.appendChild(labelEl);
+    row.appendChild(body);
+
+    // scroll-to on row click — always wired; skips when row is in deleted state
+    row.addEventListener('click',()=>{
+      if(row.classList.contains('deleted'))return;
+      const wid=`pw-${f.id}-${pi}`;
+      const t=document.getElementById(wid);
+      if(t){
+        const containerRect=D.workScroll.getBoundingClientRect();
+        const tRect=t.getBoundingClientRect();
+        const scrollTop=D.workScroll.scrollTop+(tRect.top-containerRect.top)-20;
+        D.workScroll.scrollTo({top:scrollTop,behavior:'smooth'});
+      }
+    });
+
+    // ── drag-to-reorder: handle initiates, rows are drop targets ───────────────
+    dragHandle.addEventListener('dragstart',e=>{
+      e.stopPropagation();
+      e.dataTransfer.effectAllowed='move';
+      e.dataTransfer.setData('text/page-reorder', String(pi));
+      setTimeout(()=>row.classList.add('row-dragging'),0);
+    });
+    dragHandle.addEventListener('dragend',()=>{
+      row.classList.remove('row-dragging');
+      D.pagesList.querySelectorAll('.page-row').forEach(r=>r.classList.remove('drag-over-top','drag-over-bot'));
+    });
+    row.addEventListener('dragover',e=>{
+      if(!e.dataTransfer.types.includes('text/page-reorder'))return;
+      e.preventDefault(); e.dataTransfer.dropEffect='move';
+      const mid=row.getBoundingClientRect().top+row.getBoundingClientRect().height/2;
+      D.pagesList.querySelectorAll('.page-row').forEach(r=>r.classList.remove('drag-over-top','drag-over-bot'));
+      row.classList.add(e.clientY<mid?'drag-over-top':'drag-over-bot');
+    });
+    row.addEventListener('dragleave',()=>row.classList.remove('drag-over-top','drag-over-bot'));
+    row.addEventListener('drop',e=>{
+      e.preventDefault();
+      row.classList.remove('drag-over-top','drag-over-bot');
+      const fromPi=parseInt(e.dataTransfer.getData('text/page-reorder'));
+      if(isNaN(fromPi)||fromPi===pi)return;
+      const mid=row.getBoundingClientRect().top+row.getBoundingClientRect().height/2;
+      const insertBefore=e.clientY<mid;
+
+      // 1. Reorder f.allPages array
+      const fromIdx=f.allPages.indexOf(fromPi);
+      let toIdx=f.allPages.indexOf(pi);
+      if(fromIdx===-1||toIdx===-1)return;
+      f.allPages.splice(fromIdx,1);
+      toIdx=f.allPages.indexOf(pi);
+      f.allPages.splice(insertBefore?toIdx:toIdx+1,0,fromPi);
+      f.dirty=true;
+
+      // 2. DOM reorder in sidebar
+      const fromRow=D.pagesList.querySelector(`.page-row[data-pi="${fromPi}"]`);
+      if(fromRow){
+        if(insertBefore) D.pagesList.insertBefore(fromRow,row);
+        else row.after(fromRow);
+      }
+
+      // 3. DOM reorder of canvas wrappers (no re-render)
+      const fileDiv=S.fileCanvasCache[f.id]?.domNode;
+      if(fileDiv){
+        const fromWrapper=document.getElementById(`pw-${f.id}-${fromPi}`);
+        const toWrapper=document.getElementById(`pw-${f.id}-${pi}`);
+        if(fromWrapper&&toWrapper){
+          if(insertBefore) fileDiv.insertBefore(fromWrapper,toWrapper);
+          else toWrapper.after(fromWrapper);
+        }
+      }
+
+      // 4. Re-sort active canvases to match new page order
+      S.activeCanvases.sort((a,b)=>f.allPages.indexOf(a.pageIndex)-f.allPages.indexOf(b.pageIndex));
+
+      // 5. Update page number labels
+      D.pagesList.querySelectorAll('.page-row').forEach(r=>{
+        const rpi=parseInt(r.dataset.pi);
+        const numEl=r.querySelector('.page-row-num');
+        if(numEl&&!r.classList.contains('deleted')) numEl.textContent='Page '+(rpi+1);
+      });
+    });
+
+    if(!del){
+      // jpg save button
+      const jb=document.createElement('button');
+      jb.className='page-row-jpg';
+      jb.textContent='JPG';
+      jb.title='Save this page as JPG';
+      jb.addEventListener('click',e=>{e.stopPropagation();savePageAsJpg(f,pi);});
+      row.appendChild(jb);
+
+      // delete button
+      const db=document.createElement('button');
+      db.className='page-row-del';
+      db.title='Delete page';
+      db.innerHTML='&times;';
+      db.addEventListener('click',e=>{e.stopPropagation();softDelPage(f,pi);});
+      row.appendChild(db);
+    } else {
+      // restore button
+      const rb=document.createElement('button');
+      rb.className='page-row-restore';
+      rb.title='Restore page';
+      rb.innerHTML='<svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M4 4v5h5M4 9a9 9 0 1014.93-3.36" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      rb.addEventListener('click',e=>{e.stopPropagation();restorePage(f,pi);});
+      row.appendChild(rb);
+    }
+
     if(token!==_sidebarToken)return;
-    buildSidebarRow(f,pi,thumbCanvas,i);
+    D.pagesList.appendChild(row);
   }
 }
-
 
 function makeThumb(jsonStr,cb){
   let obj;try{obj=JSON.parse(jsonStr);}catch{cb(null);return;}
@@ -3798,9 +3676,8 @@ async function initDragPreview(jsonStr){
   const result=await _renderClipToDataURL(jsonStr, 8);
   if(!result||!_dragPreviewActive)return; // dragged away already
 
-  // Scale preview to exactly match the on-screen size of the dropped object.
-  // Only cap if the object is larger than the viewport (so it doesn't cover the whole screen).
-  const maxSide=Math.max(window.innerWidth, window.innerHeight) * 0.85;
+  // Scale preview canvas by current workspace zoom so it matches what will be pasted
+  const maxSide=480;
   const rawW=result.w*zoom, rawH=result.h*zoom;
   const fit=Math.min(1,maxSide/Math.max(rawW,rawH,1));
   const cssW=Math.round(rawW*fit), cssH=Math.round(rawH*fit);
@@ -4272,134 +4149,108 @@ function applyZoom(z, show=true, anchorClientX=null, anchorClientY=null){
   const oldZoom = S.zoom;
   S.zoom = Math.min(Math.max(z, .1), 5);
   const newZoom = S.zoom;
+
   const scrollEl = D.workScroll;
 
-  _zoomInProgress = true;
+  // Find which page (and its relative offset) is currently centered in the viewport
+  // so we can restore to the same position after scaling.
+  // We work in content-space (unscaled) coords.
+  const scrollRect = scrollEl.getBoundingClientRect();
+  const ax = anchorClientX != null ? (anchorClientX - scrollRect.left) : scrollRect.width / 2;
+  const ay = anchorClientY != null ? (anchorClientY - scrollRect.top)  : scrollRect.height / 2;
 
-  // ── Snapshot BEFORE any DOM changes ──────────────────────────────────────────
-  const cW = scrollEl.clientWidth;
-  const cH = scrollEl.clientHeight;
-  const H_PAD = 80;
+  // Find the anchor page — whichever page's wrapper currently contains the anchor point
+  let anchorPageEl = null;
+  let anchorPageOffsetY = 0; // offset of anchor within the page element (in unscaled px)
   const f = getAF();
-  const doRestore = oldZoom !== newZoom;
-  const sRect = scrollEl.getBoundingClientRect();
-
-  // Anchor = screen point (relative to scroll container top-left) that stays fixed
-  const ax = anchorClientX != null ? anchorClientX - sRect.left : cW / 2;
-  const ay = anchorClientY != null ? anchorClientY - sRect.top  : cH / 2;
-
-  // ── Snapshot anchor page BEFORE resize ───────────────────────────────────────
-  // We record: which page is under the anchor, and what fraction down that page.
-  // We also record the page's absolute content-space top (scrollTop + screenTop)
-  // so we can compute the correct scrollTop after the page moves.
-  let anchorEl      = null;
-  let anchorFracY   = 0;
-  let anchorContentTop = 0;  // element top in scroll-content px, pre-resize
-
-  if(doRestore && f){
-    const curScrollTop = scrollEl.scrollTop;
-    keepPages(f).forEach(pi => {
-      if(anchorEl) return;
+  if(f){
+    keepPages(f).forEach(pi=>{
       const el = document.getElementById(`pw-${f.id}-${pi}`);
       if(!el) return;
       const r = el.getBoundingClientRect();
-      const elScreenTop = r.top - sRect.top;
-      const elScreenBot = r.bottom - sRect.top;
-      if(ay >= elScreenTop && ay < elScreenBot){
-        anchorEl         = el;
-        anchorFracY      = (ay - elScreenTop) / r.height;
-        anchorContentTop = elScreenTop + curScrollTop; // absolute in scroll-content space
+      if(ay >= r.top && ay <= r.bottom){
+        anchorPageEl = el;
+        // offset within this page in content-space px (unscaled by zoom)
+        anchorPageOffsetY = (ay - r.top) / oldZoom;
       }
     });
   }
 
-  if(window._updateZoomDebug){
-    window._updateZoomDebug(
-      'BEFORE '+oldZoom.toFixed(4)+'->'+newZoom.toFixed(4)+
-      (anchorEl?' anchorFound fracY='+anchorFracY.toFixed(3)+
-      ' contentTop='+anchorContentTop.toFixed(0)
-      :' anchorEL=NULL')
-    );
+  // If no page found under anchor, fall back to raw content coords
+  let usePageAnchor = anchorPageEl != null;
+  let cx = 0, cy = 0;
+  if(!usePageAnchor){
+    cx = (scrollEl.scrollLeft + ax) / oldZoom;
+    cy = (scrollEl.scrollTop  + ay) / oldZoom;
   }
 
-  // ── Max page natural width ────────────────────────────────────────────────────
-  let maxNatW = 0;
-  S.activeCanvases.forEach(c => { if(c.fc.width > maxNatW) maxNatW = c.fc.width; });
-  const zoomedW = Math.round(maxNatW * newZoom);
-
-  // ── Resize canvas wrappers ────────────────────────────────────────────────────
-  S.activeCanvases.forEach(c => {
+  // Apply scale to each canvas wrapper
+  S.activeCanvases.forEach(c=>{
     const wrapper   = c.fc.getElement().parentElement.parentElement;
     const container = c.fc.getElement().parentElement;
     const nW = c.fc.width, nH = c.fc.height;
     wrapper.style.width  = Math.round(nW * newZoom) + 'px';
     wrapper.style.height = Math.round(nH * newZoom) + 'px';
-    container.style.transform       = `scale(${newZoom})`;
+    container.style.transform      = `scale(${newZoom})`;
     container.style.transformOrigin = 'top left';
     container.style.position = 'absolute';
     container.style.top  = '0';
     container.style.left = '0';
   });
 
-  // ── Expand annot-container ────────────────────────────────────────────────────
+  // Expand annot-container to the widest zoomed canvas + horizontal padding
+  // so the scroll area has real scrollable width when zoomed in.
   if(D.annotCont && S.activeCanvases.length){
-    D.annotCont.style.width    = Math.max(zoomedW + H_PAD * 2, cW) + 'px';
+    const H_PAD = 80;
+    const maxW = Math.max(...S.activeCanvases.map(c=>Math.round(c.fc.width * newZoom)));
+    const targetW = maxW + H_PAD * 2;
+    const scrollW = scrollEl.clientWidth;
+    D.annotCont.style.width = Math.max(targetW, scrollW) + 'px';
     D.annotCont.style.minWidth = '100%';
   }
 
-  // ── Scroll restore: force instant scroll (bypass smooth animation) ──────────────
-  // scroll-behavior:smooth would animate the assignment and make it appear to do
-  // nothing synchronously. We force 'auto' for the duration of this function.
-  scrollEl.style.scrollBehavior = 'auto';
-
-  if(doRestore && anchorEl){
-    // Force reflow so getBoundingClientRect reflects new wrapper sizes
-    const newRect = anchorEl.getBoundingClientRect();
-    const newElContentTop = newRect.top - sRect.top + scrollEl.scrollTop;
-    const newElH = newRect.height;
-    const targetScrollTop = newElContentTop + anchorFracY * newElH - ay;
-    scrollEl.scrollTop = Math.max(0, targetScrollTop);
-
-    if(window._updateZoomDebug){
-      window._updateZoomDebug(
-        'SCROLL SET newContentTop='+newElContentTop.toFixed(0)+
-        ' newH='+newElH.toFixed(0)+
-        ' frac='+anchorFracY.toFixed(3)+
-        ' ay='+ay.toFixed(0)+
-        ' -> scrollTop='+Math.max(0,targetScrollTop).toFixed(0)
-      );
-    }
+  // Restore scroll position
+  _zoomInProgress = true;
+  if(usePageAnchor){
+    // After scaling, find where the anchor page is now and scroll so the same
+    // relative position within the page stays under the cursor
+    requestAnimationFrame(()=>{
+      const r = anchorPageEl.getBoundingClientRect();
+      const newPageTop = scrollEl.scrollTop + (r.top - scrollRect.top);
+      const targetScrollTop = newPageTop + anchorPageOffsetY * newZoom - ay;
+      scrollEl.scrollTop = Math.max(0, targetScrollTop);
+      _zoomInProgress = false;
+    });
+  } else {
+    scrollEl.scrollLeft = cx * newZoom - ax;
+    scrollEl.scrollTop  = cy * newZoom - ay;
+    requestAnimationFrame(()=>{ _zoomInProgress = false; });
   }
 
-  // ── Horizontal: always center page ───────────────────────────────────────────
-  // Use scrollWidth (actual scroll content width) rather than our computed containerW,
-  // since other layout factors (padding, min-width) may make it larger.
-  // Center = (scrollWidth - clientWidth) / 2
-  const actualScrollW = scrollEl.scrollWidth;
-  const centerLeft = Math.max(0, Math.round((actualScrollW - cW) / 2));
-  scrollEl.scrollLeft = centerLeft;
-
-  // Restore scroll-behavior (CSS value was 'auto' already, but be explicit)
-  scrollEl.style.scrollBehavior = '';
-
-  // ── Zoom label ────────────────────────────────────────────────────────────────
+  // Update zoom input
   const zi = $('zoomInput');
   if(zi && document.activeElement !== zi) zi.value = Math.round(newZoom * 100) + '%';
 
-  // ── Release lock + resync Fabric ─────────────────────────────────────────────
-  _zoomInProgress = false;
-  if(window._updateZoomDebug) window._updateZoomDebug('AFTER zoom='+newZoom.toFixed(4));
-  requestAnimationFrame(() => {
-    S.activeCanvases.forEach(c => {
-      c.fc.setWidth(c.fc.width);
-      c.fc.setHeight(c.fc.height);
+  // Reset Fabric's internal coordinate state after every zoom change.
+  // fc.setWidth(fc.width) is a no-op dimensionally but triggers Fabric's full
+  // internal canvas reset (same path as page rotation) — resetting upperCanvasEl.width,
+  // recomputing layout geometry, and calling calcOffset() at a point when the
+  // CSS transform is already painted. This is the only reliable way to keep
+  // control handles aligned with objects at any zoom level.
+  requestAnimationFrame(()=>{
+    S.activeCanvases.forEach(c=>{
+      const fc = c.fc;
+      fc.setWidth(fc.width);
+      fc.setHeight(fc.height);
     });
   });
+  D.workScroll.addEventListener('scroll',()=>{
+    S.activeCanvases.forEach(c=>c.fc.calcOffset());
+  },{passive:true});
 }
 
 // ── Fit to screen ────────────────────────────────────────────────────────────
-function fitToScreen(fitMode){
-  // fitMode: 'width' = fit to width only (default on load), 'both' = fit width+height (button)
+function fitToScreen(){
   const scrollEl = D.workScroll;
   if(!S.activeCanvases.length) return;
   requestAnimationFrame(()=>{
@@ -4408,14 +4259,8 @@ function fitToScreen(fitMode){
     const maxH = Math.max(...S.activeCanvases.map(c=>c.fc.height));
     const availW = scrollEl.clientWidth  - padding;
     const availH = scrollEl.clientHeight - padding;
-    if(availW <= 0) return;
-    let fitZoom;
-    if(fitMode==='both'){
-      fitZoom = Math.min(1, availW / maxW, availH / maxH);
-    } else {
-      // Width-only fit: scale so page fills the available width, capped at 100%
-      fitZoom = Math.min(1, availW / maxW);
-    }
+    if(availW <= 0 || availH <= 0) return;
+    const fitZoom = Math.min(1, availW / maxW, availH / maxH);
     applyZoom(fitZoom, true);
     scrollEl.scrollTop = 0;
     scrollEl.scrollLeft = 0;
@@ -4451,7 +4296,7 @@ function fitToScreen(fitMode){
   if(zin)   zin.onclick   = ()=>applyZoom(S.zoom + .1);
   if(zout)  zout.onclick  = ()=>applyZoom(S.zoom - .1);
   if(zreset) zreset.onclick= ()=>applyZoom(1);
-  if(zfit)   zfit.onclick  = ()=>fitToScreen('both');
+  if(zfit)   zfit.onclick  = ()=>fitToScreen();
 })();
 
 // ── Mouse-wheel: Ctrl = zoom (no scroll), plain = pan (3× speed) ─────────────
@@ -4522,129 +4367,10 @@ D.exportJpg.onclick=()=>exportAll('jpg');
 D.savePdf.onclick=()=>saveSinglePdf();
 if(D.mergeAllBtn) D.mergeAllBtn.onclick=()=>mergeAllToPdf();
 
-// ─── Save current tab as JPG(s) ───────────────────────────────────────────────
-const saveTabJpgBtn=$('saveTabJpgBtn');
-if(saveTabJpgBtn){
-  saveTabJpgBtn.onclick=()=>saveCurrentTabAsJpg();
-}
-
-async function saveCurrentTabAsJpg(){
-  const f=getAF();if(!f){showToast('No file open');return;}
-  flushAnnotations();
-  const pages=keepPages(f);
-  if(!pages.length){showToast('No pages');return;}
-
-  // Single page — download directly, no ZIP needed
-  if(pages.length===1){
-    await savePageAsJpg(f, pages[0]);
-    return;
-  }
-
-  const total=pages.length;
-  let done=0;
-  function tick(){
-    done++;
-    const pct=Math.round((done/total)*100);
-    D.exportProgressBar.style.width=pct+'%';
-    D.exportSub.textContent=`${done} / ${total} pages`;
-  }
-
-  showExportAnim(`Saving ${f.name} as JPG…`,`0 / ${total} pages`);
-  try{
-    const zip=new JSZip();
-    const folderName=f.name.replace(/\.[^.]+$/,'');
-    const folder=zip.folder(folderName);
-    const jpgResults=new Array(pages.length);
-
-    await withConcurrency(pages,EXPORT_CONCURRENCY,async(pi,i)=>{
-      const {canvas}=await renderPageToCanvas(f,pi);
-      jpgResults[i]=canvas.toDataURL('image/jpeg',0.92).split(',')[1];
-      tick();
-    });
-
-    jpgResults.forEach((data,i)=>{
-      const pi=pages[i];
-      const rawLabel=(f.pageLabels&&f.pageLabels[pi])||'';
-      const safeLabel=rawLabel.replace(/[\\/:*?"<>|]/g,'').replace(/\s+/g,' ').trim();
-      const baseName=f.name.replace(/\.[^.]+$/,'');
-      const filename=safeLabel?`${safeLabel}.jpg`:`${baseName}_${i+1}.jpg`;
-      folder.file(filename,data,{base64:true});
-    });
-
-    D.exportSub.textContent='Compressing…';
-    const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:3}});
-    const a=document.createElement('a');
-    a.href=URL.createObjectURL(blob);
-    a.download=folderName+'_jpg.zip';
-    a.click();
-    showExportDone('JPG export done!',`${total} pages saved`);
-  }catch(err){
-    D.exportOverlay.classList.remove('show');
-    showToast('JPG save failed: '+err.message);
-    console.error(err);
-  }
-}
-
-// ─── Clipboard sidebar resize ─────────────────────────────────────────────────
-(()=>{
-  const handle=$('clipResizeHandle');
-  const sidebar=$('sidebarClip');
-  const workArea=$('workspace-scroll-area');
-  if(!handle||!sidebar||!workArea)return;
-
-  const MIN_W=140, MAX_W=480;
-
-  function getSavedWidth(){
-    try{const v=localStorage.getItem('pdfpro_clip_w');return v?parseInt(v):192;}catch{return 192;}
-  }
-  function setSavedWidth(w){
-    try{localStorage.setItem('pdfpro_clip_w',String(w));}catch{}
-  }
-
-  function applyWidth(w){
-    w=Math.max(MIN_W,Math.min(MAX_W,w));
-    sidebar.style.width=w+'px';
-    workArea.style.right=w+'px';
-  }
-
-  // Restore persisted width on load
-  applyWidth(getSavedWidth());
-
-  let dragging=false, startX=0, startW=0;
-
-  handle.addEventListener('mousedown',e=>{
-    e.preventDefault();
-    dragging=true;
-    startX=e.clientX;
-    startW=sidebar.offsetWidth;
-    handle.classList.add('dragging');
-    document.body.style.cursor='ew-resize';
-    document.body.style.userSelect='none';
-  });
-
-  window.addEventListener('mousemove',e=>{
-    if(!dragging)return;
-    // Dragging left = make wider (sidebar grows to the left)
-    const delta=startX-e.clientX;
-    const newW=startW+delta;
-    applyWidth(newW);
-  });
-
-  window.addEventListener('mouseup',()=>{
-    if(!dragging)return;
-    dragging=false;
-    handle.classList.remove('dragging');
-    document.body.style.cursor='';
-    document.body.style.userSelect='';
-    setSavedWidth(sidebar.offsetWidth);
-  });
-})();
-
 // ─── Save single PDF (optimized with concurrency + progress) ─────────────────
-// Strip any extension from the name — the Blob carries application/pdf so the
-// OS / Google Drive recognises the file type without a .pdf suffix.
-function toBaseName(name){
-  return name.replace(/\.[^.]+$/, '');
+// Ensure a filename always ends with .pdf regardless of original extension
+function toPdfName(name){
+  return name.replace(/\.[^.]+$/, '') + '.pdf';
 }
 
 // ─── Save a single page as JPG ────────────────────────────────────────────────
@@ -4703,25 +4429,12 @@ async function saveSinglePdf(){
 
     pageResults.forEach(p=>out.addPage(p));
 
-    // Embed page labels (titles) into PDF Keywords metadata so they survive save/reload
-    if(f.pageLabels && Object.keys(f.pageLabels).length > 0){
-      // Remap from original page indices to kept-page indices
-      const labelsByIdx = {};
-      pages.forEach((pi, i) => {
-        const lbl = f.pageLabels[pi];
-        if(lbl) labelsByIdx[i] = lbl;
-      });
-      if(Object.keys(labelsByIdx).length > 0){
-        out.setKeywords(['pdfpro_labels:' + JSON.stringify(labelsByIdx)]);
-      }
-    }
-
     D.exportSub.textContent='Finalizing PDF…';
     const bytes=await out.save();
     const blob=new Blob([bytes],{type:'application/pdf'});
     const a=document.createElement('a');
     a.href=URL.createObjectURL(blob);
-    const pdfName=toBaseName(f.name);
+    const pdfName=toPdfName(f.name);
     a.download=pdfName;
     a.click();
     f.dirty=false;
@@ -4781,7 +4494,7 @@ async function mergeAllToPdf(){
     const blob=new Blob([bytes],{type:'application/pdf'});
     const a=document.createElement('a');
     a.href=URL.createObjectURL(blob);
-    a.download='merged_'+Date.now();
+    a.download='merged_'+Date.now()+'.pdf';
     a.click();
     showExportDone('Merged!',`${totalPages} pages combined`);
   }catch(err){
@@ -4835,7 +4548,7 @@ async function exportAll(fmt){
         });
 
         pageResults.forEach(p=>out.addPage(p));
-        zip.file(toBaseName(f.name), await out.save());
+        zip.file(toPdfName(f.name), await out.save());
 
       } else {
         // ── JPG export (was broken: `vp` typo fixed, now uses renderPageToCanvas) ──
@@ -4854,8 +4567,7 @@ async function exportAll(fmt){
           const rawLabel=(f.pageLabels&&f.pageLabels[pi])||'';
           // sanitise: strip chars invalid in filenames, collapse whitespace
           const safeLabel=rawLabel.replace(/[\\/:*?"<>|]/g,'').replace(/\s+/g,' ').trim();
-          const baseName=f.name.replace(/\.[^.]+$/,'');
-          const filename=safeLabel ? `${safeLabel}.jpg` : `${baseName}_${i+1}.jpg`;
+          const filename=safeLabel ? `${safeLabel}.jpg` : `page_${i+1}.jpg`;
           folder.file(filename, data, {base64:true});
         });
       }
@@ -4889,9 +4601,6 @@ document.addEventListener('keydown',e=>{
     if(o&&o.isEditing)return true;
     return c.fc.getObjects().some(obj=>(obj.type==='i-text'||obj.type==='text'||obj.type==='textbox')&&obj.isEditing);
   });
-
-  // Prevent space bar from scrolling the browser/workspace when not typing
-  if(e.key===' '&&!isInput&&!anyTextEdit){ e.preventDefault(); return; }
 
   if(e.key==='Shift'&&(S.tool==='pen'||S.tool==='highlighter')&&!anyTextEdit){
     if(!straightLineMode){
@@ -6401,16 +6110,14 @@ D.annotCont.addEventListener('touchend', e=>{
   if(dp)obs.observe(dp,{childList:true,subtree:true});
   if(dc)obs.observe(dc,{childList:true,subtree:true});
 
-  // ── Debug toggle ──────────────────────────────────────────────────────────────
+  // ── Debug toggle (button in help modal footer) ───────────────────────────────
   const dbgEl=$('mobDebug'),dbgLines=$('dbgLines'),dbgZoom=$('dbgZoom');
   const debugBtn=$('debugToggleBtn');
-  const zoomDebugEl=$('zoomDebug');
   let _dbgOn=false;
   if(debugBtn){
     debugBtn.addEventListener('click',()=>{
       _dbgOn=!_dbgOn;
       dbgEl.style.display=_dbgOn?'block':'none';
-      if(zoomDebugEl){ zoomDebugEl.style.display=_dbgOn?'flex':'none'; }
       debugBtn.style.background=_dbgOn?'#4f46e5':'#eef2ff';
       debugBtn.style.color=_dbgOn?'white':'#4f46e5';
     });
@@ -6420,212 +6127,31 @@ D.annotCont.addEventListener('touchend', e=>{
     if(dbgZoom)dbgZoom.textContent='zoom:'+((S.zoom||1).toFixed(2))+' tool:'+S.tool;
     dbgLines.innerHTML=lines.map(l=>'<div>'+l+'</div>').join('');
   }
-
-  // ── Debug recording system ─────────────────────────────────────────────────────
-  let _recording = false;   // true only while user hits RECORD
-  let _recSeq    = 0;       // monotonic sequence number per recording session
-  let _recLog    = [];      // array of plain-text lines recorded this session
-  let _liveRaf   = null;    // rAF handle for live bar
-
-  // ── Collect a snapshot of all relevant state ───────────────────────────────────
-  function _snapshot(eventLabel){
-    const scrollEl = D.workScroll;
-    if(!scrollEl) return null;
-    const f = getAF();
-    const zoom   = S.zoom || 1;
-    const sTop   = scrollEl.scrollTop;
-    const sLeft  = scrollEl.scrollLeft;
-    const cW     = scrollEl.clientWidth;
-    const cH     = scrollEl.clientHeight;
-    const oW     = scrollEl.offsetWidth;
-    const oH     = scrollEl.offsetHeight;
-    const sH     = scrollEl.scrollHeight;
-    const sW     = scrollEl.scrollWidth;
-    const sRect  = scrollEl.getBoundingClientRect();
-    const centerY = sTop + cH / 2;
-    const centerX = sLeft + cW / 2;
-
-    let centerPi = 'none', centerFrac = '';
-    const visPages = [];
-    if(f){
-      keepPages(f).forEach((pi, i) => {
-        const el = document.getElementById('pw-' + f.id + '-' + pi);
-        if(!el) return;
-        const r = el.getBoundingClientRect();
-        const elTop  = r.top  - sRect.top + sTop;
-        const elLeft = r.left - sRect.left + sLeft;
-        const elH    = r.height;
-        const elW    = r.width;
-        const inView = r.bottom > sRect.top && r.top < sRect.bottom;
-        if(centerY >= elTop && centerY < elTop + elH){
-          centerPi   = 'pg' + (i+1) + '(pi=' + pi + ')';
-          centerFrac = ((centerY - elTop) / elH * 100).toFixed(1) + '% down';
-        }
-        if(inView){
-          visPages.push({
-            label:'pg'+(i+1)+'(pi='+pi+')',
-            screenTop:r.top.toFixed(0), contentTop:elTop.toFixed(0),
-            h:elH.toFixed(0), w:elW.toFixed(0),
-            left:r.left.toFixed(0), contentLeft:elLeft.toFixed(0)
-          });
+  if(ws){
+    ws.addEventListener('touchstart',e=>{
+      if(!_dbgOn)return;
+      const t=e.touches[0];
+      const {x:tx,y:ty}=getClientXY(e);
+      const lines=[
+        `<span style="color:#86efac">touch:</span> (${tx.toFixed(0)}, ${ty.toFixed(0)}) type:${e.type}`,
+      ];
+      S.activeCanvases.forEach((c,i)=>{
+        const container=c.fc.getElement().parentElement;
+        const rect=container.getBoundingClientRect();
+        const zoom=S.zoom||1;
+        const lx=(tx-rect.left)/zoom;
+        const ly=(ty-rect.top)/zoom;
+        const inCanvas=tx>=rect.left&&tx<=rect.right&&ty>=rect.top&&ty<=rect.bottom;
+        if(inCanvas||i===0){
+          lines.push(`<span style="color:#93c5fd">canvas[${i}]</span> local:(${lx.toFixed(0)},${ly.toFixed(0)}) in:${inCanvas?'✓':'✗'}`);
+          lines.push(`<span style="color:#fca5a5">rect:</span> L${rect.left.toFixed(0)} T${rect.top.toFixed(0)} W${rect.width.toFixed(0)}×${rect.height.toFixed(0)}`);
+          lines.push(`<span style="color:#d8b4fe">canvas:</span> ${c.fc.width}×${c.fc.height} scale:${(rect.width/c.fc.width).toFixed(3)}`);
         }
       });
-    }
-
-    const activeRow = document.querySelector('#pagesList .page-row.active-page');
-    const sidebarPi  = activeRow ? activeRow.dataset.pi : '?';
-    const sidebarNum = activeRow
-      ? (Array.from(document.querySelectorAll('#pagesList .page-row')).indexOf(activeRow)+1)
-      : '?';
-
-    return {
-      eventLabel, zoom, sTop, sLeft, cW, cH, oW, oH, sH, sW,
-      centerPi, centerFrac, centerY: centerY.toFixed(1), centerX: centerX.toFixed(1),
-      visPages, sidebarPi, sidebarNum,
-      inProgress: _zoomInProgress,
-      ts: Date.now()
-    };
+      dbgLog(lines);
+    },{passive:true});
   }
 
-  // ── Render snapshot to lines of text ─────────────────────────────────────────
-  function _snapshotLines(snap, seq){
-    const t = (snap.ts % 100000).toString().padStart(5,'0');
-    const lines = [
-      '=== #' + seq + ' ' + snap.eventLabel + ' [t=' + t + '] ===',
-      'zoom=' + snap.zoom.toFixed(4) + '  zoomInProgress=' + snap.inProgress,
-      'scrollTop=' + snap.sTop.toFixed(1) + '  scrollLeft=' + snap.sLeft.toFixed(1),
-      'scrollH=' + snap.sH + '  scrollW=' + snap.sW,
-      'clientW=' + snap.cW + '  clientH=' + snap.cH + '  (offsetW=' + snap.oW + '  offsetH=' + snap.oH + ')',
-      'viewportCenter: Y=' + snap.centerY + '  X=' + snap.centerX,
-      'centerPage: ' + snap.centerPi + '  ' + snap.centerFrac,
-      'sidebar: pg' + snap.sidebarNum + '(pi=' + snap.sidebarPi + ')',
-    ];
-    if(snap.visPages.length){
-      lines.push('visible pages:');
-      snap.visPages.forEach(p => {
-        lines.push('  ' + p.label +
-          ' screenTop=' + p.screenTop + ' contentTop=' + p.contentTop +
-          ' h=' + p.h + ' w=' + p.w +
-          ' screenLeft=' + p.left + ' contentLeft=' + p.contentLeft);
-      });
-    }
-    lines.push('');
-    return lines;
-  }
-
-  // ── Colorize a line for display ───────────────────────────────────────────────
-  function _colorLine(l){
-    const esc = l.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    if(l.startsWith('=== '))    return '<div style="color:#60a5fa;font-weight:700;margin-top:5px;border-top:1px solid #1e3a5f;padding-top:3px;">'+esc+'</div>';
-    if(l.startsWith('zoom='))   return '<div style="color:#a5f3fc;">'+esc+'</div>';
-    if(l.startsWith('scroll'))  return '<div style="color:#86efac;">'+esc+'</div>';
-    if(l.startsWith('client')||l.startsWith('viewport')) return '<div style="color:#fde68a;">'+esc+'</div>';
-    if(l.startsWith('center'))  return '<div style="color:#f9a8d4;font-weight:600;">'+esc+'</div>';
-    if(l.startsWith('sidebar')) return '<div style="color:#fdba74;">'+esc+'</div>';
-    if(l.startsWith('visible')) return '<div style="color:#94a3b8;">'+esc+'</div>';
-    if(l.startsWith('  '))      return '<div style="color:#c4b5fd;">'+esc+'</div>';
-    return '<div style="color:#64748b;">'+esc+'</div>';
-  }
-
-  // ── Append lines to the log panel ────────────────────────────────────────────
-  function _appendToLog(lines){
-    const logEl = $('zdbg-log');
-    if(!logEl) return;
-    const wasAtBottom = logEl.scrollHeight - logEl.scrollTop - logEl.clientHeight < 40;
-    const frag = document.createDocumentFragment();
-    lines.forEach(l => {
-      const div = document.createElement('div');
-      div.innerHTML = _colorLine(l);
-      frag.appendChild(div.firstChild || div);
-    });
-    logEl.appendChild(frag);
-    if(wasAtBottom) logEl.scrollTop = logEl.scrollHeight;
-    const countEl = $('zdbg-count');
-    if(countEl) countEl.textContent = _recLog.length + ' lines recorded';
-  }
-
-  // ── Main entry point called by zoom/scroll ────────────────────────────────────
-  function updateZoomDebug(eventLabel){
-    if(!_dbgOn) return;
-    const snap = _snapshot(eventLabel);
-    if(!snap) return;
-
-    // Always update live bar
-    const liveEl = $('zdbg-live');
-    if(liveEl){
-      liveEl.innerHTML =
-        '<span style="color:#a5f3fc">zoom=<b>' + snap.zoom.toFixed(3) + '</b></span>  ' +
-        '<span style="color:#86efac">T=' + snap.sTop.toFixed(0) + '  L=' + snap.sLeft.toFixed(0) + '</span>  ' +
-        '<span style="color:#fde68a">cW=' + snap.cW + '  cH=' + snap.cH + '</span>  ' +
-        '<span style="color:#f9a8d4">' + snap.centerPi + '</span>  ' +
-        '<span style="color:#fdba74">side=pg' + snap.sidebarNum + '</span>  ' +
-        '<span style="color:' + (snap.inProgress ? '#f87171' : '#4ade80') + '">' + (snap.inProgress ? 'LOCKED' : 'free') + '</span>';
-    }
-
-    // Only record when RECORD is active
-    if(!_recording) return;
-    const lines = _snapshotLines(snap, ++_recSeq);
-    _recLog.push(...lines);
-    _appendToLog(lines);
-  }
-
-  // ── RECORD button ─────────────────────────────────────────────────────────────
-  const recordBtn = $('zdbg-record');
-  const stopBtn   = $('zdbg-stop');
-  const statusEl  = $('zdbg-status');
-
-  function startRecording(){
-    _recording = true;
-    _recSeq    = 0;
-    _recLog    = [];
-    const logEl = $('zdbg-log');
-    if(logEl) logEl.innerHTML = '';
-    const countEl = $('zdbg-count');
-    if(countEl) countEl.textContent = '';
-    if(recordBtn){ recordBtn.style.background='#dc2626'; recordBtn.textContent='⏺ REC…'; recordBtn.disabled=true; }
-    if(stopBtn){ stopBtn.style.background='#b45309'; stopBtn.style.color='#fff'; stopBtn.disabled=false; }
-    if(statusEl) statusEl.textContent = 'recording…';
-  }
-  function stopRecording(){
-    _recording = false;
-    if(recordBtn){ recordBtn.style.background='#16a34a'; recordBtn.textContent='⏺ RECORD'; recordBtn.disabled=false; }
-    if(stopBtn){ stopBtn.style.background='#374151'; stopBtn.style.color='#9ca3af'; stopBtn.disabled=true; }
-    if(statusEl) statusEl.textContent = _recSeq + ' events captured';
-  }
-
-  if(recordBtn) recordBtn.addEventListener('click', startRecording);
-  if(stopBtn)   stopBtn.addEventListener('click',   stopRecording);
-
-  // ── COPY button ───────────────────────────────────────────────────────────────
-  const copyBtn = $('zdbg-copy');
-  if(copyBtn) copyBtn.addEventListener('click', ()=>{
-    const text = _recLog.join('\n');
-    navigator.clipboard.writeText(text).then(()=>{
-      copyBtn.textContent='✓ COPIED!'; setTimeout(()=>copyBtn.textContent='📋 COPY',1800);
-    }).catch(()=>{
-      const ta=document.createElement('textarea');
-      ta.value=text; document.body.appendChild(ta); ta.select();
-      document.execCommand('copy'); ta.remove();
-      copyBtn.textContent='✓ COPIED!'; setTimeout(()=>copyBtn.textContent='📋 COPY',1800);
-    });
-  });
-
-  // ── CLEAR button ──────────────────────────────────────────────────────────────
-  const clearBtn = $('zdbg-clear');
-  if(clearBtn) clearBtn.addEventListener('click', ()=>{
-    _recLog=[]; _recSeq=0;
-    const logEl=$('zdbg-log'); if(logEl) logEl.innerHTML='';
-    const countEl=$('zdbg-count'); if(countEl) countEl.textContent='';
-    if(statusEl) statusEl.textContent='cleared';
-  });
-
-  // ── Live update on scroll (always, not just when recording) ──────────────────
-  if(D.workScroll){
-    D.workScroll.addEventListener('scroll', ()=>{
-      if(_dbgOn) updateZoomDebug('scroll');
-    }, {passive:true});
-  }
-  window._updateZoomDebug = updateZoomDebug;
   setTimeout(()=>{if(isMob()){setPH();syncMob();updateScrollThumb();}},600);
 })();
 
