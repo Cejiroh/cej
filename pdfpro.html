@@ -865,12 +865,6 @@ kbd+kbd{margin-left:3px;}
           <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
           Debug
         </button>
-        <div style="display:flex;gap:4px;align-items:center;">
-          <span style="font-size:11px;color:#64748b;font-weight:600;">Render:</span>
-          <button class="render-btn" data-render="1" style="display:flex;align-items:center;gap:3px;padding:6px 10px;border-radius:8px;border:1.5px solid #e2e8f0;background:white;color:#475569;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;">1x</button>
-          <button class="render-btn" data-render="2" style="display:flex;align-items:center;gap:3px;padding:6px 10px;border-radius:8px;border:1.5px solid #e2e8f0;background:white;color:#475569;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;">2x</button>
-          <button class="render-btn" data-render="3" style="display:flex;align-items:center;gap:3px;padding:6px 10px;border-radius:8px;border:1.5px solid #e2e8f0;background:white;color:#475569;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;">3x</button>
-        </div>
       </div>
       <span class="hm-version">PDF Workspace · Click anywhere outside to close</span>
     </div>
@@ -900,27 +894,11 @@ kbd+kbd{margin-left:3px;}
       </select>
     </div>
     <div class="pom-row" id="pomCustomSizeRow" style="display:none;">
-      <label>Custom Size</label>
-      <div style="display:flex;flex-direction:column;gap:8px;">
-        <div style="display:flex;gap:6px;align-items:center;">
-          <select id="pomSizeUnit" style="padding:4px 6px;border-radius:6px;border:1.5px solid #e2e8f0;font-size:12px;">
-            <option value="pixels">Pixels</option>
-            <option value="percentage">Percentage (%)</option>
-          </select>
-          <div id="pomPixelInputs" style="display:flex;gap:6px;align-items:center;">
-            <input type="number" id="pomCustomW" min="10" max="10000" value="595" style="width:70px;">
-            <span style="color:#94a3b8;font-size:12px;">×</span>
-            <input type="number" id="pomCustomH" min="10" max="10000" value="842" style="width:70px;">
-          </div>
-          <div id="pomPercentInputs" style="display:none;gap:6px;align-items:center;">
-            <input type="number" id="pomCustomPercent" min="10" max="200" value="100" style="width:70px;">
-            <span style="color:#94a3b8;font-size:12px;">%</span>
-          </div>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <input type="checkbox" id="pomLockAspect" style="width:16px;height:16px;cursor:pointer;">
-          <label for="pomLockAspect" style="font-size:12px;color:#475569;cursor:pointer;">Lock aspect ratio</label>
-        </div>
+      <label>Width × Height (px)</label>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <input type="number" id="pomCustomW" min="10" max="10000" value="595" style="width:70px;">
+        <span style="color:#94a3b8;font-size:12px;">×</span>
+        <input type="number" id="pomCustomH" min="10" max="10000" value="842" style="width:70px;">
       </div>
     </div>
     <div class="pom-row">
@@ -1059,9 +1037,6 @@ kbd+kbd{margin-left:3px;}
 </script>
 <script>
 function _initApp(){
-// Assign triggerOpen to window immediately to make it available for inline onclick handlers
-window.triggerOpen=function(){D.fileInput.click();};
-
 if(typeof fabric==='undefined'||typeof PDFLib==='undefined'||typeof pdfjsLib==='undefined'||typeof JSZip==='undefined'){
   setTimeout(_initApp,50);return;
 }
@@ -1113,6 +1088,7 @@ function lockTextarea(ta){
   }
 })();
 
+const RENDER_SCALE = 3.0;
 const EXPORT_CONCURRENCY = 4;
 
 // Coordinate patches are on fabric.Canvas.prototype (see script block above _initApp).
@@ -1149,8 +1125,6 @@ const ls={
   get:(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch{return d;}},
   set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch{}},
 };
-
-const RENDER_SCALE = ls.get('pdfpro_render_scale', 3.0);
 
 let paletteColorsMap = ls.get('pdfpro_palette_v3', {...PALETTE_DEFAULTS_PER_TOOL});
 Object.keys(PALETTE_DEFAULTS_PER_TOOL).forEach(t=>{
@@ -1341,39 +1315,12 @@ async function renderPageToCanvas(f, pi, reuse) {
     let js; try { js = JSON.parse(f.annotations[pi]); } catch { js = null; }
     if (js) {
       await new Promise(res => {
-        // Use same canvas settings as display for perfect visual match
-        const sc = new fabric.StaticCanvas(null, {
-          width: v.width, 
-          height: v.height,
-          enableRetinaScaling: false,  // Match display setting
-          renderOnAddRemove: true,     // Match display setting
-          backgroundColor: 'transparent',
-          preserveObjectStacking: true  // Match display setting
-        });
-        
-        // Apply same coordinate transformation as display (no zoom transform)
-        sc.viewportTransform = [1, 0, 0, 1, 0, 0];
-        
+        const sc = new fabric.StaticCanvas(null, {width: v.width, height: v.height});
         sc.loadFromJSON(js, () => {
-          // Apply same object transformations as display
-          sc.getObjects().forEach(o => {
-            // Use canvas coordinates (no zoom) for export to match display visual appearance
-            o.set({selectable: true});
-            if (o.type === 'rect' || o.type === 'ellipse') {
-              o.set({strokeUniform: true});
-              o.perPixelTargetFind = true;
-              o.targetFindTolerance = 4;
-            }
-          });
-          
           sc.renderAll();
           ctx2d.drawImage(sc.getElement(), 0, 0);
           sc.dispose();
           res();
-        }, null, (obj) => {
-          // Handle custom objects same way as display
-          if (obj.type === 'curvedArrow') return CurvedArrow.fromObject(obj, () => {});
-          if (obj.type === 'curvedLine') return CurvedLine.fromObject(obj, () => {});
         });
       });
     }
@@ -1407,6 +1354,7 @@ const getHist=(f,pi)=>{const k=histKey(f,pi);if(!S.histMap[k])S.histMap[k]={u:[]
 function normalizeKey(e){return e.key.length===1?e.key.toLowerCase():e.key;}
 
 function triggerOpen(){D.fileInput.click();}
+window.triggerOpen=triggerOpen;
 
 // ── Drag-and-drop onto the empty state landing page ───────────────────────────
 (()=>{
@@ -1468,70 +1416,13 @@ function flushAnnotations(fileHint){
   const file=fileHint||S.files.find(f=>f.id===S.canvasOwnerFileId)||null;
   if(!file)return;
   S.activeCanvases.forEach(c=>{
-    // Create a copy of the canvas and reset viewport transform to get true canvas coordinates
-    const tempCanvas = new fabric.StaticCanvas(null, {width: c.fc.width, height: c.fc.height});
-    tempCanvas.setViewportTransform([1, 0, 0, 1, 0, 0]); // Reset to identity matrix
-    
-    // Copy objects and transform their coordinates to canvas space
-    const objects = c.fc.getObjects().map(obj => {
-      const objCopy = obj.toObject(['id','selectable','curveX','curveY']);
-      
-      // Transform coordinates from current zoom space to canvas space
-      if (objCopy.left !== undefined && objCopy.top !== undefined) {
-        const zoom = c.fc.getZoom() || 1;
-        objCopy.left = objCopy.left / zoom;
-        objCopy.top = objCopy.top / zoom;
-        
-        // Also scale dimensions
-        if (objCopy.scaleX !== undefined) objCopy.scaleX = objCopy.scaleX;
-        if (objCopy.scaleY !== undefined) objCopy.scaleY = objCopy.scaleY;
-        if (objCopy.width !== undefined) objCopy.width = objCopy.width / zoom;
-        if (objCopy.height !== undefined) objCopy.height = objCopy.height / zoom;
-      }
-      
-      return objCopy;
-    });
-    
-    // Create JSON with corrected coordinates
-    const canvasJSON = {
-      version: '5.3.0',
-      objects: objects,
-      background: c.fc.backgroundColor
-    };
-    
-    file.annotations[c.pageIndex] = JSON.stringify(canvasJSON);
+    file.annotations[c.pageIndex]=JSON.stringify(c.fc.toObject(['id','selectable','curveX','curveY']));
   });
 }
 
 function snap(fc,f,pi){
   const h=getHist(f,pi);
-  
-  // Transform coordinates to canvas space before saving to history
-  const objects = fc.getObjects().map(obj => {
-    const objCopy = obj.toObject(['id','selectable','curveX','curveY']);
-    
-    // Transform coordinates from current zoom space to canvas space
-    if (objCopy.left !== undefined && objCopy.top !== undefined) {
-      const zoom = fc.getZoom() || 1;
-      objCopy.left = objCopy.left / zoom;
-      objCopy.top = objCopy.top / zoom;
-      
-      // Also scale dimensions
-      if (objCopy.width !== undefined) objCopy.width = objCopy.width / zoom;
-      if (objCopy.height !== undefined) objCopy.height = objCopy.height / zoom;
-    }
-    
-    return objCopy;
-  });
-  
-  // Create JSON with corrected coordinates
-  const canvasJSON = {
-    version: '5.3.0',
-    objects: objects,
-    background: fc.backgroundColor
-  };
-  
-  h.u.push(JSON.stringify(canvasJSON));
+  h.u.push(JSON.stringify(fc.toJSON(['id','selectable','curveX','curveY'])));
   if(h.u.length>60)h.u.shift();
   h.r=[];
   f.dirty=true;
@@ -1545,40 +1436,14 @@ function doUndo(fc,f,pi){
   const h=getHist(f,pi);
   if(h.u.length<2)return;
   h.r.push(h.u.pop());
-  const json = JSON.parse(h.u[h.u.length-1]);
-  fc.loadFromJSON(json, ()=>{
-    // Apply current zoom to restore proper display coordinates
-    const zoom = fc.getZoom() || 1;
-    fc.getObjects().forEach(obj => {
-      if (obj.left !== undefined && obj.top !== undefined) {
-        obj.left = obj.left * zoom;
-        obj.top = obj.top * zoom;
-        if (obj.width !== undefined) obj.width = obj.width * zoom;
-        if (obj.height !== undefined) obj.height = obj.height * zoom;
-      }
-    });
-    fc.renderAll();
-  });
+  fc.loadFromJSON(JSON.parse(h.u[h.u.length-1]),()=>fc.renderAll());
 }
 function doRedo(fc,f,pi){
   const h=getHist(f,pi);
   if(!h.r.length)return;
   const s=h.r.pop();
   h.u.push(s);
-  const json = JSON.parse(s);
-  fc.loadFromJSON(json, ()=>{
-    // Apply current zoom to restore proper display coordinates
-    const zoom = fc.getZoom() || 1;
-    fc.getObjects().forEach(obj => {
-      if (obj.left !== undefined && obj.top !== undefined) {
-        obj.left = obj.left * zoom;
-        obj.top = obj.top * zoom;
-        if (obj.width !== undefined) obj.width = obj.width * zoom;
-        if (obj.height !== undefined) obj.height = obj.height * zoom;
-      }
-    });
-    fc.renderAll();
-  });
+  fc.loadFromJSON(JSON.parse(s),()=>fc.renderAll());
 }
 function initHist(fc,f,pi){const h=getHist(f,pi);if(!h.u.length)h.u.push(JSON.stringify(fc.toJSON(['id','selectable','curveX','curveY'])));}
 
@@ -2168,8 +2033,6 @@ function _wireLineControls(line, fc, f, pi){
     render(ctx,left,top,so,obj){
       if(!obj) return;
       ctx.save();
-      const cssZoom = S.zoom || 1;
-      const invZoom = 1 / cssZoom;
       if(obj.canvas){
         const vpt=obj.canvas.viewportTransform||[1,0,0,1,0,0];
         const zoom=obj.canvas.getZoom()||1;
@@ -2177,11 +2040,10 @@ function _wireLineControls(line, fc, f, pi){
         const x1s=(obj.x1-ox)*zoom+vpt[4], y1s=(obj.y1-oy)*zoom+vpt[5];
         const x2s=(obj.x2-ox)*zoom+vpt[4], y2s=(obj.y2-oy)*zoom+vpt[5];
         ctx.setLineDash([4,3]); ctx.strokeStyle='rgba(59,130,246,0.45)'; ctx.lineWidth=1;
-        ctx.beginPath(); ctx.moveTo((x1s-left)*invZoom,(y1s-top)*invZoom); ctx.lineTo(0,0); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo((x2s-left)*invZoom,(y2s-top)*invZoom); ctx.lineTo(0,0); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x1s-left,y1s-top); ctx.lineTo(0,0); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x2s-left,y2s-top); ctx.lineTo(0,0); ctx.stroke();
         ctx.setLineDash([]);
       }
-      ctx.scale(invZoom, invZoom);
       ctx.translate(left,top);
       ctx.beginPath(); ctx.moveTo(0,-10); ctx.lineTo(10,0); ctx.lineTo(0,10); ctx.lineTo(-10,0); ctx.closePath();
       ctx.fillStyle='white'; ctx.strokeStyle='#3b82f6'; ctx.lineWidth=2.5; ctx.fill(); ctx.stroke();
@@ -2273,8 +2135,6 @@ function _wireArrowControls(arr, fc, f, pi){
     render(ctx, left, top, styleOverride, obj){
       if(!obj) return;
       ctx.save();
-      const cssZoom = S.zoom || 1;
-      const invZoom = 1 / cssZoom;
       // Guide lines drawn in screen-space offsets relative to handle position
       if(obj.canvas){
         const vpt = obj.canvas.viewportTransform||[1,0,0,1,0,0];
@@ -2288,11 +2148,10 @@ function _wireArrowControls(arr, fc, f, pi){
         ctx.setLineDash([4,3]);
         ctx.strokeStyle='rgba(59,130,246,0.45)';
         ctx.lineWidth=1;
-        ctx.beginPath(); ctx.moveTo((x1s-left)*invZoom, (y1s-top)*invZoom); ctx.lineTo(0,0); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo((x2s-left)*invZoom, (y2s-top)*invZoom); ctx.lineTo(0,0); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x1s-left, y1s-top); ctx.lineTo(0,0); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x2s-left, y2s-top); ctx.lineTo(0,0); ctx.stroke();
         ctx.setLineDash([]);
       }
-      ctx.scale(invZoom, invZoom);
       ctx.translate(left, top);
       ctx.beginPath();
       ctx.moveTo(0,-10); ctx.lineTo(10,0); ctx.lineTo(0,10); ctx.lineTo(-10,0);
@@ -2338,11 +2197,7 @@ function _wireArrowControls(arr, fc, f, pi){
     },
     actionHandler(){ return true; },
     render(ctx, left, top){
-      ctx.save();
-      const cssZoom = S.zoom || 1;
-      const invZoom = 1 / cssZoom;
-      ctx.scale(invZoom, invZoom);
-      ctx.translate(left, top);
+      ctx.save(); ctx.translate(left, top);
       ctx.beginPath();
       ctx.arc(-10,0,11,Math.PI/2,Math.PI*3/2);
       ctx.arc( 10,0,11,-Math.PI/2,Math.PI/2);
@@ -3500,17 +3355,7 @@ async function loadAnnotations(fc,f,pi,saved){
       let js;try{js=JSON.parse(saved);}catch{js=null;}
       if(js){
         fc.loadFromJSON(js,()=>{
-          // Apply current zoom to transform coordinates from canvas space to display space
-          const zoom = fc.getZoom() || 1;
           fc.getObjects().forEach(o=>{
-            // Transform coordinates from canvas space to current zoom display space
-            if (o.left !== undefined && o.top !== undefined) {
-              o.left = o.left * zoom;
-              o.top = o.top * zoom;
-              if (o.width !== undefined) o.width = o.width * zoom;
-              if (o.height !== undefined) o.height = o.height * zoom;
-            }
-            
             o.set({selectable:true});
             if(o.type==='rect'||o.type==='ellipse'){
               o.set({strokeUniform:true});
@@ -4685,13 +4530,7 @@ if(saveTabJpgBtn){
 
 async function saveCurrentTabAsJpg(){
   const f=getAF();if(!f){showToast('No file open');return;}
-  
-  // Ensure annotations are flushed with correct coordinates before export
-  const currentZoom = S.zoom;
-  S.zoom = 1;
   flushAnnotations();
-  S.zoom = currentZoom;
-  
   const pages=keepPages(f);
   if(!pages.length){showToast('No pages');return;}
 
@@ -4812,15 +4651,6 @@ function toBaseName(name){
 async function savePageAsJpg(f, pi){
   showToast('Saving page as JPG…', 10000);
   try {
-    // Ensure annotations are flushed with current coordinates before export
-    const entry = S.activeCanvases.find(c => c.pageIndex === pi);
-    if (entry) {
-      // Temporarily reset zoom to ensure correct coordinates are saved
-      const currentZoom = S.zoom;
-      S.zoom = 1;
-      flushAnnotations(f);
-      S.zoom = currentZoom;
-    }
     const {canvas} = await renderPageToCanvas(f, pi);
     const rawLabel = (f.pageLabels && f.pageLabels[pi]) || '';
     const safeLabel = rawLabel.replace(/[\\/:*?"<>|]/g,'').replace(/\s+/g,' ').trim();
@@ -4839,13 +4669,7 @@ async function savePageAsJpg(f, pi){
 
 async function saveSinglePdf(){
   const f=getAF(); if(!f) return;
-  
-  // Ensure annotations are flushed with correct coordinates before export
-  const currentZoom = S.zoom;
-  S.zoom = 1;
   flushAnnotations();
-  S.zoom = currentZoom;
-  
   const pages=keepPages(f);
   const total=pages.length;
   let done=0;
@@ -4913,13 +4737,7 @@ async function saveSinglePdf(){
 // ─── Merge all tabs into one PDF ─────────────────────────────────────────────
 async function mergeAllToPdf(){
   if(!S.files.length){showToast('No files open');return;}
-  
-  // Ensure annotations are flushed with correct coordinates before export
-  const currentZoom = S.zoom;
-  S.zoom = 1;
   flushAnnotations();
-  S.zoom = currentZoom;
-  
   const {PDFDocument}=PDFLib;
 
   const totalPages=S.files.reduce((sum,f)=>sum+keepPages(f).length,0);
@@ -5787,10 +5605,6 @@ function openPageOptions(f, pi){
     const dispW = rot===90||rot===270 ? height : width;
     const dispH = rot===90||rot===270 ? width  : height;
     $('pomCurSize').textContent = `Current: ${Math.round(dispW)} × ${Math.round(dispH)} pt (${(dispW/2.835).toFixed(0)} × ${(dispH/2.835).toFixed(0)} mm)`;
-    
-    // Store original dimensions for aspect ratio calculations
-    window._pomOriginalW = dispW;
-    window._pomOriginalH = dispH;
   } catch(_){ $('pomCurSize').textContent = ''; }
 
   $('pomPageSize').value = 'keep';
@@ -5802,16 +5616,6 @@ function openPageOptions(f, pi){
   });
   $('pomBW').checked = false;
   $('pomAllPages').checked = false;
-  
-  // Reset custom size controls
-  $('pomSizeUnit').value = 'pixels';
-  $('pomCustomW').value = '595';
-  $('pomCustomH').value = '842';
-  $('pomCustomPercent').value = '100';
-  $('pomLockAspect').checked = false;
-  $('pomPixelInputs').style.display = 'flex';
-  $('pomPercentInputs').style.display = 'none';
-  
   pageOptModal.style.display='flex';
 }
 
@@ -5829,43 +5633,6 @@ pageOptModal.addEventListener('click', e=>{ if(e.target===pageOptModal) pageOptM
 
 $('pomPageSize').addEventListener('change', ()=>{
   $('pomCustomSizeRow').style.display = $('pomPageSize').value==='custom' ? 'flex' : 'none';
-});
-
-// Size unit selector
-$('pomSizeUnit').addEventListener('change', ()=>{
-  const isPercent = $('pomSizeUnit').value === 'percentage';
-  $('pomPixelInputs').style.display = isPercent ? 'none' : 'flex';
-  $('pomPercentInputs').style.display = isPercent ? 'flex' : 'none';
-});
-
-// Lock aspect ratio functionality
-function updateAspectRatioLock() {
-  if (!$('pomLockAspect').checked) return;
-  
-  const w = parseFloat($('pomCustomW').value) || 595;
-  const h = parseFloat($('pomCustomH').value) || 842;
-  const aspect = w / h;
-  
-  // Update height based on width change
-  $('pomCustomH').value = Math.round(w / aspect);
-}
-
-// Aspect ratio lock event listeners
-$('pomLockAspect').addEventListener('change', ()=>{
-  if ($('pomLockAspect').checked && window._pomOriginalW && window._pomOriginalH) {
-    const aspect = window._pomOriginalW / window._pomOriginalH;
-    const currentW = parseFloat($('pomCustomW').value) || 595;
-    $('pomCustomH').value = Math.round(currentW / aspect);
-  }
-});
-
-$('pomCustomW').addEventListener('input', updateAspectRatioLock);
-$('pomCustomH').addEventListener('input', ()=>{
-  if ($('pomLockAspect').checked && window._pomOriginalW && window._pomOriginalH) {
-    const aspect = window._pomOriginalW / window._pomOriginalH;
-    const currentH = parseFloat($('pomCustomH').value) || 842;
-    $('pomCustomW').value = Math.round(currentH * aspect);
-  }
 });
 
 $('pomApplyBtn').addEventListener('click', async ()=>{
@@ -5903,19 +5670,7 @@ $('pomApplyBtn').addEventListener('click', async ()=>{
 
       if(sizeVal !== 'keep'){
         let [newW, newH] = sizeVal === 'custom'
-          ? (() => {
-              const unit = $('pomSizeUnit').value;
-              if (unit === 'percentage') {
-                const percent = parseFloat($('pomCustomPercent').value) || 100;
-                const scale = percent / 100;
-                // Use original dimensions stored when modal opened
-                const origW = window._pomOriginalW || 595;
-                const origH = window._pomOriginalH || 842;
-                return [origW * scale, origH * scale];
-              } else {
-                return [parseFloat($('pomCustomW').value)||595, parseFloat($('pomCustomH').value)||842];
-              }
-            })()
+          ? [parseFloat($('pomCustomW').value)||595, parseFloat($('pomCustomH').value)||842]
           : PAGE_SIZES[sizeVal] || [595.28, 841.89];
 
         const {width: origW, height: origH} = page.getSize();
@@ -6660,48 +6415,6 @@ D.annotCont.addEventListener('touchend', e=>{
       debugBtn.style.color=_dbgOn?'white':'#4f46e5';
     });
   }
-
-  // ── Rendering scale buttons ─────────────────────────────────────────────────────
-  const renderBtns = document.querySelectorAll('.render-btn');
-  let currentRenderScale = ls.get('pdfpro_render_scale', 3); // Default to 3x
-  
-  // Update button states and apply render scale
-  function updateRenderScale(newScale) {
-    currentRenderScale = newScale;
-    ls.set('pdfpro_render_scale', newScale);
-    
-    // Update button styles
-    renderBtns.forEach(btn => {
-      const btnScale = parseInt(btn.dataset.render);
-      if (btnScale === newScale) {
-        btn.style.background = '#4f46e5';
-        btn.style.color = 'white';
-        btn.style.borderColor = '#4f46e5';
-      } else {
-        btn.style.background = 'white';
-        btn.style.color = '#475569';
-        btn.style.borderColor = '#e2e8f0';
-      }
-    });
-    
-    // Update global RENDER_SCALE constant
-    if (typeof RENDER_SCALE !== 'undefined') {
-      window.RENDER_SCALE = newScale;
-    }
-    
-    showToast(`Render scale set to ${newScale}x`);
-  }
-  
-  // Initialize button states
-  updateRenderScale(currentRenderScale);
-  
-  // Add click handlers
-  renderBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const scale = parseInt(btn.dataset.render);
-      updateRenderScale(scale);
-    });
-  });
   function dbgLog(lines){
     if(!_dbgOn||!dbgLines)return;
     if(dbgZoom)dbgZoom.textContent='zoom:'+((S.zoom||1).toFixed(2))+' tool:'+S.tool;
