@@ -208,7 +208,6 @@ html.dark .btn-del:hover{background:#450a0a;color:#fca5a5}
 .thsort.sdesc .sico .au{opacity:.25}
 .l5b{font-size:8px;padding:1px 4px;border-radius:3px;background:var(--pb-bg);color:var(--pb-t);font-weight:700;opacity:0;transition:opacity .15s;white-space:nowrap}
 .thsort.sa .l5b{opacity:1}
-.thfbtn.sa .l5b{opacity:1}
 .pill{display:inline-flex;align-items:center;padding:2px 7px;border-radius:14px;font-size:10px;font-weight:600;white-space:nowrap}
 .badge{display:inline-flex;align-items:center;justify-content:center;min-width:17px;height:17px;padding:0 4px;border-radius:8px;font-size:9px;font-weight:700}
 .sc-bs{background:#fef08a;color:#854d0e}
@@ -221,30 +220,6 @@ html.dark .btn-del:hover{background:#450a0a;color:#fca5a5}
 html.dark .sc-bs{background:#713f12;color:#fde047}
 html.dark .sc-rej{background:#450a0a;color:#fca5a5}
 .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;text-align:center;box-shadow:var(--shadow)}
-/* Analytics panel */
-.ana-panel{background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:14px;overflow:hidden;box-shadow:var(--shadow)}
-.ana-hdr{display:flex;align-items:center;justify-content:space-between;padding:9px 14px;border-bottom:1px solid var(--border);background:var(--hbg);cursor:pointer;user-select:none}
-.ana-hdr-left{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:700;color:var(--text)}
-.ana-hdr-right{display:flex;align-items:center;gap:8px}
-.ana-toggle{font-size:10px;color:var(--muted);font-weight:600;display:flex;align-items:center;gap:3px;transition:color .12s}
-.ana-hdr:hover .ana-toggle{color:var(--text)}
-.ana-body{overflow:hidden;transition:max-height .25s cubic-bezier(.4,0,.2,1)}
-.ana-body.collapsed{max-height:0!important}
-.ana-table{width:100%;border-collapse:collapse;font-size:11px}
-.ana-table thead th{padding:6px 12px;text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);border-bottom:1px solid var(--border);background:var(--hbg);white-space:nowrap}
-.ana-table thead th.r{text-align:right}
-.ana-table thead th.c{text-align:center}
-.ana-table tbody tr{cursor:pointer;transition:background .1s}
-.ana-table tbody tr:hover td{background:var(--surface2)}
-.ana-table tbody tr.ana-active td{background:var(--pt-bg)!important}
-.ana-table tbody td{padding:7px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
-.ana-table tbody tr:last-child td{border-bottom:none}
-.ana-name{font-weight:600;color:var(--text);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ana-num{font-weight:700;font-family:'Nunito',sans-serif;font-size:12px;text-align:right;white-space:nowrap}
-.ana-bar-wrap{width:120px;height:6px;background:var(--border);border-radius:3px;overflow:hidden;display:inline-flex;gap:0}
-.ana-seg{height:100%;flex-shrink:0;transition:width .3s}
-.ana-pill{display:inline-flex;align-items:center;justify-content:center;min-width:28px;padding:1px 5px;border-radius:8px;font-size:9px;font-weight:700;font-family:'Nunito',sans-serif}
-.ana-no-user{font-size:10px;color:var(--muted2);font-style:italic}
 .fin-inp{background:var(--in-bg);border:1px solid var(--in-bd);color:var(--text);border-radius:5px;padding:3px 7px;font-size:11px;width:100%;font-family:'Inter',sans-serif;transition:border-color .15s}
 .fin-inp:focus{outline:none;border-color:var(--blue);background:var(--surface)}
 .fin-inp.hv{border-color:var(--green)}
@@ -580,8 +555,6 @@ html.dark .res-missing{background:#500724;color:#f9a8d4}
     </div>
   </div>
 
-  <div id="mAnalytics" style="display:none"></div>
-
   <div id="mResults" style="display:none">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
       <div id="mCards" style="display:flex;gap:8px;flex-wrap:wrap"></div>
@@ -642,7 +615,7 @@ let sOrder=new Map(), sRowNum=new Map();
 const corr=new Map(), enums=new Map(), rmks=new Map(), rcvd=new Map();
 const shtOv=new Map(), stDates=new Map();
 let cMap={}, actSheet='__ALL__', actFilter='all', qTerm='', qSort='none', stDateSort='none';
-const cF={ss:new Set(),sht:new Set(),enum:new Set(),rcv:new Set(),res:new Set(),stDate:new Set(),qcn:new Set()};
+const cF={ss:new Set(),sht:new Set(),enum:new Set(),rcv:new Set(),res:new Set(),stDate:new Set()};
 
 // Master state
 const MD={
@@ -653,8 +626,7 @@ const MD={
   sheetNames:[],
 };
 let mActiveChk='__ALL__', mActiveSheet='__ALL__', mTerm='', mChkSearch='', mActiveFilter='all';
-let mQcnSort='none', mStDateSort='none';
-const mF={ba:new Set(),hs:new Set(),dma:new Set(),city:new Set(),barangay:new Set(),enumerator:new Set(),checkoder:new Set(),shtSt:new Set(),rcv:new Set(),stDate:new Set(),qcn:new Set()};
+const mF={ba:new Set(),hs:new Set(),dma:new Set(),city:new Set(),barangay:new Set(),enumerator:new Set(),checkoder:new Set(),shtSt:new Set(),rcv:new Set(),stDate:new Set()};
 let mRenderedCount=PAGE_SIZE;
 let mObserver=null;
 let mismatchSrchTerm='';
@@ -1491,19 +1463,6 @@ function getMasterVisibleSync(){
     const dStr=sd?.iso?new Date(sd.iso).toLocaleDateString([],{year:'numeric',month:'short',day:'numeric'}):'';
     return mF.stDate.has(dStr);
   });
-  if(mF.qcn.size)rows=rows.filter(r=>{const parts=(r.qcn||'').split('-');const pfx=parts.length>=2?parts[0]+'-'+parts[1]:r.qcn||'';return mF.qcn.has(pfx);});
-  // Sort
-  if(mStDateSort!=='none'){
-    rows=[...rows].sort((a,b)=>{
-      const ma=findUserByCheckoder(a.checkoder),mb=findUserByCheckoder(b.checkoder);
-      const da=ma?(ma.snap.statusChangeDates||new Map()).get(a.qcn)?.iso||'':'';
-      const db=mb?(mb.snap.statusChangeDates||new Map()).get(b.qcn)?.iso||'':'';
-      if(!da&&!db)return 0;if(!da)return 1;if(!db)return-1;
-      const cmp=da<db?-1:da>db?1:0;return mStDateSort==='asc'?cmp:-cmp;
-    });
-  }else if(mQcnSort!=='none'){
-    rows=[...rows].sort((a,b)=>{const cmp=last5(a.qcn).localeCompare(last5(b.qcn),undefined,{numeric:true,sensitivity:'base'});return mQcnSort==='asc'?cmp:-cmp;});
-  }
   return rows;
 }
 
@@ -1511,144 +1470,10 @@ function getMasterVisibleSync(){
    MASTER — RENDER RESULTS
 ═══════════════════════════════════════════════════════ */
 function renderMasterResults(){
-  if(!MD.allRows.length){document.getElementById('mResults').style.display='none';document.getElementById('mAnalytics').style.display='none';return}
+  if(!MD.allRows.length){document.getElementById('mResults').style.display='none';return}
   document.getElementById('mResults').style.display='';
-  renderAnalyticsPanel();renderMCards();buildMTabs();buildMasterFBar();buildMasterTHead();renderMasterTableBody();
+  renderMCards();buildMTabs();buildMasterFBar();buildMasterTHead();renderMasterTableBody();
   updateStickyTop();updateMismatchBadge();
-}
-
-/* ═══════════════════════════════════════════════════════
-   MASTER — ANALYTICS PANEL
-═══════════════════════════════════════════════════════ */
-let anaCollapsed=false;
-function renderAnalyticsPanel(){
-  const el=document.getElementById('mAnalytics');
-  if(!MD.checkoders.length){el.style.display='none';return}
-  el.style.display='';
-
-  // Build per-checkoder stats across ALL dates/sheets (not just current filter)
-  const rows=MD.allRows;
-  const stats={};
-  MD.checkoders.forEach(c=>{stats[c]={total:0,match:0,mismatch:0,notInUser:0,rcvY:0,rcvN:0,rcvBlank:0,hasUser:false,shtSt:{}}});
-
-  rows.forEach(r=>{
-    const c=r.checkoder;if(!c||!stats[c])return;
-    const s=stats[c];
-    s.total++;
-    const m=findUserByCheckoder(c);
-    if(m){
-      s.hasUser=true;
-      const ms=getQcnMatchStatus(r.qcn,c);
-      if(ms==='match')s.match++;
-      else if(ms==='mismatch'||ms==='not-in-user'||ms==='not-in-sheet')s.mismatch++;
-      else s.notInUser++;
-      const rv=(m.snap.received||new Map()).get(r.qcn)||'';
-      const rvu=rv.trim().toUpperCase();
-      if(rvu==='Y'||rvu==='YES')s.rcvY++;
-      else if(rvu==='N'||rvu==='NO')s.rcvN++;
-      else s.rcvBlank++;
-      // Sheet status
-      const shtOvVal=m.snap.sheetStatusOverrides.get(r.qcn);
-      const uRow=m.snap.allRowsFlat.find(x=>x.qcn===r.qcn);
-      const st=shtOvVal!==undefined?shtOvVal:(uRow?(uRow.sheetStatus||uRow.srcStatus||''):'');
-      if(st)s.shtSt[st]=(s.shtSt[st]||0)+1;
-    }
-  });
-
-  const sorted=[...MD.checkoders].sort((a,b)=>{
-    // Sort: has-user first, then by encoded count desc, then name
-    const sa=stats[a],sb=stats[b];
-    if(sa.hasUser!==sb.hasUser)return sa.hasUser?-1:1;
-    return((sb.shtSt['Encoded']||0)-(sa.shtSt['Encoded']||0))||a.localeCompare(b);
-  });
-
-  const overallTotal=rows.length;
-  const overallRcvY=sorted.reduce((s,ch)=>s+stats[ch].rcvY,0);
-  const overallRcvN=sorted.reduce((s,ch)=>s+(stats[ch].rcvN+stats[ch].rcvBlank),0);
-  const overallShtSt={};sorted.forEach(ch=>{Object.entries(stats[ch].shtSt).forEach(([st,n])=>{overallShtSt[st]=(overallShtSt[st]||0)+n;});});
-  // Ordered status columns: fixed order + any extras
-  const FIXED_ST=['For Encoding','Encoded','Bad Sheet','Reject'];
-  const extraSt=Object.keys(overallShtSt).filter(s=>!FIXED_ST.includes(s)).sort();
-  const allSt=[...FIXED_ST.filter(s=>overallShtSt[s]>0),...extraSt.filter(s=>overallShtSt[s]>0)];
-  const stShort=s=>s==='For Encoding'?'For Enc':s==='Encoded'?'Encoded':s==='Bad Sheet'?'Bad Sheet':s==='Reject'?'Reject':s;
-  const stPill=(st,n,dimZero=false)=>{const cls=sCls(st);if(dimZero&&!n)return`<span style="color:var(--muted2);font-size:10px">—</span>`;return`<span class="ana-pill ${cls}">${n}</span>`;};
-  const pct=(n,t)=>t>0?Math.round(n/t*100):0;
-
-  // Status colors for progress bar — match pill background colors
-  const ST_COLORS={'Encoded':'var(--pb-t)','For Encoding':'var(--pg-t)','Bad Sheet':'#854d0e','Reject':'#991b1b'};
-  const barSeg=(pctVal,color)=>pctVal>0?`<span class="ana-seg" style="width:${pctVal}%;background:${color}"></span>`:'';
-  const stBar=(shtSt,total)=>FIXED_ST.filter(s=>ST_COLORS[s]).map(s=>barSeg(pct(shtSt[s]||0,total),ST_COLORS[s])).join('')||(barSeg(100,'var(--border)'));
-
-  const totalsRow=`<tr style="background:var(--hbg)">
-    <td class="ana-name" style="font-weight:800;color:var(--teal)">All Checkoders</td>
-    <td class="ana-num" style="color:var(--teal)">${overallTotal.toLocaleString()}</td>
-    <td><div class="ana-bar-wrap">${stBar(overallShtSt,overallTotal)}</div></td>
-    ${allSt.map(st=>`<td class="ana-num">${stPill(st,overallShtSt[st]||0)}</td>`).join('')}
-    <td class="ana-num"><span class="ana-pill sc-yes">${overallRcvY.toLocaleString()}</span></td>
-    <td class="ana-num"><span class="ana-pill sc-no">${overallRcvN.toLocaleString()}</span></td>
-  </tr>`;
-
-  const chkRows=sorted.map(c=>{
-    const s=stats[c];
-    const isActive=mActiveChk===c;
-    return`<tr data-ana-chk="${esc(c)}" class="${isActive?'ana-active':''}">
-      <td><span class="ana-name" title="${esc(c)}">${esc(c)}</span></td>
-      <td class="ana-num">${s.total.toLocaleString()}</td>
-      <td><div class="ana-bar-wrap">${s.hasUser?stBar(s.shtSt,s.total):'<span class="ana-seg" style="width:100%;background:var(--border)"></span>'}</div></td>
-      ${allSt.map(st=>`<td class="ana-num">${s.hasUser?stPill(st,s.shtSt[st]||0,true):'<span style="color:var(--muted2);font-size:10px">—</span>'}</td>`).join('')}
-      <td class="ana-num">${s.hasUser?`<span class="ana-pill sc-yes">${s.rcvY}</span>`:'<span style="color:var(--muted2);font-size:10px">—</span>'}</td>
-      <td class="ana-num">${s.hasUser?(s.rcvN+s.rcvBlank)>0?`<span class="ana-pill sc-no">${s.rcvN+s.rcvBlank}</span>`:`<span class="ana-pill sc-yes">0</span>`:'<span style="color:var(--muted2);font-size:10px">—</span>'}</td>
-    </tr>`;
-  }).join('');
-
-  const chevron=anaCollapsed
-    ?`<svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>`
-    :`<svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M18 15l-6-6-6 6"/></svg>`;
-
-  el.innerHTML=`<div class="ana-panel">
-    <div class="ana-hdr" id="anaHdr">
-      <div class="ana-hdr-left">
-        <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" style="color:var(--teal)"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
-        Summary by Checkoder
-        <span style="font-size:9px;font-weight:600;padding:1px 6px;border-radius:8px;background:var(--pt-bg);color:var(--pt-t)">${MD.checkoders.length}</span>
-      </div>
-      <div class="ana-hdr-right">
-        <span style="font-size:10px;color:var(--muted)">Click a row to filter</span>
-        <div class="ana-toggle" id="anaToggle">${anaCollapsed?'Show':'Hide'} ${chevron}</div>
-      </div>
-    </div>
-    <div class="ana-body${anaCollapsed?' collapsed':''}" id="anaBody" style="max-height:${anaCollapsed?'0':Math.min(sorted.length*41+42,420)}px">
-      <table class="ana-table">
-        <thead><tr>
-          <th style="min-width:140px">Checkoder</th>
-          <th class="r" style="min-width:60px">Total</th>
-          <th style="min-width:130px">Progress</th>
-          ${allSt.map(st=>`<th class="r" style="min-width:65px">${esc(stShort(st))}</th>`).join('')}
-          <th class="r" style="min-width:55px">Rcv Y</th>
-          <th class="r" style="min-width:55px">Rcv N</th>
-        </tr></thead>
-        <tbody>${totalsRow}${chkRows}</tbody>
-      </table>
-    </div>
-  </div>`;
-
-  // Toggle collapse
-  document.getElementById('anaHdr').addEventListener('click',()=>{
-    anaCollapsed=!anaCollapsed;
-    renderAnalyticsPanel();
-  });
-
-  // Row click → filter by checkoder
-  el.querySelectorAll('[data-ana-chk]').forEach(tr=>{
-    tr.addEventListener('click',()=>{
-      const c=tr.dataset.anaChk;
-      mActiveChk=mActiveChk===c?'__ALL__':c;
-      mActiveSheet='__ALL__';mTerm='';mActiveFilter='all';
-      Object.keys(mF).forEach(k=>mF[k].clear());
-      document.getElementById('mSrch').value='';
-      renderMasterChips();buildMTabs();renderMasterResults();saveUiState();
-    });
-  });
 }
 function renderMCards(){
   const base=getMasterBase();
@@ -1837,17 +1662,9 @@ function masterHasSourceData(){
 }
 function buildMasterTHead(){
   const showChk=mActiveChk==='__ALL__';
-  const mStDateActive=mF.stDate&&mF.stDate.size>0;
-  const mQcnActive=mF.qcn&&mF.qcn.size>0;
   document.getElementById('mTHead').innerHTML=`<tr>
     <th class="rn-th" style="width:36px">#<div class="col-resizer"></div></th>
-    <th class="thf" id="mth-qcn" style="min-width:160px;overflow:visible">
-      <button class="thfbtn${mQcnActive?' af':''}" data-mcol="qcn" id="mthQcnBtn" style="padding:8px 24px 8px 11px">
-        <span>QCN</span>${mQcnActive?'<span class="adot" id="mdot-qcn"></span>':'<span class="adot hidden" id="mdot-qcn"></span>'}
-        <svg class="chev" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
-      </button>
-      <div class="thdd" id="mdd-qcn"><div class="thdd-srch"><input type="text" placeholder="Filter prefix…" data-mdd="qcn"/></div><div class="thdd-list" id="mddl-qcn"></div><div class="thdd-clr"><button data-mclr="qcn">✕ Clear</button></div></div>
-      <div class="col-resizer"></div></th>
+    <th class="tp" style="min-width:160px;padding:8px 11px;position:relative">QCN<div class="col-resizer"></div></th>
     ${mkMasterFilterTh('ba','BA','ba',48)}
     ${mkMasterFilterTh('hs','HS','hs',48)}
     ${mkMasterFilterTh('dma','DMA','dma',58)}
@@ -1858,13 +1675,7 @@ function buildMasterTHead(){
     <th class="tp" style="min-width:120px;padding:8px 11px;position:relative;overflow:hidden">Remarks<div class="col-resizer"></div></th>
     ${mkMasterFilterTh('shtSt','Sheet Status','shtSt',100)}
     ${mkMasterFilterTh('rcv','Received','rcv',100)}
-    <th class="thf" id="mth-stDate" style="min-width:140px;overflow:visible">
-      <button class="thfbtn${mStDateActive?' af':''}" data-mcol="stDate" id="mthStDateBtn" style="padding:8px 24px 8px 11px">
-        <span>Status Updated</span>${mStDateActive?'<span class="adot" id="mdot-stDate"></span>':'<span class="adot hidden" id="mdot-stDate"></span>'}
-        <svg class="chev" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
-      </button>
-      <div class="thdd" id="mdd-stDate"><div class="thdd-srch"><input type="text" placeholder="Filter date…" data-mdd="stDate"/></div><div class="thdd-list" id="mddl-stDate"></div><div class="thdd-clr"><button data-mclr="stDate">✕ Clear</button></div></div>
-      <div class="col-resizer"></div></th>
+    ${mkMasterFilterTh('stDate','Status Updated','stDate',140)}
   </tr>`;
   const thead=document.getElementById('mTHead');
   thead.addEventListener('click',handleMasterThClick,{once:false});
@@ -1873,12 +1684,6 @@ function buildMasterTHead(){
     const list=document.getElementById(`mddl-${col}`);
     if(list){const allVals=base.map(r=>r[col]);const hasBlank=allVals.some(v=>!v);const vals=[...new Set(allVals.filter(Boolean))].sort();const finalVals=hasBlank?['', ...vals]:vals;list.innerHTML=buildMDDItems(finalVals,mF[col]||new Set(),'')}
   });
-  // QCN prefix dropdown
-  const mQcnList=document.getElementById('mddl-qcn');
-  if(mQcnList){const pfxSet=new Set();let hasBQ=false;base.forEach(r=>{const parts=(r.qcn||'').split('-');const pfx=parts.length>=2?parts[0]+'-'+parts[1]:r.qcn||'';if(pfx)pfxSet.add(pfx);else hasBQ=true;});const sorted=[...pfxSet].sort();const finalQ=hasBQ?['',...sorted]:sorted;mQcnList.innerHTML=buildMDDItems(finalQ,mF.qcn||new Set(),'');}
-  // Restore sort-indicator classes after head rebuild
-  const mSDB=document.getElementById('mthStDateBtn');if(mSDB){mSDB.classList.toggle('sa',mStDateSort!=='none');mSDB.classList.toggle('sasc',mStDateSort==='asc');mSDB.classList.toggle('sdesc',mStDateSort==='desc');}
-  const mQSB=document.getElementById('mthQcnBtn');if(mQSB){mQSB.classList.toggle('sa',mQcnSort!=='none');mQSB.classList.toggle('sasc',mQcnSort==='asc');mQSB.classList.toggle('sdesc',mQcnSort==='desc');}
   // Sheet Status dropdown — from user snaps
   const shtStList=document.getElementById('mddl-shtSt');
   if(shtStList){
@@ -1914,14 +1719,7 @@ function buildMasterTHead(){
 
 function handleMasterThClick(e){
   const fbtn=e.target.closest('[data-mcol]');
-  if(fbtn){e.stopPropagation();const col=fbtn.dataset.mcol;
-    if(col==='stDate'||col==='qcn'){
-      if(e.target.closest('svg.chev')){toggleMDrop(col);return;}
-      if(col==='stDate'){mStDateSort=mStDateSort==='none'?'desc':mStDateSort==='desc'?'asc':'none';mQcnSort='none';}
-      else{mQcnSort=mQcnSort==='none'?'asc':mQcnSort==='asc'?'desc':'none';mStDateSort='none';}
-      mRenderedCount=PAGE_SIZE;buildMasterTHead();renderMasterTableBody();return;
-    }
-    toggleMDrop(col);return}
+  if(fbtn){e.stopPropagation();const col=fbtn.dataset.mcol;toggleMDrop(col);return}
   const item=e.target.closest('[data-mval]');
   if(item){e.stopPropagation();const dd=item.closest('.thdd');const col=dd.id.replace('mdd-','');const val=item.dataset.mval;
     const key=col;if(mF[key]){if(mF[key].has(val))mF[key].delete(val);else mF[key].add(val);mRenderedCount=PAGE_SIZE;buildMasterTHead();renderMasterTableBody();buildMasterFBar();}return}
@@ -1959,7 +1757,6 @@ document.getElementById('mTHead').addEventListener('input',e=>{
     list.innerHTML=buildMDDItems(finalVals.filter(v=>!inp.value||v.toLowerCase().includes(inp.value.toLowerCase())||(v===''&&'no data'.includes(inp.value.toLowerCase()))),mF.stDate||new Set(),'');
     return;
   }
-  if(col==='qcn'){const pfxSet=new Set();base.forEach(r=>{const parts=(r.qcn||'').split('-');const pfx=parts.length>=2?parts[0]+'-'+parts[1]:r.qcn||'';pfxSet.add(pfx);});const sv=[...pfxSet].sort().filter(v=>!inp.value||v.toLowerCase().includes(inp.value.toLowerCase()));list.innerHTML=buildMDDItems(sv,mF.qcn||new Set(),'');return;}
   const allVals=base.map(r=>r[col]);const hasBlank=allVals.some(v=>!v);
   const vals=[...new Set(allVals.filter(Boolean))].sort();
   const finalVals=hasBlank?['', ...vals]:vals;
@@ -2771,7 +2568,7 @@ function buildQcnTHead(hasSrc){
     'min-width:110px;max-width:110px',                  // For Correction — keep flexible/wrapped
     'min-width:200px',                                  // Remarks — flexible
     'min-width:90px',                                   // Received — auto-fit
-    ...(hasSrc?['min-width:130px']:[]),                 // Status Updated — only with source
+    'min-width:130px',                                  // Status Updated — auto-fit
     ...(hasSrc?['min-width:100px']:[]),                 // Result — auto-fit
   ];
   cg.innerHTML=cols.map(w=>`<col${w?` style="${w}"`:''}>` ).join('');
@@ -2781,14 +2578,14 @@ function buildQcnTHead(hasSrc){
 
   document.getElementById('qcnThead').innerHTML=`<tr>
     <th class="rn-th">#<div class="col-resizer"></div></th>
-    <th class="thf" id="thQCN" style="overflow:visible"><button class="thfbtn" data-col="qcn" id="thQcnSortBtn" style="padding:8px 24px 8px 11px"><span>QCN</span><span class="l5b">last 5</span><span class="adot hidden" id="dot-qcn"></span><svg class="chev" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></button><div class="thdd" id="dd-qcn"><div class="thdd-srch"><input type="text" placeholder="Filter prefix…" data-dd="qcn"/></div><div class="thdd-list" id="ddl-qcn"></div><div class="thdd-clr"><button data-clr="qcn">✕ Clear</button></div></div><div class="col-resizer"></div></th>
+    <th style="padding:0"><button class="thsort" id="thQcnSort"><span>QCN</span><span class="l5b">last 5</span><span class="sico"><span class="au"></span><span class="ad"></span></span></button><div class="col-resizer"></div></th>
     ${hasSrc?filterTh('thSS','ss','Source Status','dot-ss'):''}
     ${filterTh('thSHT','sht','Sheet Status','dot-sht')}
     ${filterTh('thEnum','enum','Enumerator','dot-enum')}
     <th class="tp">For Correction<div class="col-resizer"></div></th>
     <th class="tp">Remarks<div class="col-resizer"></div></th>
     ${filterTh('thRCV','rcv','Received (Y/N)','dot-rcv')}
-    ${hasSrc?`<th class="thf" id="thSTDATE" style="overflow:visible"><button class="thfbtn" data-col="stDate" id="thStDateBtn" style="padding:8px 24px 8px 11px"><span>Status Updated</span><span class="adot hidden" id="dot-stDate"></span><svg class="chev" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></button><div class="thdd" id="dd-stDate"><div class="thdd-srch"><input type="text" placeholder="Filter date…" data-dd="stDate"/></div><div class="thdd-list" id="ddl-stDate"></div><div class="thdd-clr"><button data-clr="stDate">✕ Clear</button></div></div><div class="col-resizer"></div></th>`:''}
+    <th class="thf" id="thSTDATE" style="overflow:visible"><button class="thfbtn" data-col="stDate" id="thStDateBtn" style="padding:8px 24px 8px 11px"><span>Status Updated</span><span class="adot hidden" id="dot-stDate"></span><svg class="chev" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></button><div class="thdd" id="dd-stDate"><div class="thdd-srch"><input type="text" placeholder="Filter date…" data-dd="stDate"/></div><div class="thdd-list" id="ddl-stDate"></div><div class="thdd-clr"><button data-clr="stDate">✕ Clear</button></div></div><div class="col-resizer"></div></th>
     ${hasSrc?filterTh('thRES','res','Result','dot-res'):''}
   </tr>`;
 
@@ -2833,7 +2630,6 @@ function getQBase(){
 }
 function getQFiltered(){
   let r=getQBase();
-  if(cF.qcn.size)r=r.filter(x=>{const parts=(x.qcn||'').split('-');const pfx=parts.length>=2?parts[0]+'-'+parts[1]:x.qcn||'';return cF.qcn.has(pfx);});
   if(cF.ss.size)r=r.filter(x=>cF.ss.has(x.srcStatus||''));
   if(cF.sht.size)r=r.filter(x=>cF.sht.has(shtOv.has(x.qcn)?shtOv.get(x.qcn):(x.sheetStatus||'')));
   if(cF.enum.size)r=r.filter(x=>cF.enum.has(enums.get(x.qcn)||''));
@@ -2848,7 +2644,7 @@ function _renderQcnTable(){
   document.getElementById('qcnRC').textContent=rows.length+' rows';
   const snap=userSnaps[activeUid];
   const hasSrc=!snap?.viewOnly||(snap?.viewMode!=='sheet');
-  const numCols=hasSrc?10:8; // #,QCN,[src],sht,enum,corr,rmk,recv,[stDate],[result]
+  const numCols=hasSrc?10:8; // #,QCN,[src],sht,enum,corr,rmk,recv,stChanged,[result]
   if(!rows.length){tbody.innerHTML=`<tr><td colspan="${numCols}" style="text-align:center;padding:36px;color:var(--muted);font-style:italic">No matching rows.</td></tr>`;return}
   const frag=document.createDocumentFragment();
   rows.forEach(r=>{
@@ -2876,10 +2672,7 @@ function _renderQcnTable(){
     const rm2full=rmks.get(r.qcn)||'';
     // Status Updated date from source
     const stD=stDates.get(r.qcn);
-    const stDStr=stD?.iso
-      ?`<span style="font-size:10px">📅 ${esc(new Date(stD.iso).toLocaleString())}</span>`
-      :`<span style="color:var(--muted)">—</span>`;
-    const stDTd=hasSrc?`<td style="text-align:${stD?.iso?'left':'center'};white-space:nowrap">${stDStr}</td>`:'';
+    const stDStr=stD?.iso?`<span style="font-size:10px">📅 ${esc(new Date(stD.iso).toLocaleString())}</span>`:`<span style="color:var(--muted)">—</span>`;
     let resPill='';
     if(hasSrc){
       if(r.type==='match')resPill=`<span class="pill res-match"><svg width="9" height="9" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg> Match</span>`;
@@ -2899,7 +2692,7 @@ function _renderQcnTable(){
       <td class="td-wrap" style="font-size:11px;${co2?'':'color:var(--muted);'}white-space:normal;word-break:break-word">${co2||'—'}</td>
       <td class="td-wrap" style="font-size:11px;color:var(--muted);white-space:normal;word-break:break-word">${esc(rm2full)||'—'}</td>
       ${rcvTd}
-      ${stDTd}
+      <td style="font-size:10px;color:var(--muted);white-space:nowrap">${stDStr}</td>
       ${hasSrc?`<td style="text-align:center">${resPill}</td>`:''}`;
     frag.appendChild(tr);
   });
@@ -3033,7 +2826,6 @@ function getColVals(col){
     else if(col==='enum')v=enums.get(r.qcn)||'';
     else if(col==='rcv')v=rcvd.get(r.qcn)||'';
     else if(col==='res')v=r.type||'';
-    else if(col==='qcn'){const parts=(r.qcn||'').split('-');v=parts.length>=2?parts[0]+'-'+parts[1]:r.qcn||'';}
     else if(col==='stDate'){const sd=stDates.get(r.qcn);v=sd?.iso?new Date(sd.iso).toLocaleDateString([],{year:'numeric',month:'short',day:'numeric'}):''}
     else v='';
     vals.push(v);
@@ -3055,33 +2847,24 @@ function buildDDList(col,search=''){
 }
 function updDotHead(col){
   document.getElementById(`dot-${col}`)?.classList.toggle('hidden',!(cF[col]?.size));
-  const idMap={ss:'SS',sht:'SHT',rcv:'RCV',res:'RES',enum:'Enum',stDate:'STDATE',qcn:'QCN'};
+  const idMap={ss:'SS',sht:'SHT',rcv:'RCV',res:'RES',enum:'Enum',stDate:'STDATE'};
   document.getElementById(`th${idMap[col]||col}`)?.classList.toggle('af',!!(cF[col]?.size));
 }
 function closeAllDD(){document.querySelectorAll('.thdd.open').forEach(d=>d.classList.remove('open'));document.querySelectorAll('.thfbtn.open').forEach(b=>b.classList.remove('open'))}
 function togDD(col){const dd=document.getElementById(`dd-${col}`);const btn=document.querySelector(`[data-col="${col}"]`);if(!dd||!btn)return;const was=dd.classList.contains('open');closeAllDD();if(!was){const rect=btn.getBoundingClientRect();dd.style.top=(rect.bottom+2)+'px';dd.style.left=Math.min(rect.left,window.innerWidth-200)+'px';dd.classList.add('open');btn.classList.add('open');const si=dd.querySelector('input[type=text]');if(si)si.value='';buildDDList(col,'')}}
 
 document.querySelector('#qcnThead').addEventListener('click',e=>{
-  const fb=e.target.closest('.thfbtn[data-col]');if(fb){e.stopPropagation();const col=fb.dataset.col;
-    if(col==='stDate'){
-      if(e.target.closest('svg.chev')){togDD('stDate');return;}
-      stDateSort=stDateSort==='none'?'desc':stDateSort==='desc'?'asc':'none';qSort='none';
-      const btn=document.getElementById('thStDateBtn');
-      if(btn){btn.classList.toggle('sa',stDateSort!=='none');btn.classList.toggle('sasc',stDateSort==='asc');btn.classList.toggle('sdesc',stDateSort==='desc');}
-      const qBtn=document.getElementById('thQcnSortBtn');if(qBtn){qBtn.classList.remove('sa','sasc','sdesc');}
-      renderQcnTable();return;
-    }
-    if(col==='qcn'){
-      if(e.target.closest('svg.chev')){togDD('qcn');return;}
-      qSort=qSort==='none'?'asc':qSort==='asc'?'desc':'none';stDateSort='none';
-      const stBtn=document.getElementById('thStDateBtn');if(stBtn){stBtn.classList.remove('sa','sasc','sdesc');}
-      const btn=document.getElementById('thQcnSortBtn');
-      if(btn){btn.classList.toggle('sa',qSort!=='none');btn.classList.toggle('sasc',qSort==='asc');btn.classList.toggle('sdesc',qSort==='desc');}
-      renderQcnTable();return;
-    }
-    togDD(col);return}
+  const fb=e.target.closest('.thfbtn[data-col]');if(fb&&!fb.closest('#thQcnSort')){e.stopPropagation();const col=fb.dataset.col;if(col==='stDate'){
+    // Chevron click → open filter dropdown; label/button body click → sort
+    if(e.target.closest('svg.chev')){togDD('stDate');return;}
+    stDateSort=stDateSort==='none'?'desc':stDateSort==='desc'?'asc':'none';qSort='none';
+    const btn=document.getElementById('thStDateBtn');
+    if(btn){btn.classList.toggle('sa',stDateSort!=='none');btn.classList.toggle('sasc',stDateSort==='asc');btn.classList.toggle('sdesc',stDateSort==='desc');}
+    renderQcnTable();return;
+  }togDD(col);return}
   const it=e.target.closest('.thdd-item[data-col]');if(it){e.stopPropagation();const col=it.dataset.col,val=it.dataset.val;if(cF[col].has(val))cF[col].delete(val);else cF[col].add(val);updDotHead(col);buildDDList(col,it.closest('.thdd').querySelector('input')?.value||'');renderQcnTable();return}
   const cb=e.target.closest('[data-clr]');if(cb){e.stopPropagation();const col=cb.dataset.clr;cF[col].clear();updDotHead(col);buildDDList(col,'');renderQcnTable();return}
+  const sb=e.target.closest('#thQcnSort');if(sb){qSort=qSort==='none'?'asc':qSort==='asc'?'desc':'none';stDateSort='none';const btn=document.getElementById('thStDateBtn');if(btn){btn.classList.remove('sa','sasc','sdesc');}sb.classList.toggle('sa',qSort!=='none');sb.classList.toggle('sasc',qSort==='asc');sb.classList.toggle('sdesc',qSort==='desc');renderQcnTable()}
 });
 document.querySelector('#qcnThead').addEventListener('input',e=>{const inp=e.target.closest('[data-dd]');if(inp)buildDDList(inp.dataset.dd,inp.value)});
 document.getElementById('qcnSrch').addEventListener('input',function(){qTerm=this.value;renderQcnTable()});
