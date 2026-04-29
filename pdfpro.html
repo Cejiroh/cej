@@ -1792,6 +1792,31 @@ function renderAll(){
     setTimeout(()=>setupPageObserver(f),100);
     return;
   }
+  
+  // Recalculate canvas offsets after layout changes (tabs added/removed, resize)
+  function recalcAllCanvasOffsets(){
+    if(!S.activeCanvases||!S.activeCanvases.length) return;
+    requestAnimationFrame(()=>{
+      S.activeCanvases.forEach(c=>{
+        try{
+          if(c && c.fc){
+            c.fc.calcOffset();
+            c.fc.requestRenderAll();
+          }
+        }catch(e){/* ignore */}
+      });
+    });
+  }
+
+  // Observe tab bar mutations and window resizes to keep Fabric offsets in sync
+  try{
+    if(D && D.tabBar){
+      const _tabObs = new MutationObserver(() => recalcAllCanvasOffsets());
+      _tabObs.observe(D.tabBar, { childList: true, subtree: true, attributes: true });
+      D.tabBar.addEventListener('scroll', ()=>recalcAllCanvasOffsets(), {passive:true});
+    }
+  }catch(e){}
+  window.addEventListener('resize', ()=>recalcAllCanvasOffsets());
   renderWorkspace();
 }
 
