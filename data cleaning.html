@@ -1084,6 +1084,14 @@ function buildErrors(rows, headers) {
       if (isYes && !isInt(cv)) add(r[1],`q38_appliances_${key}_count`,'error',`q38_appliances_${key}_count must be an integer when has_appliance = Yes`,str(cv));
       if (!isYes && notEmpty(cv)) add(r[1],`q38_appliances_${key}_count`,'error',`q38_appliances_${key}_count must be NULL when has_appliance = No`,str(cv));
     });
+    // Warnings: garden count >= 2, swimming pool count >= 1
+    const gardenCnt = g(row,'q38_appliances_garden_count') ?? getByLetter(row,'IB');
+    if (isInt(gardenCnt) && num(gardenCnt) >= 2)
+      add(150,'q38_appliances_garden_count','warning',`q38_appliances_garden_count is ${num(gardenCnt)} — please verify (2 or more gardens)`,str(gardenCnt));
+    const poolCnt = g(row,'q38_appliances_swimming_pool_count') ?? getByLetter(row,'IH');
+    if (isInt(poolCnt) && num(poolCnt) >= 1)
+      add(156,'q38_appliances_swimming_pool_count','warning',`q38_appliances_swimming_pool_count is ${num(poolCnt)} — please verify`,str(poolCnt));
+
     // Rule 161-163: q38_appliances_other
     const appOtherText = g(row,'q38_appliances_other','IM');
     const appOtherHas = g(row,'q38_appliances_other_has_appliance','IN');
