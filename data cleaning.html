@@ -815,6 +815,53 @@ function buildErrors(rows, headers) {
       }
     }
 
+    // ── RULES 164-167: Q18 cross-validation ──
+    const getCount18 = (name, letter) => {
+      const v = g(row, name) ?? getByLetter(row, letter);
+      const n = parseInt(str(v).replace(/,/g,''));
+      return isNaN(n) ? 0 : n;
+    };
+
+    const q18Total = getCount18('q18_total_number_of_water_user_past_month', 'CY');
+
+    const total18a =
+      getCount18('q18a_breakdown_nangungupahan_no_perm_count',  'DA') +
+      getCount18('q18a_breakdown_nangungupahan_with_perm_count','DC') +
+      getCount18('q18a_breakdown_stay_in_staff_count',          'DE') +
+      getCount18('q18a_breakdown_residente_count',              'DG') +
+      getCount18('q18a_breakdown_other_count',                  'DJ');
+
+    const total18b =
+      getCount18('q18b_breakdown_stay_out_staff_count',         'DM') +
+      getCount18('q18b_breakdown_nakikiigib_everyday_count',    'DO') +
+      getCount18('q18b_breakdown_other_count',                  'DR');
+
+    // Rule 164: Q18 total must not be lower than sum of Q18A
+    if (q18Total > 0 && total18a > 0 && q18Total < total18a)
+      add(164, 'q18_total_number_of_water_user_past_month', 'error',
+        `Q18 total (${q18Total}) must not be lower than sum of Q18A (${total18a})`,
+        str(q18Total));
+
+    // Rule 165: Q18d Year 2025 count should match expected sum
+    const count2025 = getCount18('q18d_5yr_change_year2025_user_count', 'ED');
+    const expected2025 = total18a > 0 ? total18a : total18b;
+    if (expected2025 > 0 && count2025 !== expected2025)
+      add(165, 'q18d_5yr_change_year2025_user_count', 'warning',
+        `Q18d 2025 count (${count2025}) does not match expected sum: ${expected2025} (Q18A total=${total18a}, Q18B total=${total18b})`,
+        str(count2025));
+
+    // Rule 166: Q17 = 1 household but multiple Q18b categories filled (warning)
+    const q17hhNum = parseInt(str(g(row,'q17_users_num_households') ?? getByLetter(row,'CW')).replace(/,/g,''));
+    const q18bFilledCount = [
+      getCount18('q18b_breakdown_stay_out_staff_count',      'DM'),
+      getCount18('q18b_breakdown_nakikiigib_everyday_count', 'DO'),
+      getCount18('q18b_breakdown_other_count',               'DR'),
+    ].filter(n => n > 0).length;
+    if (q17hhNum === 1 && q18bFilledCount >= 2)
+      add(166, 'q17_users_num_households', 'warning',
+        `Q17 is 1 household but ${q18bFilledCount} Q18b categories have counts — please verify`,
+        str(q17hhNum));
+
     // ── RULE 80: q19_septic = Meron/Wala/Hindi alam, no NULL ──
     const septic = g(row,'q19_septic','EN');
     if (isEmpty(septic)) add(80,'q19_septic','error','q19_septic must not be NULL','[empty]');
@@ -1155,6 +1202,7 @@ function renderSummary() {
     <div class="card"><div class="card-label">Total Rows</div><div class="card-value blue">${rowCount.toLocaleString()}</div><div class="card-sub">QCNs checked</div></div>
     <div class="card"><div class="card-label">QCNs with Issues</div><div class="card-value red">${qcnsWithIssues.toLocaleString()}</div><div class="card-sub">of ${rowCount} QCNs</div></div>
     <div class="card"><div class="card-label">Total Errors</div><div class="card-value red">${errors.toLocaleString()}</div><div class="card-sub">must fix</div></div>
+    <div class="card"><div class="card-label">Total Warnings</div><div class="card-value amber">${warnings.toLocaleString()}</div><div class="card-sub">review needed</div></div>
     <div class="card"><div class="card-label">Clean QCNs</div><div class="card-value green">${cleanQCNs.toLocaleString()}</div><div class="card-sub">passed all checks</div></div>
     <div class="card"><div class="card-label">Total Issues</div><div class="card-value amber">${totalIssues.toLocaleString()}</div><div class="card-sub">across all QCNs</div></div>
   `;
