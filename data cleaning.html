@@ -104,7 +104,14 @@
   .card {
     background: var(--surface); border: 1px solid var(--border);
     border-radius: 12px; padding: 20px 22px;
+    cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s, transform 0.1s;
+    user-select: none;
   }
+  .card:hover { border-color: var(--border2); box-shadow: 0 2px 12px rgba(0,0,0,0.12); transform: translateY(-1px); }
+  .card.active-filter { border-color: var(--blue); box-shadow: 0 0 0 2px rgba(0,122,204,0.25); }
+  .card.active-filter-red { border-color: var(--red); box-shadow: 0 0 0 2px rgba(244,63,94,0.25); }
+  .card.active-filter-amber { border-color: var(--amber); box-shadow: 0 0 0 2px rgba(245,158,11,0.25); }
+  .card.active-filter-green { border-color: var(--green); box-shadow: 0 0 0 2px rgba(34,197,94,0.25); }
   .card-label { font-size: 12px; color: var(--text-dim); font-weight: 500; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 8px; }
   .card-value { font-size: 32px; font-weight: 700; font-family: var(--mono); line-height: 1; }
   .card-value.red { color: var(--red); }
@@ -334,6 +341,7 @@ let allErrors = [];
 let allGroups = [];      // [{qcn, issues:[...]}]
 let filteredGroups = [];
 let currentPage = 1;
+let activeSevFilter = 'all'; // 'all' | 'error' | 'warning'
 const PAGE_SIZE = 25;
 
 // ── HELPERS ────────────────────────────────────────────────────────────────
@@ -571,11 +579,11 @@ function buildErrors(rows, headers) {
     if (notEmpty(wsh)) {
       const wshStr = str(wsh).trim();
       if (wshStr !== '24' && !hasWalaPressure)
-        add(13,'q10_remarks','warning',
+        add(13,'q8_water_supply_hours','warning',
           `Q8 supply hours is ${wshStr} (not 24) but no Q10 pressure field shows "Wala" — verify`,
           wshStr, q10Remarks);
       if (wshStr === '24' && hasWalaPressure)
-        add(13,'q10_remarks','warning',
+        add(13,'q8_water_supply_hours','warning',
           `Q8 supply hours is 24 but Q10 has "Wala" pressure — verify`,
           wshStr, q10Remarks);
     }
@@ -1255,7 +1263,7 @@ function renderFileInfo() {
 }
 
 function resetTool() {
-  allErrors = []; allGroups = []; filteredGroups = []; currentPage = 1;
+  allErrors = []; allGroups = []; filteredGroups = []; currentPage = 1; activeSevFilter = 'all';
   document.getElementById('results-zone').style.display = 'none';
   document.getElementById('upload-zone').style.display = 'block';
   document.getElementById('file-input').value = '';
@@ -1269,14 +1277,32 @@ function renderSummary() {
   const qcnsWithIssues = allGroups.length;
   const cleanQCNs = rowCount - qcnsWithIssues;
 
-  document.getElementById('summary-grid').innerHTML = `
-    <div class="card"><div class="card-label">Total Rows</div><div class="card-value blue">${rowCount.toLocaleString()}</div><div class="card-sub">QCNs checked</div></div>
-    <div class="card"><div class="card-label">QCNs with Issues</div><div class="card-value red">${qcnsWithIssues.toLocaleString()}</div><div class="card-sub">of ${rowCount} QCNs</div></div>
-    <div class="card"><div class="card-label">Total Errors</div><div class="card-value red">${errors.toLocaleString()}</div><div class="card-sub">must fix</div></div>
-    <div class="card"><div class="card-label">Total Warnings</div><div class="card-value amber">${warnings.toLocaleString()}</div><div class="card-sub">review needed</div></div>
-    <div class="card"><div class="card-label">Clean QCNs</div><div class="card-value green">${cleanQCNs.toLocaleString()}</div><div class="card-sub">passed all checks</div></div>
-    <div class="card"><div class="card-label">Total Issues</div><div class="card-value amber">${totalIssues.toLocaleString()}</div><div class="card-sub">across all QCNs</div></div>
-  `;
+  const cards = [
+    { filter: 'all',     label: 'Total Rows',       value: rowCount,        color: 'blue',  sub: 'QCNs checked',    activeClass: 'active-filter' },
+    { filter: 'issues',  label: 'QCNs with Issues', value: qcnsWithIssues,  color: 'red',   sub: `of ${rowCount} QCNs`, activeClass: 'active-filter-red' },
+    { filter: 'error',   label: 'Total Errors',      value: errors,          color: 'red',   sub: 'must fix',        activeClass: 'active-filter-red' },
+    { filter: 'warning', label: 'Total Warnings',    value: warnings,        color: 'amber', sub: 'review needed',   activeClass: 'active-filter-amber' },
+    { filter: 'clean',   label: 'Clean QCNs',        value: cleanQCNs,       color: 'green', sub: 'passed all checks', activeClass: 'active-filter-green' },
+    { filter: 'all',     label: 'Total Issues',      value: totalIssues,     color: 'amber', sub: 'across all QCNs', activeClass: 'active-filter' },
+  ];
+
+  const grid = document.getElementById('summary-grid');
+  grid.innerHTML = cards.map((c, i) => `
+    <div class="card${activeSevFilter === c.filter && !(c.filter === 'all' && i === 5 && activeSevFilter !== 'all') ? ' ' + c.activeClass : ''}"
+         data-filter="${c.filter}" data-index="${i}"
+         onclick="setSevFilter('${c.filter}', ${i})">
+      <div class="card-label">${c.label}</div>
+      <div class="card-value ${c.color}">${c.value.toLocaleString()}</div>
+      <div class="card-sub">${c.sub}</div>
+    </div>`).join('');
+}
+
+function setSevFilter(filter, index) {
+  // "Total Rows" (index 0) and "Total Issues" (index 5) both use 'all' — clicking them resets
+  const isReset = filter === 'all';
+  activeSevFilter = (activeSevFilter === filter && !isReset) ? 'all' : filter;
+  renderSummary();
+  renderTable();
 }
 
 function populateRuleFilter() {
@@ -1307,9 +1333,13 @@ function getFilteredGroups() {
 
   return allGroups.map(grp => {
     let issues = grp.issues;
+    if (activeSevFilter === 'error')   issues = issues.filter(e => e.sev === 'error');
+    if (activeSevFilter === 'warning') issues = issues.filter(e => e.sev === 'warning');
+    if (activeSevFilter === 'issues')  issues = issues; // all issues, but only QCNs with issues (already in allGroups)
+    if (activeSevFilter === 'clean')   return { qcn: grp.qcn, issues: [] }; // clean QCNs have no issues — handled below
     if (rule !== 'all') issues = issues.filter(e => e.qLabel === rule);
     if (q) issues = issues.filter(e =>
-      `${grp.qcn} ${e.cols} ${e.msg} ${e.val}`.toLowerCase().includes(q)
+      `${grp.qcn} ${e.cols} ${e.msg} ${e.val} ${e.remarks} ${e.checkoder}`.toLowerCase().includes(q)
     );
     return { qcn: grp.qcn, issues };
   }).filter(grp => grp.issues.length > 0);
