@@ -534,8 +534,8 @@ function buildErrors(rows, headers) {
         add(12,'q7_can','error','q7_can must be exactly 8 digits (including leading zeros)',canStr);
     }
 
-    // ── RULE 12b: duplicate CAN across rows ──
-    if (notEmpty(can)) {
+    // ── RULE 12b: duplicate CAN across rows (only when q6_submeter = Hindi) ──
+    if (notEmpty(can) && str(submeter).toLowerCase() === 'hindi') {
       const canStr = str(can).replace(/\s/g,'');
       if (canDupMap.has(canStr)) {
         const firstQcn = canDupMap.get(canStr);
