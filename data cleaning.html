@@ -209,6 +209,11 @@
     word-break: break-word;
   }
 
+  .col-checkoder {
+    font-size: 12px; color: var(--text-dim);
+    word-break: break-word; white-space: nowrap;
+  }
+
   /* PAGINATION */
   .pagination {
     display: flex; align-items: center; justify-content: space-between;
@@ -308,6 +313,7 @@
             <th>Error Description</th>
             <th>Actual Value</th>
             <th>Remarks</th>
+            <th>Checkoder</th>
           </tr>
         </thead>
         <tbody id="table-body"></tbody>
@@ -419,6 +425,9 @@ function buildErrors(rows, headers) {
 
   // Track seen control numbers for duplicate check
   const seenCtrl = new Map();
+  // Track duplicate CAN and phone numbers across rows
+  const canDupMap = new Map();
+  const phoneDupMap = new Map();
 
   const errors = [];
 
@@ -439,10 +448,11 @@ function buildErrors(rows, headers) {
       // No leading q# pattern — use the full column name (or first token before space)
       return s.split(/[\s,]/)[0] || s;
     };
+    const rowCheckoder = str(getByLetter(row, 'I') || '');
     const add = (ruleId, cols, sev, msg, val, remarks) => {
       const colStr = Array.isArray(cols) ? cols.join(', ') : cols;
       const qLabel = extractQLabel(cols);
-      errors.push({ qcn: rowQCN, ruleId, qLabel, cols: colStr, sev, msg, val: val !== undefined ? String(val) : '', remarks: remarks || '' });
+      errors.push({ qcn: rowQCN, ruleId, qLabel, cols: colStr, sev, msg, val: val !== undefined ? String(val) : '', remarks: remarks || '', checkoder: rowCheckoder });
     };
 
     // ── RULE 1: questionnaire_control_number == q_control_number ──
@@ -516,12 +526,58 @@ function buildErrors(rows, headers) {
         add(12,'q7_can','error','q7_can must be exactly 8 digits (including leading zeros)',canStr);
     }
 
+    // ── RULE 12b: duplicate CAN across rows ──
+    if (notEmpty(can)) {
+      const canStr = str(can).replace(/\s/g,'');
+      if (canDupMap.has(canStr)) {
+        const firstQcn = canDupMap.get(canStr);
+        add(12,'q7_can','warning',`Duplicate CAN — same CAN found in QCN ${firstQcn}`,canStr);
+      } else {
+        canDupMap.set(canStr, rowQCN);
+      }
+    }
+
+    // ── RULE 12c: duplicate phone number across rows (different respondent name) ──
+    const phoneRaw = str(g(row,'q3_contact_q3_cell_landline') ?? g(row,'q3_cell_landline') ?? '').replace(/\s/g,'');
+    const respondentName = str(g(row,'q1_name_q1_last_name') ?? '') + ',' + str(g(row,'q1_name_q1_first_name') ?? '');
+    if (phoneRaw) {
+      if (phoneDupMap.has(phoneRaw)) {
+        const prev = phoneDupMap.get(phoneRaw);
+        if (prev.name !== respondentName) {
+          add(12,'q3_contact_q3_cell_landline','warning',`Duplicate phone — same number used by "${prev.name}" in QCN ${prev.qcn}`,phoneRaw);
+        }
+      } else {
+        phoneDupMap.set(phoneRaw, { name: respondentName, qcn: rowQCN });
+      }
+    }
+
     // ── RULES 13-14: q8_water_supply_hours outliers ──
     const wsh = g(row,'q8_water_supply_hours','AU');
     if (notEmpty(wsh) && isNum(wsh)) {
       const h = num(wsh);
       if (h < 8) add(13,'q8_water_supply_hours','warning',`q8_water_supply_hours is a potential outlier: ${h} hours (less than 8)`,str(wsh));
       if (h > 24) add(14,'q8_water_supply_hours','error',`q8_water_supply_hours exceeds 24: ${h} hours`,str(wsh));
+    }
+
+    // ── RULE 13b: Q8 supply hours cross-check with Q10 pressure ──
+    const q10Pressures = [
+      g(row,'q10_pressure_daytime_6_12','AW'),
+      g(row,'q10_pressure_daytime_12_6','AX'),
+      g(row,'q10_pressure_nighttime_6_12','AY'),
+      g(row,'q10_pressure_nighttime_12_6','AZ')
+    ];
+    const hasWalaPressure = q10Pressures.some(v => str(v).toLowerCase() === 'wala');
+    const q10Remarks = str(g(row,'q10_remarks','BA') || '');
+    if (notEmpty(wsh)) {
+      const wshStr = str(wsh).trim();
+      if (wshStr !== '24' && !hasWalaPressure)
+        add(13,'q10_remarks','warning',
+          `Q8 supply hours is ${wshStr} (not 24) but no Q10 pressure field shows "Wala" — verify`,
+          wshStr, q10Remarks);
+      if (wshStr === '24' && hasWalaPressure)
+        add(13,'q10_remarks','warning',
+          `Q8 supply hours is 24 but Q10 has "Wala" pressure — verify`,
+          wshStr, q10Remarks);
     }
 
     // ── RULE 15: q9_booster_pump = Oo or Hindi, no NULL ──
@@ -668,6 +724,14 @@ function buildErrors(rows, headers) {
     const q17biz = g(row,'q17_users_num_business','CX');
     if (isEmpty(q17hh)) add(45,'q17_users_num_households','error','q17_users_num_households must not be empty','[empty]');
     if (isEmpty(q17biz)) add(46,'q17_users_num_business','error','q17_users_num_business must not be empty','[empty]');
+
+    // ── RULE 46b: Q17 total (HH + Biz) cannot be 0 ──
+    if (notEmpty(q17hh) && notEmpty(q17biz)) {
+      const hhN = num(q17hh);
+      const bizN = num(q17biz);
+      if (hhN + bizN === 0)
+        add(46,'q17_users_num_households','warning','Q17 total (HH + Biz) cannot be 0 — verify both values',`HH=${hhN}, Biz=${bizN}`);
+    }
 
     // ── RULES 47-57: q18a breakdowns ──
     const q18aGroups = [
@@ -1090,7 +1154,7 @@ function buildErrors(rows, headers) {
       add(150,'q38_appliances_garden_count','warning',`q38_appliances_garden_count is ${num(gardenCnt)} — please verify (2 or more gardens)`,str(gardenCnt));
     const poolCnt = g(row,'q38_appliances_swimming_pool_count') ?? getByLetter(row,'IH');
     if (isInt(poolCnt) && num(poolCnt) >= 1)
-      add(156,'q38_appliances_swimming_pool_count','warning',`q38_appliances_swimming_pool_count is ${num(poolCnt)} — please verify`,str(poolCnt));
+      add(156,'q38_appliances_swimming_pool_count','warning',`q38_appliances_swimming_pool_count is ${num(poolCnt)} — please verify (swimming pool reported)`,str(poolCnt));
 
     // Rule 161-163: q38_appliances_other
     const appOtherText = g(row,'q38_appliances_other','IM');
@@ -1301,6 +1365,7 @@ function renderPage() {
             <td class="col-msg">${escHtml(issue.msg)}</td>
             <td><div class="col-val" title="${escHtml(issue.val)}">${escHtml(issue.val)||'<span style="color:var(--text-faint)">[empty]</span>'}</div></td>
             <td class="col-remarks">${issue.remarks ? escHtml(issue.remarks) : ''}</td>
+            <td class="col-checkoder">${issue.checkoder ? escHtml(issue.checkoder) : ''}</td>
           </tr>`);
       });
     });
@@ -1352,9 +1417,9 @@ function escHtml(s) {
 }
 
 function exportCSV() {
-  const data = [['QCN','Column(s)','Q#','Error Description','Actual Value','Remarks']];
+  const data = [['QCN','Column(s)','Q#','Error Description','Actual Value','Remarks','Checkoder']];
   filteredGroups.forEach(grp => {
-    grp.issues.forEach(e => data.push([grp.qcn, e.cols, e.qLabel.match(/^q\d+/i) ? e.qLabel.toUpperCase() : e.qLabel, e.msg, e.val, e.remarks || '']));
+    grp.issues.forEach(e => data.push([grp.qcn, e.cols, e.qLabel.match(/^q\d+/i) ? e.qLabel.toUpperCase() : e.qLabel, e.msg, e.val, e.remarks || '', e.checkoder || '']));
   });
   const csv = data.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
   const blob = new Blob([csv], { type: 'text/csv' });
