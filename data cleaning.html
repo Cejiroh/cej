@@ -457,10 +457,38 @@ function buildErrors(rows, headers) {
       return s.split(/[\s,]/)[0] || s;
     };
     const rowCheckoder = str(getByLetter(row, 'I') || '');
+
+    // Build a remarks lookup: q-prefix → remarks value
+    const remarksFields = [
+      'q3_remarks','q6_1_remarks','q7_remarks','q10_remarks','q11_remarks',
+      'q14_remarks','q15_remarks','q17_users_remarks','q18a_remarks','q18b_remarks',
+      'q18c_remarks','q19_remarks','q20_remarks','q21_remarks','q22_remarks',
+      'q23_remarks','q25_remarks','q26_remarks','q28_consumption_change_remarks',
+      'q30_remarks','q31_remarks','q32_remarks','q33_remarks','q34_remarks',
+      'q35_remarks','q38_remarks'
+    ];
+    const remarksMap = {};
+    remarksFields.forEach(f => {
+      const m = f.match(/^(q\d+[a-z]*)/i);
+      if (m) {
+        const key = m[1].toLowerCase();
+        const v = str(g(row, f) || '');
+        if (v) remarksMap[key] = v;
+      }
+    });
+
+    const getAutoRemarks = (cols) => {
+      const colStr = Array.isArray(cols) ? cols[0] : String(cols);
+      const m = colStr.match(/^(q\d+[a-z]*)/i);
+      if (!m) return '';
+      return remarksMap[m[1].toLowerCase()] || '';
+    };
+
     const add = (ruleId, cols, sev, msg, val, remarks) => {
       const colStr = Array.isArray(cols) ? cols.join(', ') : cols;
       const qLabel = extractQLabel(cols);
-      errors.push({ qcn: rowQCN, ruleId, qLabel, cols: colStr, sev, msg, val: val !== undefined ? String(val) : '', remarks: remarks || '', checkoder: rowCheckoder });
+      const autoRemarks = remarks !== undefined && remarks !== '' ? remarks : getAutoRemarks(cols);
+      errors.push({ qcn: rowQCN, ruleId, qLabel, cols: colStr, sev, msg, val: val !== undefined ? String(val) : '', remarks: autoRemarks, checkoder: rowCheckoder });
     };
 
     // ── RULE 1: questionnaire_control_number == q_control_number ──
