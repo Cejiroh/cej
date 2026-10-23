@@ -79,3 +79,54 @@ if (form) {
     if (window.turnstile) try { turnstile.reset(); } catch (_) {}
   });
 }
+
+/* motion (all of it is skipped when the visitor prefers reduced motion) */
+const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* reveal on scroll */
+const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold: .15 });
+document.querySelectorAll('.rv').forEach(el => io.observe(el));
+
+/* ticker: loops forever and speeds up with scroll speed */
+const tr = document.querySelector('.track');
+if (tr && !calm) {
+  tr.innerHTML += tr.innerHTML;
+  let x = 0, last = scrollY, boost = 0;
+  const half = () => tr.scrollWidth / 2;
+  (function tick() {
+    boost = boost * .9 + Math.abs(scrollY - last) * .15; last = scrollY;
+    x -= .7 + Math.min(boost, 18);
+    if (-x >= half()) x += half();
+    tr.style.transform = `translateX(${x}px)`;
+    requestAnimationFrame(tick);
+  })();
+}
+
+/* statement: words light up as it scrolls into view */
+const st = document.querySelector('.stmt');
+if (st && !calm) {
+  st.innerHTML = st.textContent.trim().split(/\s+/).map(w => `<span>${w}</span>`).join(' ');
+  const sp = [...st.children];
+  const upd = () => {
+    const r = st.getBoundingClientRect();
+    const p = Math.min(1, Math.max(0, (innerHeight * .85 - r.top) / (r.height + innerHeight * .3)));
+    sp.forEach((s, i) => s.classList.toggle('on', i / sp.length < p));
+  };
+  addEventListener('scroll', upd, { passive: true }); upd();
+}
+
+/* services: the preview image follows the cursor (mouse screens only) */
+if (matchMedia('(hover:hover) and (min-width:860px)').matches && !calm) {
+  document.querySelectorAll('.idx a').forEach(a => {
+    const p = a.querySelector('.pic'); let x = 0, y = 0, tx = 0, ty = 0, on = false, raf;
+    const loop = () => {
+      x += (tx - x) * .15; y += (ty - y) * .15;
+      p.style.setProperty('--x', x + 'px'); p.style.setProperty('--y', y + 'px');
+      p.style.setProperty('--r', Math.max(-8, Math.min(8, (tx - x) * .06)) + 'deg');
+      if (on) raf = requestAnimationFrame(loop);
+    };
+    a.addEventListener('pointerenter', e => { tx = x = e.clientX + 24; ty = y = e.clientY - 90; on = true; loop(); });
+    a.addEventListener('pointermove', e => { tx = e.clientX + 24; ty = e.clientY - 90; });
+    a.addEventListener('pointerleave', () => { on = false; cancelAnimationFrame(raf); });
+  });
+}
