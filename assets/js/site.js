@@ -14,35 +14,14 @@ const MSG = {
   fields: 'Please fill in your name, a valid email and a message.'
 };
 const ICO = n => `<svg class="ico" aria-hidden="true"><use href="/assets/icons/sprite.svg#${n}"/></svg>`;
-const NAV = [['3D', '/3d/'], ['Videos', '/videos/'], ['Website', '/website/'], ['Graphics', '/graphics/'], ['Products', '/products/']];
-const here = location.pathname.replace(/index\.html$/, '');
 
-/* nav */
-const navEl = document.querySelector('[data-nav]');
-if (navEl) {
-  navEl.outerHTML = `<header class="nav"><div class="wrap">
-    <a class="logo" href="/" aria-label="Cejiroh home"><img class="d" src="/assets/logo/logo-dark.svg" alt="Cejiroh" width="106" height="28"><img class="l" src="/assets/logo/logo-light.svg" alt="" width="106" height="28"></a>
-    <ul class="links" id="links">${NAV.map(([t, h]) => `<li><a href="${h}"${here === h ? ' aria-current="page"' : ''}>${t}</a></li>`).join('')}</ul>
-    <button class="btn" type="button" data-contact>Contact</button>
-    <button class="burger" aria-label="Menu" aria-expanded="false" aria-controls="links">${ICO('menu')}</button>
-  </div></header>`;
-  const b = document.querySelector('.burger'), l = document.getElementById('links');
-  b.addEventListener('click', () => b.setAttribute('aria-expanded', l.classList.toggle('open')));
-  l.addEventListener('click', e => { if (e.target.closest('a')) { l.classList.remove('open'); b.setAttribute('aria-expanded', 'false'); } });
+/* nav behaviour: the nav and footer are plain HTML in every page (so search engines read them); this only adds the menu button */
+const burger = document.querySelector('.burger'), links = document.getElementById('links');
+if (burger && links) {
+  burger.addEventListener('click', () => burger.setAttribute('aria-expanded', links.classList.toggle('open')));
+  links.addEventListener('click', e => { if (e.target.closest('a')) { links.classList.remove('open'); burger.setAttribute('aria-expanded', 'false'); } });
 }
-
-/* footer */
-const footEl = document.querySelector('[data-footer]');
-if (footEl) {
-  footEl.outerHTML = `<footer><div class="wrap">
-    <div>
-      <a class="logo" href="/" aria-label="Cejiroh home"><img class="d" src="/assets/logo/logo-dark.svg" alt="" width="91" height="24"><img class="l" src="/assets/logo/logo-light.svg" alt="" width="91" height="24"></a>
-      <p>© ${new Date().getFullYear()} Cejiroh · <a href="mailto:${CONFIG.email}">${CONFIG.email}</a></p>
-      <p>Icons: <a href="https://github.com/saoudi-h/solar-icons">Solar</a> by 480 Design, <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a></p>
-    </div>
-    <ul>${NAV.concat([['Photography', '/photography/'], ['3D Art', '/3d-art/']]).map(([t, h]) => `<li><a href="${h}">${t}</a></li>`).join('')}</ul>
-  </div></footer>`;
-}
+document.querySelectorAll('.yr').forEach(y => { y.textContent = new Date().getFullYear(); });
 
 /* contact forms: ONE markup and ONE handler, used by both the bottom form and the popup */
 const formHTML = `
@@ -189,4 +168,32 @@ if (matchMedia('(hover:hover) and (min-width:860px)').matches && !calm) {
     a.addEventListener('pointermove', e => { tx = e.clientX + 24; ty = e.clientY - 90; });
     a.addEventListener('pointerleave', () => { on = false; cancelAnimationFrame(raf); });
   });
+}
+
+/* image zoom: click an image marked data-zoom */
+const lb = document.createElement('div');
+lb.className = 'lb'; lb.setAttribute('role', 'dialog'); lb.setAttribute('aria-label', 'Enlarged image'); lb.innerHTML = '<img alt="">';
+document.body.append(lb);
+document.addEventListener('click', e => {
+  const i = e.target.closest('img[data-zoom]');
+  if (i) { const z = lb.querySelector('img'); z.src = i.src; z.alt = i.alt; lb.classList.add('open'); document.body.style.overflow = 'hidden'; return; }
+  if (e.target.closest('.lb')) { lb.classList.remove('open'); document.body.style.overflow = ''; }
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && lb.classList.contains('open')) { lb.classList.remove('open'); document.body.style.overflow = ''; } });
+
+/* image viewer for the photography and 3D art galleries */
+const lbItems = [...document.querySelectorAll('a[data-lb]')];
+if (lbItems.length) {
+  const box = document.createElement('div');
+  box.className = 'lightbox'; box.setAttribute('role', 'dialog'); box.setAttribute('aria-modal', 'true'); box.setAttribute('aria-label', 'Image viewer');
+  box.innerHTML = `<button class="lb-x" type="button" aria-label="Close">${ICO('close')}</button><button class="lb-p" type="button" aria-label="Previous image">${ICO('prev')}</button><img alt=""><button class="lb-n" type="button" aria-label="Next image">${ICO('next')}</button>`;
+  document.body.append(box);
+  const im = box.querySelector('img'); let i = 0, from = null, sx = 0;
+  const show = n => { i = (n + lbItems.length) % lbItems.length; im.src = lbItems[i].getAttribute('href'); im.alt = lbItems[i].querySelector('img').alt; };
+  const shut = () => { box.classList.remove('open'); document.body.style.overflow = ''; if (from) from.focus(); };
+  lbItems.forEach((a, n) => a.addEventListener('click', e => { e.preventDefault(); from = a; show(n); box.classList.add('open'); document.body.style.overflow = 'hidden'; box.querySelector('.lb-x').focus(); }));
+  box.addEventListener('click', e => { if (e.target.closest('.lb-x') || e.target === box) shut(); else if (e.target.closest('.lb-p')) show(i - 1); else if (e.target.closest('.lb-n')) show(i + 1); });
+  document.addEventListener('keydown', e => { if (!box.classList.contains('open')) return; if (e.key === 'Escape') shut(); else if (e.key === 'ArrowLeft') show(i - 1); else if (e.key === 'ArrowRight') show(i + 1); });
+  box.addEventListener('touchstart', e => { sx = e.touches[0].clientX; }, { passive: true });
+  box.addEventListener('touchend', e => { const dx = e.changedTouches[0].clientX - sx; if (Math.abs(dx) > 50) show(i + (dx < 0 ? 1 : -1)); }, { passive: true });
 }
