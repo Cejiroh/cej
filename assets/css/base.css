@@ -143,4 +143,21 @@ footer{position:relative;overflow:hidden}
 footer::before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(135deg,transparent 48%,rgba(255,255,255,.07) 50%,transparent 52%) 0 0/40px 40px;animation:lines 28s linear infinite;-webkit-mask-image:linear-gradient(to bottom,transparent,#000 70%);mask-image:linear-gradient(to bottom,transparent,#000 70%)}
 footer .wrap{position:relative;z-index:1}
 @keyframes lines{to{background-position:40px 40px}}
-@media(prefers-reduced-motion:reduce){.fx i,.fx::after,footer::before,
+@media(prefers-reduced-motion:reduce){footer::before{animation:none!important}}
+/* contact sheet: slides down from the top, themed by the page it opens on */
+.sheet{position:fixed;inset:0;z-index:60;visibility:hidden;pointer-events:none;transition:visibility 0s .5s}
+.sheet.open{visibility:visible;pointer-events:auto;transition-delay:0s}
+.sheet .back{position:absolute;inset:0;background:rgba(0,0,0,.6);opacity:0;transition:opacity .4s}
+.sheet.open .back{opacity:1}
+.sheet .sp{position:relative;max-height:100svh;overflow:auto;background:var(--surface);color:var(--text);border-bottom:1px solid var(--border);box-shadow:0 24px 60px rgba(0,0,0,.45);padding:var(--s8) 0 var(--s7);padding-top:max(var(--s8),env(safe-area-inset-top));transform:translateY(-105%);transition:transform .5s cubic-bezier(.7,0,.2,1)}
+.sheet.open .sp{transform:none}
+.sheet h2{font-size:clamp(2rem,5vw,3.5rem);line-height:1;margin-bottom:var(--s4)}
+.sheet .mail{display:inline-flex;gap:var(--s2);align-items:center;margin-top:var(--s4)}
+.sheet input,.sheet textarea{background:var(--bg)}
+.sg{display:grid;gap:var(--s6)}@media(min-width:860px){.sg{grid-template-columns:1fr 1.1fr}}
+.x{position:absolute;top:max(var(--s4),env(safe-area-inset-top));right:var(--s4);width:44px;height:44px;display:grid;place-items:center;background:none;border:0;color:var(--text);cursor:pointer}
+.x .ico{width:30px;height:30px}
+.btn.big{min-height:56px;padding:0 var(--s7);font-size:1.05rem}
+.contact .cta-r{display:flex;align-items:center}
+
+.idx a:hover,.idx a:focus-visible{z-index:5}

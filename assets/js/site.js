@@ -23,7 +23,7 @@ if (navEl) {
   navEl.outerHTML = `<header class="nav"><div class="wrap">
     <a class="logo" href="/" aria-label="Cejiroh home"><img class="d" src="/assets/logo/logo-dark.svg" alt="Cejiroh" width="106" height="28"><img class="l" src="/assets/logo/logo-light.svg" alt="" width="106" height="28"></a>
     <ul class="links" id="links">${NAV.map(([t, h]) => `<li><a href="${h}"${here === h ? ' aria-current="page"' : ''}>${t}</a></li>`).join('')}</ul>
-    <a class="btn" href="${here === '/' ? '' : '/'}#contact">Contact</a>
+    <button class="btn" type="button" data-contact>Contact</button>
     <button class="burger" aria-label="Menu" aria-expanded="false" aria-controls="links">${ICO('menu')}</button>
   </div></header>`;
   const b = document.querySelector('.burger'), l = document.getElementById('links');
@@ -44,19 +44,27 @@ if (footEl) {
   </div></footer>`;
 }
 
-/* contact form */
-const form = document.getElementById('contact-form');
-if (form) {
-  const status = form.querySelector('.status'), btn = form.querySelector('button');
-  form.elements['Source'].value = form.dataset.source || document.body.dataset.page || '';
-  form.elements.ts.value = Date.now();                      // when the page loaded (server checks this too)
+/* contact forms: ONE markup and ONE handler, used by both the bottom form and the popup */
+const formHTML = `
+  <label>Full name<input name="Full Name" autocomplete="name" required maxlength="80"></label>
+  <label>Email<input name="Email" type="email" autocomplete="email" required maxlength="120"></label>
+  <label>Message<textarea name="Message" required minlength="5" maxlength="2000"></textarea></label>
+  <div class="hp" aria-hidden="true"><label>Website<input name="website" tabindex="-1" autocomplete="off"></label></div>
+  <input type="hidden" name="Company Name" value="cejiroh"><input type="hidden" name="Source"><input type="hidden" name="ts">
+  <button class="btn" type="submit">Send message</button><p class="status" role="status" aria-live="polite"></p>`;
+const page = document.body.dataset.page || '';
+
+function wireForm(form, source) {            // each form keeps its own state, status line and timer
+  const status = form.querySelector('.status'), btn = form.querySelector('button[type=submit]');
+  const stamp = () => { form.elements.Source.value = source; form.elements.ts.value = Date.now(); };
+  stamp();                                   // ts = when the form appeared (the server checks it too)
   if (CONFIG.turnstileSiteKey) {
     const w = document.createElement('div');
-    w.className = 'cf-turnstile'; w.dataset.sitekey = CONFIG.turnstileSiteKey;
-    btn.before(w);
-    const s = document.createElement('script');
-    s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js'; s.async = true;
-    document.head.append(s);
+    w.className = 'cf-turnstile'; w.dataset.sitekey = CONFIG.turnstileSiteKey; btn.before(w);
+    if (!document.querySelector('script[data-ts]')) {
+      const t = document.createElement('script');
+      t.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js'; t.async = true; t.dataset.ts = ''; document.head.append(t);
+    }
   }
   const say = (t, cls) => { status.textContent = t; status.className = 'status ' + (cls || ''); };
   form.addEventListener('submit', async e => {
@@ -72,13 +80,65 @@ if (form) {
       const res = await fetch(CONFIG.formUrl, { method: 'POST', body: new URLSearchParams(d) });
       const out = await res.json();
       // out.result === 'success' is the reply format of the old script
-      if (out.ok || out.result === 'success') { form.reset(); form.elements.Source.value = form.dataset.source || ''; form.elements.ts.value = Date.now(); say(MSG.ok, 'ok'); }
+      if (out.ok || out.result === 'success') { form.reset(); stamp(); say(MSG.ok, 'ok'); }
       else say(out.error || MSG.fail, 'err');
     } catch (_) { say(MSG.fail, 'err'); }
     btn.disabled = false;
-    if (window.turnstile) try { turnstile.reset(); } catch (_) {}
+    const cf = form.querySelector('.cf-turnstile');
+    if (cf && window.turnstile) try { turnstile.reset(cf); } catch (_) {}
   });
 }
+function makeForm(source) {
+  const f = document.createElement('form');
+  f.className = 'cform'; f.noValidate = true; f.innerHTML = formHTML;
+  return f;
+}
+
+/* 1. the form at the bottom of the page */
+document.querySelectorAll('[data-contact-form]').forEach(m => {
+  const f = makeForm(); m.replaceWith(f); wireForm(f, page);
+});
+
+/* 2. the popup: opens ONLY from the nav "Contact" button, slides down from the top */
+const sheet = document.createElement('div');
+sheet.className = 'sheet'; sheet.setAttribute('role', 'dialog'); sheet.setAttribute('aria-modal', 'true');
+sheet.setAttribute('aria-labelledby', 'sheet-t'); sheet.setAttribute('aria-hidden', 'true');
+sheet.innerHTML = `<div class="back" data-close></div><div class="sp">
+  <button class="x" type="button" data-close aria-label="Close contact form">${ICO('close')}</button>
+  <div class="wrap sg">
+    <div><h2 id="sheet-t">Start a project</h2><p class="lead">Tell me what you need and I’ll get back to you.</p>
+    <a class="mail" href="mailto:${CONFIG.email}">${ICO('mail')}${CONFIG.email}</a></div>
+    <div data-slot></div>
+  </div></div>`;
+const pf = makeForm(); sheet.querySelector('[data-slot]').replaceWith(pf);
+document.body.append(sheet);
+wireForm(pf, page + ' (popup)');             // the sheet column shows which form a message came from
+let opener = null;
+const openSheet = el => {
+  opener = el || null; sheet.classList.add('open'); sheet.setAttribute('aria-hidden', 'false'); document.body.style.overflow = 'hidden';
+  setTimeout(() => pf.querySelector('input').focus({ preventScroll: true }), 350);
+};
+const closeSheet = () => {
+  sheet.classList.remove('open'); sheet.setAttribute('aria-hidden', 'true'); document.body.style.overflow = '';
+  if (opener && opener.focus) opener.focus();
+};
+document.addEventListener('click', e => {
+  const c = e.target.closest('[data-contact]');
+  if (c) { openSheet(c); return; }
+  if (e.target.closest('[data-close]')) closeSheet();
+});
+document.addEventListener('keydown', e => {
+  if (!sheet.classList.contains('open')) return;
+  if (e.key === 'Escape') return closeSheet();
+  if (e.key === 'Tab') {   // keep Tab inside the popup
+    const f = [...sheet.querySelectorAll('button,a[href],input:not([tabindex="-1"]),textarea')].filter(x => !x.disabled), a = f[0], z = f[f.length - 1];
+    if (e.shiftKey && document.activeElement === a) { e.preventDefault(); z.focus(); }
+    else if (!e.shiftKey && document.activeElement === z) { e.preventDefault(); a.focus(); }
+  }
+});
+
+/* before/after sliders */
+document.querySelectorAll('.cmp input').forEach(i => i.addEventListener('input', () => i.parentElement.style.setProperty('--p', i.value + '%')));
 
 /* motion (all of it is skipped when the visitor prefers reduced motion) */
 const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;

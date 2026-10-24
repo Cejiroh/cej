@@ -101,17 +101,7 @@
       <p class="lead">Tell me what you need and I’ll get back to you.</p>
       <a class="mail" href="mailto:cejiroh@gmail.com"><svg class="ico" aria-hidden="true"><use href="/assets/icons/sprite.svg#mail"/></svg>cejiroh@gmail.com</a>
     </div>
-    <form id="contact-form" data-source="hub" novalidate>
-      <label>Full name<input name="Full Name" autocomplete="name" required maxlength="80"></label>
-      <label>Email<input name="Email" type="email" autocomplete="email" required maxlength="120"></label>
-      <label>Message<textarea name="Message" required minlength="5" maxlength="2000"></textarea></label>
-      <div class="hp" aria-hidden="true"><label>Website<input name="website" tabindex="-1" autocomplete="off"></label></div>
-      <input type="hidden" name="Company Name" value="cejiroh">
-      <input type="hidden" name="Source">
-      <input type="hidden" name="ts">
-      <button class="btn" type="submit">Send message</button>
-      <p class="status" role="status" aria-live="polite"></p>
-    </form>
+    <div data-contact-form></div>
   </div>
 </section>
 </main>
