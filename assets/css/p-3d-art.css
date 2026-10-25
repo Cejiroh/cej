@@ -1,6 +1,6 @@
 /* 3D Art: an open gallery. The title is filled with your own artwork; images show whole, no frames */
 .hart{padding:var(--s8) 0 var(--s7);overflow:hidden}
-.hart h1{font-size:clamp(4.5rem,19vw,17rem);line-height:.8;letter-spacing:-.05em;margin:var(--s3) 0 var(--s5);color:var(--accent)}
+.hart h1{font-size:clamp(4.5rem,19vw,17rem);line-height:1;padding:.04em 0 .14em;letter-spacing:-.05em;margin:var(--s3) 0 var(--s4);color:var(--accent)}
 @supports (-webkit-background-clip:text) or (background-clip:text){
   .hart h1{background:url("/images/3d%20art.png") center/cover;filter:brightness(1.4) saturate(1.25);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
 }

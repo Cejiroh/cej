@@ -26,3 +26,4 @@
 .vp-card::before{top:0;left:0;border-right:0;border-bottom:0}.vp-card::after{bottom:0;right:0;border-left:0;border-top:0}
 .vp-card b{display:block;margin-bottom:var(--s2);font:500 .72rem var(--mono);letter-spacing:.16em;color:var(--accent)}
 [data-page="3d"] .step .num{font-family:var(--mono)}
+.vp-card:last-child:nth-child(odd){grid-column:1/-1}

@@ -12,7 +12,7 @@ body[data-page="videos"]::after{content:"";position:fixed;inset:-20%;z-index:25;
 .screen::before,.screen::after{content:"";position:absolute;top:0;bottom:0;width:12px;background:repeating-linear-gradient(180deg,#252525 0 16px,transparent 16px 30px)}
 .screen::before{left:-26px}.screen::after{right:-26px}
 .screen .t{border:0;border-radius:0;aspect-ratio:16/9!important}
-.tc{position:absolute;z-index:2;font:500 .7rem var(--mono);letter-spacing:.2em;color:var(--accent);text-shadow:0 1px 6px #000}
+.tc{pointer-events:none;position:absolute;z-index:2;font:500 .7rem var(--mono);letter-spacing:.2em;color:var(--accent);text-shadow:0 1px 6px #000}
 .tc.a{top:12px;left:14px}.tc.b{bottom:12px;right:14px}
 .hvid .lead{margin:0 auto var(--s5)}.hvid .cta{justify-content:center}
 .show{display:grid;gap:var(--s5);align-items:center;padding:var(--s6) 0;border-top:1px solid var(--border)}
