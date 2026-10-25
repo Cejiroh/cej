@@ -1,0 +1,13 @@
+/* 3D Art: an open gallery. The title is filled with your own artwork; images show whole, no frames */
+.hart{padding:var(--s8) 0 var(--s7);overflow:hidden}
+.hart h1{font-size:clamp(4.5rem,19vw,17rem);line-height:.8;letter-spacing:-.05em;margin:var(--s3) 0 var(--s5);color:var(--accent)}
+@supports (-webkit-background-clip:text) or (background-clip:text){
+  .hart h1{background:url("/images/3d%20art.png") center/cover;filter:brightness(1.4) saturate(1.25);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+}
+.hart .lead{max-width:30em}
+.art{columns:3 300px;column-gap:14px;padding-top:var(--s4)}
+.art a{position:relative;display:block;margin:0 0 14px;border-radius:6px;overflow:hidden;cursor:zoom-in;break-inside:avoid;background:var(--surface)}
+.art img{display:block;width:100%;height:auto;transition:transform .5s}
+.art a:hover img{transform:scale(1.04)}
+.art a::after{content:attr(data-n);position:absolute;left:10px;bottom:8px;font:700 .75rem var(--display);letter-spacing:.12em;color:#fff;text-shadow:0 1px 6px #000;opacity:0;transition:opacity .25s}
+.art a:hover::after{opacity:1}

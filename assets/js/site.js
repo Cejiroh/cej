@@ -170,17 +170,6 @@ if (matchMedia('(hover:hover) and (min-width:860px)').matches && !calm) {
   });
 }
 
-/* image zoom: click an image marked data-zoom */
-const lb = document.createElement('div');
-lb.className = 'lb'; lb.setAttribute('role', 'dialog'); lb.setAttribute('aria-label', 'Enlarged image'); lb.innerHTML = '<img alt="">';
-document.body.append(lb);
-document.addEventListener('click', e => {
-  const i = e.target.closest('img[data-zoom]');
-  if (i) { const z = lb.querySelector('img'); z.src = i.src; z.alt = i.alt; lb.classList.add('open'); document.body.style.overflow = 'hidden'; return; }
-  if (e.target.closest('.lb')) { lb.classList.remove('open'); document.body.style.overflow = ''; }
-});
-document.addEventListener('keydown', e => { if (e.key === 'Escape' && lb.classList.contains('open')) { lb.classList.remove('open'); document.body.style.overflow = ''; } });
-
 /* image viewer for the photography and 3D art galleries */
 const lbItems = [...document.querySelectorAll('a[data-lb]')];
 if (lbItems.length) {
