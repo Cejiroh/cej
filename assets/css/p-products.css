@@ -22,8 +22,9 @@
 .steps .num{font:400 2.6rem/1 var(--display);color:#111}
 .step{border-top:1px solid #111}
 
-/* full-width divider that opens the Amazon part of the page */
-.divider{background:#111;color:#fff;padding:var(--s7) 0}
-.divider .wrap{display:grid;gap:var(--s4)}
-.divider .no{font-size:.8rem;letter-spacing:.2em;text-transform:uppercase;opacity:.6}
-.divider h2{font-size:clamp(1.6rem,3.4vw,2.6rem);line-height:1.05;margin:0;max-width:22em}
+/* chapter-opener bands: big outlined number, serif heading, tight black band */
+.divider{background:#111;color:#fff;padding:var(--s6) 0}
+.divider .wrap{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:var(--s5)}
+.divider .no{font:400 clamp(3.2rem,7vw,5.6rem)/1 var(--display);color:transparent;-webkit-text-stroke:1px rgba(255,255,255,.75);letter-spacing:-.02em}
+.divider h2{font-size:clamp(1.7rem,3.6vw,3rem);line-height:1.05;margin:0;max-width:20em}
+@media(max-width:600px){.divider .wrap{gap:var(--s4)}.divider h2{font-size:1.5rem}}

@@ -37,3 +37,13 @@
 
 .bento .b>a.zoom,.mosaic>div>a.zoom{display:block;height:100%}
 .gcard a.zoom{display:block}
+
+/* Logo to 3D animation: the logo tile is exactly as tall as the video */
+@media(min-width:701px){
+  .gcard.p .pair{grid-template-columns:calc((100% - 56px - 2*var(--s4))*.36) 56px calc((100% - 56px - 2*var(--s4))*.64);gap:var(--s4);align-items:start}
+  .gcard.p .pair>.ico{align-self:center;margin-top:calc(-1 * var(--s6))}
+}
+@media(max-width:700px){
+  .gcard.p .pair>figure:first-child .t{aspect-ratio:16/9!important}
+  .gcard.p .pair>figure:first-child img{object-fit:contain;background:#fff}
+}
