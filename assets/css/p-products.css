@@ -1,13 +1,13 @@
 /* Products: an editorial catalogue. Black on white, serif, hairline rules, plates and spreads */
 .hprod{padding:var(--s6) 0 var(--s8);border-bottom:1px solid #111}
 .hprod .wrap{display:grid;gap:var(--s6);align-items:end}
-@media(min-width:900px){.hprod .wrap{grid-template-columns:1.15fr .85fr}}
+@media(min-width:900px){.hprod .wrap{grid-template-columns:1fr 1fr;align-items:center}}
 .meta{display:flex;justify-content:space-between;flex-wrap:wrap;gap:var(--s2) var(--s4);font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;border-block:1px solid #111;padding:10px 0;margin:0 0 var(--s4);grid-column:1/-1}
-.hprod h1{font-size:clamp(3.2rem,11vw,10rem);line-height:.86;letter-spacing:-.025em;margin:0 0 var(--s5);overflow-wrap:normal}
+.hprod h1{font-size:clamp(3rem,8.4vw,7.5rem);line-height:.86;letter-spacing:-.025em;margin:0 0 var(--s5);overflow-wrap:normal}
 .idxl{list-style:none;padding:0;margin:var(--s5) 0 0;border-top:1px solid #111}
 .idxl a{display:flex;gap:var(--s4);padding:12px 4px;border-bottom:1px solid #111;text-decoration:none;transition:background .2s,color .2s,padding .2s}
 .idxl a:hover{background:#111;color:#fff;padding-inline:14px}.idxl span{font-size:.8rem;letter-spacing:.15em;opacity:.6}
-.hprod figure{margin:0}.hprod figure .t{border:0;border-radius:0;aspect-ratio:4/5!important}
+.hprod figure{margin:0}.hprod figure .t{border:0;border-radius:0}
 .hprod figcaption{font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;margin-top:10px}
 .plate{position:relative;border:1px solid #111;padding:var(--s6) var(--s5) var(--s4);margin-bottom:var(--s6);background:radial-gradient(#D7D7D0 1px,transparent 1px) 0 0/16px 16px #fff}
 .plate-n{position:absolute;top:-10px;left:20px;background:#fff;padding:0 10px;font-size:.72rem;letter-spacing:.2em;text-transform:uppercase}
@@ -21,3 +21,9 @@
 .spread figcaption{font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:#111}
 .steps .num{font:400 2.6rem/1 var(--display);color:#111}
 .step{border-top:1px solid #111}
+
+/* full-width divider that opens the Amazon part of the page */
+.divider{background:#111;color:#fff;padding:var(--s7) 0}
+.divider .wrap{display:grid;gap:var(--s4)}
+.divider .no{font-size:.8rem;letter-spacing:.2em;text-transform:uppercase;opacity:.6}
+.divider h2{font-size:clamp(1.6rem,3.4vw,2.6rem);line-height:1.05;margin:0;max-width:22em}

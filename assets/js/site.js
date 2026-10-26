@@ -103,7 +103,7 @@ const closeSheet = () => {
 };
 document.addEventListener('click', e => {
   const c = e.target.closest('[data-contact]');
-  if (c) { openSheet(c); return; }
+  if (c) { e.preventDefault(); openSheet(c); return; }
   if (e.target.closest('[data-close]')) closeSheet();
 });
 document.addEventListener('keydown', e => {
@@ -170,19 +170,34 @@ if (matchMedia('(hover:hover) and (min-width:860px)').matches && !calm) {
   });
 }
 
-/* image viewer for the photography and 3D art galleries */
-const lbItems = [...document.querySelectorAll('a[data-lb]')];
-if (lbItems.length) {
+/* image viewer. Images with the same data-lb value belong to one set and browse together */
+const lbAll = [...document.querySelectorAll('a[data-lb]')];
+if (lbAll.length) {
   const box = document.createElement('div');
   box.className = 'lightbox'; box.setAttribute('role', 'dialog'); box.setAttribute('aria-modal', 'true'); box.setAttribute('aria-label', 'Image viewer');
   box.innerHTML = `<button class="lb-x" type="button" aria-label="Close">${ICO('close')}</button><button class="lb-p" type="button" aria-label="Previous image">${ICO('prev')}</button><img alt=""><button class="lb-n" type="button" aria-label="Next image">${ICO('next')}</button>`;
   document.body.append(box);
-  const im = box.querySelector('img'); let i = 0, from = null, sx = 0;
-  const show = n => { i = (n + lbItems.length) % lbItems.length; im.src = lbItems[i].getAttribute('href'); im.alt = lbItems[i].querySelector('img').alt; };
+  const im = box.querySelector('img'); let items = lbAll, i = 0, from = null, sx = 0;
+  const show = n => { i = (n + items.length) % items.length; im.src = items[i].getAttribute('href'); im.alt = items[i].querySelector('img').alt; };
   const shut = () => { box.classList.remove('open'); document.body.style.overflow = ''; if (from) from.focus(); };
-  lbItems.forEach((a, n) => a.addEventListener('click', e => { e.preventDefault(); from = a; show(n); box.classList.add('open'); document.body.style.overflow = 'hidden'; box.querySelector('.lb-x').focus(); }));
+  lbAll.forEach(a => a.addEventListener('click', e => {
+    e.preventDefault(); from = a; items = lbAll.filter(x => x.dataset.lb === a.dataset.lb);
+    box.classList.toggle('single', items.length < 2); show(items.indexOf(a)); box.classList.add('open'); document.body.style.overflow = 'hidden'; box.querySelector('.lb-x').focus();
+  }));
   box.addEventListener('click', e => { if (e.target.closest('.lb-x') || e.target === box) shut(); else if (e.target.closest('.lb-p')) show(i - 1); else if (e.target.closest('.lb-n')) show(i + 1); });
   document.addEventListener('keydown', e => { if (!box.classList.contains('open')) return; if (e.key === 'Escape') shut(); else if (e.key === 'ArrowLeft') show(i - 1); else if (e.key === 'ArrowRight') show(i + 1); });
   box.addEventListener('touchstart', e => { sx = e.touches[0].clientX; }, { passive: true });
-  box.addEventListener('touchend', e => { const dx = e.changedTouches[0].clientX - sx; if (Math.abs(dx) > 50) show(i + (dx < 0 ? 1 : -1)); }, { passive: true });
+  box.addEventListener('touchend', e => { const dx = e.changedTouches[0].clientX - sx; if (Math.abs(dx) > 50 && items.length > 1) show(i + (dx < 0 ? 1 : -1)); }, { passive: true });
 }
+
+/* themed play button on every video, on desktop and phones (the browser's own controls stay underneath) */
+document.querySelectorAll('.m.v video').forEach(v => {
+  const b = document.createElement('button');
+  b.type = 'button'; b.className = 'vplay'; b.setAttribute('aria-label', 'Play video');
+  b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 5.8v12.4L18.6 12z" fill="currentColor"/></svg>';
+  v.parentElement.append(b);
+  b.addEventListener('click', () => { v.play(); });
+  v.addEventListener('play', () => b.classList.add('hide'));
+  v.addEventListener('pause', () => b.classList.remove('hide'));
+  v.addEventListener('ended', () => b.classList.remove('hide'));
+});

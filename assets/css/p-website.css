@@ -17,7 +17,7 @@ body[data-page="website"]{background-image:radial-gradient(#CBD2E3 1px,transpare
 .br-tab{margin-left:12px;padding:3px 14px;border-radius:8px 8px 0 0;background:var(--surface);font:500 .76rem var(--mono);color:var(--muted)}
 .br .t{border:0;border-radius:0}
 .site{display:grid;gap:var(--s6);align-items:center;margin-bottom:var(--s9)}
-@media(min-width:900px){.site{grid-template-columns:1.6fr 1fr;gap:var(--s8)}.site:nth-child(even){grid-template-columns:1fr 1.6fr}.site:nth-child(even) .br{order:2}}
+@media(min-width:900px){.site{grid-template-columns:1.6fr 1fr;gap:var(--s8)}.site .br{order:-1}.site.alt{grid-template-columns:1fr 1.6fr}.site.alt .br{order:0}}
 .site .no{font:500 .85rem var(--mono);color:var(--accent)}
 .site h3{font:800 clamp(2rem,4vw,3.2rem)/1 var(--display);margin:var(--s3) 0 var(--s4)}
 .site .brand{border:1px solid var(--border);margin:0}

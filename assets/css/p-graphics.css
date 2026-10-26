@@ -29,8 +29,11 @@
 @media(min-width:760px){.mosaic{grid-template-columns:repeat(4,1fr)}}
 .mosaic .big{grid-column:span 2;grid-row:span 2}.mosaic .t{width:100%}
 .duo .t{background:var(--accent)}
-.g-sm .t:nth-child(odd){transform:rotate(-1deg)}.g-sm .t:nth-child(even){transform:rotate(1deg)}
+.g-sm>a:nth-child(odd) .t{transform:rotate(-1deg)}.g-sm>a:nth-child(even) .t{transform:rotate(1deg)}
 .step{border:3px solid var(--text);padding:var(--s4);box-shadow:5px 5px 0 var(--text);background:var(--surface)}
 .step .num{display:inline-grid;place-items:center;width:44px;height:44px;border-radius:50%;background:var(--accent);border:3px solid var(--text);font:700 .8rem var(--display);color:var(--text)}
 .step p{color:var(--text)}
 [data-page="graphics"] main{overflow-x:clip}
+
+.bento .b>a.zoom,.mosaic>div>a.zoom{display:block;height:100%}
+.gcard a.zoom{display:block}
