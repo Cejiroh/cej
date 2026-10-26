@@ -194,8 +194,7 @@ if (lbAll.length) {
 document.querySelectorAll('.m.v video').forEach(v => {
   const b = document.createElement('button');
   b.type = 'button'; b.className = 'vplay'; b.setAttribute('aria-label', 'Play video');
-  b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 5.8v12.4L18.6 12z" fill="currentColor"/></svg>';
-  v.parentElement.append(b);
+    v.parentElement.append(b);
   b.addEventListener('click', () => { v.play(); });
   v.addEventListener('play', () => b.classList.add('hide'));
   v.addEventListener('pause', () => b.classList.remove('hide'));
