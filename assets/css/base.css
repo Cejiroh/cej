@@ -163,3 +163,13 @@ footer .wrap{position:relative;z-index:1}
 .contact .cta-r{display:flex;align-items:center}
 
 .idx a:hover,.idx a:focus-visible{z-index:5}
+
+/* form: select, service + budget row */
+select{font:inherit;font-weight:400;color:var(--text);background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);min-height:44px;padding:0 var(--s3);width:100%}
+.sheet select,.contact select{background:var(--bg)}
+.row2{display:grid;gap:var(--s4)}@media(min-width:560px){.row2{grid-template-columns:1fr 1fr}}
+.bud{display:grid;grid-template-columns:104px 1fr;gap:var(--s2)}
+/* content protection */
+body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+input,textarea,select{-webkit-user-select:text;user-select:text}
+img,video,a{-webkit-user-drag:none}

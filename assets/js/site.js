@@ -24,18 +24,32 @@ if (burger && links) {
 document.querySelectorAll('.yr').forEach(y => { y.textContent = new Date().getFullYear(); });
 
 /* contact forms: ONE markup and ONE handler, used by both the bottom form and the popup */
+const SERVICES = ['3D Modeling', 'Product Videos', 'Website', 'Graphics', 'Product Showcase', 'Photography', '3D Art', 'Something else', 'Not sure yet'];
+const PAGE_SERVICE = { '3d': '3D Modeling', videos: 'Product Videos', website: 'Website', graphics: 'Graphics', products: 'Product Showcase', photography: 'Photography', '3d-art': '3D Art' };
+const PAGE_NAME = { hub: 'Home', '3d': '3D Modeling', videos: 'Product Videos', website: 'Websites', graphics: 'Graphics', products: 'Product Showcase', photography: 'Photography', '3d-art': '3D Art' };
 const formHTML = `
   <label>Full name<input name="Full Name" autocomplete="name" required maxlength="80"></label>
   <label>Email<input name="Email" type="email" autocomplete="email" required maxlength="120"></label>
+  <div class="row2">
+    <label>Service type<select name="Service Type">${SERVICES.map(x => `<option>${x}</option>`).join('')}</select></label>
+    <label>Budget<span class="bud"><select name="Currency" aria-label="Currency"><option value="USD">USD $</option><option value="PHP">PHP ₱</option></select><input name="Budget amount" type="number" min="0" max="999999999" step="any" inputmode="decimal" placeholder="Optional" aria-label="Budget amount"></span></label>
+  </div>
   <label>Message<textarea name="Message" required minlength="5" maxlength="2000"></textarea></label>
   <div class="hp" aria-hidden="true"><label>Website<input name="website" tabindex="-1" autocomplete="off"></label></div>
-  <input type="hidden" name="Company Name" value="cejiroh"><input type="hidden" name="Source"><input type="hidden" name="ts">
+  <input type="hidden" name="Company Name" value="cejiroh"><input type="hidden" name="Source"><input type="hidden" name="Source page"><input type="hidden" name="Budget"><input type="hidden" name="ts">
   <button class="btn" type="submit">Send message</button><p class="status" role="status" aria-live="polite"></p>`;
+
 const page = document.body.dataset.page || '';
 
-function wireForm(form, source) {            // each form keeps its own state, status line and timer
+function wireForm(form, kind) {            // each form keeps its own state, status line and timer
   const status = form.querySelector('.status'), btn = form.querySelector('button[type=submit]');
-  const stamp = () => { form.elements.Source.value = source; form.elements.ts.value = Date.now(); };
+  const where = (PAGE_NAME[page] || page) + ' (' + location.pathname.replace(/index\.html$/, '') + ') · ' + (kind === 'popup' ? 'popup form' : 'bottom form');
+  const stamp = () => {
+    form.elements.Source.value = page + (kind === 'popup' ? ' (popup)' : '');
+    form.elements['Source page'].value = where;                                  // which page and which form it was sent from
+    form.elements['Service Type'].value = PAGE_SERVICE[page] || 'Not sure yet';  // starts on this page's service
+    form.elements.ts.value = Date.now();
+  };
   stamp();                                   // ts = when the form appeared (the server checks it too)
   if (CONFIG.turnstileSiteKey) {
     const w = document.createElement('div');
@@ -49,6 +63,9 @@ function wireForm(form, source) {            // each form keeps its own state, s
   form.addEventListener('submit', async e => {
     e.preventDefault();
     const d = new FormData(form);
+    const amt = String(d.get('Budget amount') || '').trim();
+    d.set('Budget', amt && Number(amt) >= 0 ? d.get('Currency') + ' ' + amt : 'Not specified');   // USD unless PHP is picked
+    d.delete('Budget amount'); d.delete('Currency');
     const name = (d.get('Full Name') || '').trim(), email = (d.get('Email') || '').trim(), msg = (d.get('Message') || '').trim();
     if (!name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || msg.length < 5) return say(MSG.fields, 'err');
     if (Date.now() - Number(form.elements.ts.value) < CONFIG.minSeconds * 1000) return say(MSG.fast, 'err');
@@ -75,7 +92,7 @@ function makeForm(source) {
 
 /* 1. the form at the bottom of the page */
 document.querySelectorAll('[data-contact-form]').forEach(m => {
-  const f = makeForm(); m.replaceWith(f); wireForm(f, page);
+  const f = makeForm(); m.replaceWith(f); wireForm(f, 'bottom');
 });
 
 /* 2. the popup: opens ONLY from the nav "Contact" button, slides down from the top */
@@ -91,7 +108,7 @@ sheet.innerHTML = `<div class="back" data-close></div><div class="sp">
   </div></div>`;
 const pf = makeForm(); sheet.querySelector('[data-slot]').replaceWith(pf);
 document.body.append(sheet);
-wireForm(pf, page + ' (popup)');             // the sheet column shows which form a message came from
+wireForm(pf, 'popup');             // the sheet column shows which form a message came from
 let opener = null;
 const openSheet = el => {
   opener = el || null; sheet.classList.add('open'); sheet.setAttribute('aria-hidden', 'false'); document.body.style.overflow = 'hidden';
@@ -200,3 +217,9 @@ document.querySelectorAll('.m.v video').forEach(v => {
   v.addEventListener('pause', () => b.classList.remove('hide'));
   v.addEventListener('ended', () => b.classList.remove('hide'));
 });
+
+/* content protection: no text selection, no dragging, no right-click menu. Form fields keep working. */
+const editable = t => t && t.closest && t.closest('input,textarea,select');
+document.addEventListener('contextmenu', e => { if (!editable(e.target)) e.preventDefault(); });
+document.addEventListener('selectstart', e => { if (!editable(e.target)) e.preventDefault(); });
+document.addEventListener('dragstart', e => e.preventDefault());

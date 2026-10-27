@@ -47,3 +47,7 @@
   .gcard.p .pair>figure:first-child .t{aspect-ratio:16/9!important}
   .gcard.p .pair>figure:first-child img{object-fit:contain;background:#fff}
 }
+
+/* logos: the hover lift works again, and the cursor stays a normal arrow */
+[data-page="graphics"] a.zoom{cursor:default}
+[data-page="graphics"] a.zoom:hover .t{transform:rotate(-1deg) translate(-2px,-2px);box-shadow:8px 8px 0 var(--text)}

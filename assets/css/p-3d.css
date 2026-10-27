@@ -27,3 +27,13 @@
 .vp-card::before{top:0;left:0;border-right:0;border-bottom:0}.vp-card::after{bottom:0;right:0;border-left:0;border-top:0}
 .vp-card b{display:block;margin-bottom:var(--s2);font:500 .72rem var(--mono);letter-spacing:.16em;color:var(--accent)}
 [data-page="3d"] .step .num{font-family:var(--mono)}
+
+/* loading animation shown until the model is ready */
+.mv-load{width:100%;height:100%;display:grid;place-content:center;justify-items:center;gap:32px;background:#12161A;perspective:420px}
+.mv-load b{font:500 .7rem var(--mono);letter-spacing:.22em;color:var(--accent)}
+.mv-cube{position:relative;width:56px;height:56px;transform-style:preserve-3d;transform:rotateX(-24deg) rotateY(0);animation:mvspin 2.6s linear infinite}
+.mv-cube i{position:absolute;inset:0;border:2px solid var(--accent);background:rgba(110,231,192,.07)}
+.mv-cube i:nth-child(1){transform:translateZ(28px)}.mv-cube i:nth-child(2){transform:rotateY(90deg) translateZ(28px)}.mv-cube i:nth-child(3){transform:rotateY(180deg) translateZ(28px)}
+.mv-cube i:nth-child(4){transform:rotateY(-90deg) translateZ(28px)}.mv-cube i:nth-child(5){transform:rotateX(90deg) translateZ(28px)}.mv-cube i:nth-child(6){transform:rotateX(-90deg) translateZ(28px)}
+@keyframes mvspin{to{transform:rotateX(-24deg) rotateY(360deg)}}
+@media(prefers-reduced-motion:reduce){.mv-cube{animation:none}}

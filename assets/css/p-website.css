@@ -29,3 +29,7 @@ body[data-page="website"]{background-image:radial-gradient(#CBD2E3 1px,transpare
 .code h3{margin:var(--s4) 0 var(--s1);color:#fff}.code p{color:#9AA0AE;margin:0 0 var(--s4)}
 .code .btn.ghost{color:#fff;border-color:#3A3F4B}
 .steps .num{font:800 2.4rem/1 var(--display);color:var(--accent)}
+
+/* the whole project card is a link (it opens in a new tab) */
+.code{position:relative}.code .btn::after{content:"";position:absolute;inset:0}
+.code:hover{box-shadow:0 24px 70px rgba(47,91,255,.25)}
