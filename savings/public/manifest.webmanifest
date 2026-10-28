@@ -1,9 +1,0 @@
-{
-  "name": "Ipon — Savings Tracker",
-  "short_name": "Ipon",
-  "start_url": "./",
-  "display": "standalone",
-  "background_color": "#f6f2ea",
-  "theme_color": "#1f5c4a",
-  "icons": [{ "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
-}
