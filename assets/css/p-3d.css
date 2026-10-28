@@ -37,3 +37,13 @@
 .mv-cube i:nth-child(4){transform:rotateY(-90deg) translateZ(28px)}.mv-cube i:nth-child(5){transform:rotateX(90deg) translateZ(28px)}.mv-cube i:nth-child(6){transform:rotateX(-90deg) translateZ(28px)}
 @keyframes mvspin{to{transform:rotateX(-24deg) rotateY(360deg)}}
 @media(prefers-reduced-motion:reduce){.mv-cube{animation:none}}
+
+/* picture -> video scenes: the client's image is exactly as tall as the video */
+@media(min-width:701px){
+  .scene.eq{grid-template-columns:calc((100% - 56px - 2*var(--s4))*var(--k)) 56px 1fr;gap:var(--s4);align-items:start}
+  .scene.eq>.ico{align-self:center;margin-top:calc(-1 * var(--s6))}
+}
+@media(max-width:700px){
+  .scene.eq figure:first-child .t{aspect-ratio:16/9!important}
+  .scene.eq figure:first-child img{object-fit:contain;background:var(--surface)}
+}

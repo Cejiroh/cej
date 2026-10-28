@@ -29,3 +29,7 @@ body[data-page="videos"]::after{content:"";position:fixed;inset:-20%;z-index:25;
 .vert{max-width:960px;align-items:start}
 @media(max-width:600px){.vert{grid-template-columns:1fr}}
 .vert figcaption{font:500 .72rem var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--accent)}
+
+/* portrait videos: same 9:16 box for all, video centred (letterboxed) inside it */
+.vert .t{aspect-ratio:9/16!important}
+.vert video,.vert .m img{object-fit:contain}
