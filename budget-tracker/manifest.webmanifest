@@ -1,6 +1,6 @@
 {
-  "name": "Ipon — Savings Tracker",
-  "short_name": "Ipon",
+  "name": "Budget Tracker",
+  "short_name": "Budget Tracker",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#f6f2ea",
