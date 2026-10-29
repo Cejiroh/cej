@@ -10,16 +10,19 @@ body[data-page="photography"]::after{content:"";position:fixed;inset:0;z-index:2
 .pileph{position:relative;min-height:clamp(380px,52vw,560px)}
 .pileph .print{position:absolute;width:52%;margin:0}
 .pileph .print:nth-child(1){left:0;top:30px;--r:-6deg}.pileph .print:nth-child(2){right:0;top:0;--r:5deg}.pileph .print:nth-child(3){left:22%;bottom:0;--r:-1.5deg}
-.print{display:block;position:relative;background:#F4EEDF;padding:34px 14px 58px;transform:rotate(var(--r,0deg));box-shadow:0 1px 1px rgba(0,0,0,.35),0 14px 28px rgba(0,0,0,.5);transition:transform .35s,box-shadow .35s;break-inside:avoid;margin:0 0 36px;cursor:zoom-in;color:#3A3226}
-.print:hover{transform:rotate(0) scale(1.04);z-index:3;box-shadow:0 2px 2px rgba(0,0,0,.35),0 26px 50px rgba(0,0,0,.6)}
-.print img{display:block;width:100%;height:auto;filter:sepia(.12) contrast(1.05) saturate(.95);box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
 .cap{position:absolute;left:0;right:0;bottom:15px;text-align:center;font:500 1.6rem/1 var(--hand)}
 .wall{columns:3 270px;column-gap:36px;padding:var(--s5) 0 0}
 .prose{background:#F4EEDF;color:#3A3226;padding:var(--s6);transform:rotate(-.7deg);box-shadow:0 14px 28px rgba(0,0,0,.5)}
 .prose p{font-family:var(--display);font-size:1.3rem;line-height:1.5}
 .step{border-color:var(--accent)}
 
-/* tape: part of every print, kept inside its box so columns can never move or clip it */
-.print::before{content:"";position:absolute;top:3px;left:50%;width:96px;height:26px;margin-left:-48px;background:rgba(233,215,170,.72);transform:rotate(-2.5deg);box-shadow:0 1px 2px rgba(0,0,0,.28);z-index:2;pointer-events:none}
-.print:nth-child(even)::before{transform:rotate(2.5deg);margin-left:-42px}
-.print:nth-child(3n)::before{margin-left:-54px;width:88px}
+/* a print = wrapper (moves, holds the tape) + paper (the photo card). The tape sits on the wrapper's top edge,
+   so it overlaps the paper like real tape but stays inside the wrapper's own box: columns can't move or clip it. */
+.print{display:block;position:relative;padding-top:16px;transform:rotate(var(--r,0deg));transition:transform .35s;break-inside:avoid;margin:0 0 30px;cursor:zoom-in}
+.print:hover{transform:rotate(0) scale(1.04);z-index:3}
+.paper{display:block;position:relative;background:#F4EEDF;padding:14px 14px 58px;box-shadow:0 1px 1px rgba(0,0,0,.35),0 14px 28px rgba(0,0,0,.5);transition:box-shadow .35s;color:#3A3226}
+.print:hover .paper{box-shadow:0 2px 2px rgba(0,0,0,.35),0 26px 50px rgba(0,0,0,.6)}
+.paper img{display:block;width:100%;height:auto;filter:sepia(.12) contrast(1.05) saturate(.95);box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
+.print::before{content:"";position:absolute;top:0;left:50%;width:98px;height:30px;margin-left:-49px;background:rgba(233,215,170,.74);transform:rotate(-2.5deg);box-shadow:0 1px 2px rgba(0,0,0,.28);z-index:3;pointer-events:none}
+.print:nth-child(even)::before{transform:rotate(2.5deg);margin-left:-40px}
+.print:nth-child(3n)::before{margin-left:-58px;width:90px}
