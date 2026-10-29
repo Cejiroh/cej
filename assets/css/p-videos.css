@@ -31,5 +31,5 @@ body[data-page="videos"]::after{content:"";position:fixed;inset:-20%;z-index:25;
 .vert figcaption{font:500 .72rem var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--accent)}
 
 /* portrait videos: same 9:16 box for all, video centred (letterboxed) inside it */
-.vert .t{aspect-ratio:9/16!important}
+@media(min-width:601px){.vert .t{aspect-ratio:9/16!important}}   /* side by side: one shared height. Stacked on phones: each video keeps its own shape */
 .vert video,.vert .m img{object-fit:contain}
