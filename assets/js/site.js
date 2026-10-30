@@ -32,7 +32,7 @@ const formHTML = `
   <label>Email<input name="Email" type="email" autocomplete="email" required maxlength="120"></label>
   <div class="row2">
     <label>Service type<select name="Service Type">${SERVICES.map(x => `<option>${x}</option>`).join('')}</select></label>
-    <label>Budget<span class="bud"><select name="Currency" aria-label="Currency"><option value="USD">USD $</option><option value="PHP">PHP ₱</option></select><input name="Budget amount" type="number" min="0" max="999999999" step="any" inputmode="decimal" placeholder="Optional" aria-label="Budget amount"></span></label>
+    <label>Budget<span class="bud"><select name="Currency" aria-label="Currency"><option value="USD">USD $</option><option value="PHP">PHP ₱</option></select><input name="Budget amount" type="text" inputmode="decimal" autocomplete="off" maxlength="12" placeholder="Optional" aria-label="Budget amount"></span></label>
   </div>
   <label>Message<textarea name="Message" required minlength="5" maxlength="2000"></textarea></label>
   <div class="hp" aria-hidden="true"><label>Website<input name="website" tabindex="-1" autocomplete="off"></label></div>
@@ -59,6 +59,13 @@ function wireForm(form, kind) {            // each form keeps its own state, sta
       t.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js'; t.async = true; t.dataset.ts = ''; document.head.append(t);
     }
   }
+  const amtEl = form.elements['Budget amount'];          // digits and one decimal point only (no "e", "+" or "-")
+  amtEl.addEventListener('beforeinput', e => { if (e.data && !/^[0-9.]+$/.test(e.data)) e.preventDefault(); });
+  amtEl.addEventListener('input', () => {
+    let v = amtEl.value.replace(/[^0-9.]/g, ''); const i = v.indexOf('.');
+    if (i > -1) v = v.slice(0, i + 1) + v.slice(i + 1).replace(/\./g, '');
+    if (v !== amtEl.value) amtEl.value = v;
+  });
   const say = (t, cls) => { status.textContent = t; status.className = 'status ' + (cls || ''); };
   form.addEventListener('submit', async e => {
     e.preventDefault();
@@ -195,7 +202,9 @@ if (lbAll.length) {
   box.innerHTML = `<button class="lb-x" type="button" aria-label="Close">${ICO('close')}</button><button class="lb-p" type="button" aria-label="Previous image">${ICO('prev')}</button><img alt=""><button class="lb-n" type="button" aria-label="Next image">${ICO('next')}</button>`;
   document.body.append(box);
   const im = box.querySelector('img'); let items = lbAll, i = 0, from = null, sx = 0;
-  const show = n => { i = (n + items.length) % items.length; im.src = items[i].getAttribute('href'); im.alt = items[i].querySelector('img').alt; };
+  box.insertAdjacentHTML('beforeend', '<span class="hexload" aria-hidden="true"><b><i></i><i></i><i></i><i></i><i></i><i></i><i></i></b></span>');
+  im.addEventListener('load', () => box.classList.remove('loading')); im.addEventListener('error', () => box.classList.remove('loading'));
+  const show = n => { i = (n + items.length) % items.length; box.classList.add('loading'); im.src = items[i].getAttribute('href'); im.alt = items[i].querySelector('img').alt; if (im.complete && im.naturalWidth) box.classList.remove('loading'); };
   const shut = () => { box.classList.remove('open'); document.body.style.overflow = ''; if (from) from.focus(); };
   lbAll.forEach(a => a.addEventListener('click', e => {
     e.preventDefault(); from = a; items = lbAll.filter(x => x.dataset.lb === a.dataset.lb);
@@ -223,3 +232,34 @@ const editable = t => t && t.closest && t.closest('input,textarea,select');
 document.addEventListener('contextmenu', e => { if (!editable(e.target)) e.preventDefault(); });
 document.addEventListener('selectstart', e => { if (!editable(e.target)) e.preventDefault(); });
 document.addEventListener('dragstart', e => e.preventDefault());
+
+/* hexagon loader on every image until it has loaded */
+document.querySelectorAll('main img').forEach(img => {
+  if (img.complete && img.naturalWidth) return;
+  const host = img.parentElement, r = host.getBoundingClientRect();
+  if (host.closest('.logo,.brand') || r.width < 110 || r.height < 110) return;
+  if (getComputedStyle(host).position === 'static') host.style.position = 'relative';
+  host.insertAdjacentHTML('beforeend', '<span class="hexload" aria-hidden="true"><b><i></i><i></i><i></i><i></i><i></i><i></i><i></i></b></span>');
+  const hl = host.lastElementChild, done = () => { hl.classList.add('out'); setTimeout(() => hl.remove(), 350); };
+  img.addEventListener('load', done, { once: true }); img.addEventListener('error', done, { once: true });
+});
+
+/* when the page has fully loaded: get its videos ready, then quietly fetch the other pages.
+   Skipped on Data Saver and slow connections so it never costs visitors data they didn't choose to use. */
+window.addEventListener('load', () => {
+  if (location.protocol !== 'http:' && location.protocol !== 'https:') return;
+  const c = navigator.connection || {};
+  if (c.saveData || /(^|-)2g$|3g/.test(c.effectiveType || '')) return;
+  (window.requestIdleCallback || (f => setTimeout(f, 1200)))(() => {
+    const vids = [...document.querySelectorAll('.m.v video')];
+    vids.forEach(v => { if (v.preload === 'none') v.preload = 'metadata'; });                       // length and first frame ready
+    const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.preload = 'auto'; io.unobserve(e.target); } }), { rootMargin: '600px 0px' });
+    vids.forEach(v => io.observe(v));                                                              // videos near the screen buffer ahead
+    const here = location.pathname.replace(/index\.html$/, '');
+    ['/', '/3d/', '/videos/', '/website/', '/graphics/', '/products/', '/photography/', '/3d-art/'].filter(p => p !== here).forEach((p, n) => setTimeout(() => {
+      const l = document.createElement('link'); l.rel = 'prefetch'; l.href = p; document.head.append(l);
+      const slug = p.replace(/\//g, '');
+      if (slug) { const k = document.createElement('link'); k.rel = 'prefetch'; k.as = 'style'; k.href = '/assets/css/p-' + slug + '.css'; document.head.append(k); }
+    }, n * 400));
+  });
+});

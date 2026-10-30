@@ -64,3 +64,14 @@ body[data-page="website"]{background-image:radial-gradient(#CBD2E3 1px,transpare
 @keyframes wa-rise{0%{transform:translateY(100%)}9%,100%{transform:none}}
 @keyframes wa-cur{0%{left:80%;top:72%}14%,23%{left:24%;top:42%}25%{left:24%;top:42%;transform:scale(.8)}28%{transform:scale(1)}42%,60%{left:62%;top:58%}82%,100%{left:80%;top:72%}}
 @media(prefers-reduced-motion:reduce){.wa-load{display:none}.wa-page,.wa-btn,.wa-img s,.wa-cur{animation:none}}
+
+/* featured projects: white browser frame, the whole image is the link */
+.proj h3{margin:var(--s4) 0 0}
+.pimg{position:relative;display:block;overflow:hidden}
+.pimg .t{border:0;border-radius:0}
+.pimg img{transition:transform .5s}
+.pimg:hover img,.pimg:focus-visible img{transform:scale(1.04)}
+.pimg::after{content:"";position:absolute;inset:0;background:rgba(20,22,26,0);transition:background .25s;pointer-events:none;z-index:1}
+.pimg:hover::after,.pimg:focus-visible::after{background:rgba(20,22,26,.3)}
+.pgo{position:absolute;left:50%;top:50%;z-index:2;display:inline-flex;gap:8px;align-items:center;padding:12px 22px;border-radius:999px;background:var(--accent);color:#fff;font-weight:700;box-shadow:0 10px 30px rgba(0,0,0,.35);opacity:0;transform:translate(-50%,-35%);transition:opacity .25s,transform .25s;pointer-events:none}
+.pimg:hover .pgo,.pimg:focus-visible .pgo{opacity:1;transform:translate(-50%,-50%)}
