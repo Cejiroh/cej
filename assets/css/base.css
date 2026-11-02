@@ -177,15 +177,28 @@ img,video,a{-webkit-user-drag:none}
 select{-webkit-appearance:none;appearance:none;padding-right:42px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%238a8f99' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 18px center;background-size:12px 8px}
 .bud select{padding-right:34px;background-position:right 13px center}
 
-/* hexagon loader shown on an image until it has loaded */
+/* loader shown on an image until it has loaded: the logo cube builds up piece by piece */
 .hexload{position:absolute;inset:0;z-index:1;display:grid;place-items:center;background:var(--surface);pointer-events:none;transition:opacity .3s}
 .hexload.out{opacity:0}
-.hexload b{position:relative;display:block;width:64px;height:64px}
-.hexload i{position:absolute;left:21px;top:22px;width:22px;height:19px;background:var(--accent);clip-path:polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%);opacity:.15;scale:.8;animation:hexp 1.3s ease-in-out infinite}
-.hexload i:nth-child(2){transform:translate(0,-20.5px);animation-delay:.1s}.hexload i:nth-child(3){transform:translate(17.8px,-10.3px);animation-delay:.2s}
-.hexload i:nth-child(4){transform:translate(17.8px,10.3px);animation-delay:.3s}.hexload i:nth-child(5){transform:translate(0,20.5px);animation-delay:.4s}
-.hexload i:nth-child(6){transform:translate(-17.8px,10.3px);animation-delay:.5s}.hexload i:nth-child(7){transform:translate(-17.8px,-10.3px);animation-delay:.6s}
-@keyframes hexp{0%,100%{opacity:.15;scale:.8}35%{opacity:1;scale:1}}
-@media(prefers-reduced-motion:reduce){.hexload i{animation:none;opacity:.6;scale:1}}
+.hexload svg{width:72px;height:auto;overflow:visible}
+.hexload path{opacity:0;transform-box:fill-box;transform-origin:center;animation:logobuild 1.9s ease-in-out infinite}
+.hexload path:nth-child(2){animation-delay:.1s}.hexload path:nth-child(3){animation-delay:.2s}.hexload path:nth-child(4){animation-delay:.3s}
+.hexload path:nth-child(5){animation-delay:.4s}.hexload path:nth-child(6){animation-delay:.5s}.hexload path:nth-child(7){animation-delay:.6s}.hexload path:nth-child(8){animation-delay:.7s}
+@keyframes logobuild{0%{opacity:0;transform:translateY(8%) scale(.92)}28%,66%{opacity:1;transform:none}92%,100%{opacity:0;transform:none}}
+@media(prefers-reduced-motion:reduce){.hexload path{animation:none;opacity:1}}
 .paper .hexload{background:#E9E2D1}
 .lightbox .hexload{display:none;background:transparent}.lightbox.loading .hexload{display:grid}.lightbox.loading>img{opacity:0}
+
+/* home page service previews: self-drawing vector illustrations (dark panel, the service's color for the lines) */
+.pic.ill{background:#111;color:var(--pl,var(--p))}   /* every service preview is a dark panel; --pl lets a service use a lighter line color on black */
+.ill svg{display:block;width:100%;height:100%}
+.ill .ln{fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1}
+.ill .f{fill:currentColor;stroke:none;opacity:0;transform-box:fill-box;transform-origin:center}
+@keyframes ill-draw{to{stroke-dashoffset:0}}
+@keyframes ill-fill{from{opacity:0;scale:.85}to{opacity:var(--o,.2);scale:1}}
+@media(hover:hover) and (min-width:860px){
+  .idx a:hover .ill .ln{animation:ill-draw .8s cubic-bezier(.6,.1,.2,1) forwards;animation-delay:calc(var(--i,0)*.06s)}
+  .idx a:hover .ill .f{animation:ill-fill .5s ease-out forwards;animation-delay:calc(.35s + var(--i,0)*.05s)}
+}
+/* phones, and anyone who prefers less motion: the finished drawing is simply shown */
+@media(hover:none),(max-width:859px),(prefers-reduced-motion:reduce){.ill .ln{stroke-dashoffset:0}.ill .f{opacity:var(--o,.2)}}
