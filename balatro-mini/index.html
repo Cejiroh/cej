@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="description" content="A game inspired by Balatro.">
+<link rel="canonical" href="https://cejiroh.com/balatro-mini">
+<meta property="og:type" content="website"><meta property="og:site_name" content="Cejiroh"><meta property="og:title" content="Balatro Mini | Cejiroh"><meta property="og:description" content="A game inspired by Balatro."><meta property="og:url" content="https://cejiroh.com/balatro-mini"><meta property="og:image" content="https://cejiroh.com/assets/og/balatro-mini.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="Balatro Mini | Cejiroh"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Balatro Mini | Cejiroh"><meta name="twitter:description" content="A game inspired by Balatro."><meta name="twitter:image" content="https://cejiroh.com/assets/og/balatro-mini.jpg">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BALATRO MINI</title>
+    <link rel="shortcut icon" type="image/x-icon" href="images/favicon.ico">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Bungee&family=Inter:wght@400;700;900&display=swap');
+        
+        body {
+            background-color: #050505;
+            background-image: radial-gradient(circle at center, #1e1b4b 0%, #050505 100%);
+            color: #f8fafc;
+            font-family: 'Inter', sans-serif;
+            overflow: hidden; 
+            height: 100dvh; 
+            width: 100vw;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+            transition: background-image 0.5s ease;
+        }
+
+        body::before {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            z-index: 999;
+            pointer-events: none;
+            background-size: 100% 4px, 3px 100%;
+        }
+
+        .font-bungee { font-family: 'Bungee', cursive; }
+
+        .card {
+            aspect-ratio: 2/3;
+            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s, opacity 0.2s;
+            user-select: none;
+            position: relative;
+            touch-action: none;
+        }
+
+        .card.selected {
+            transform: translateY(-12px) !important;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.6);
+            border: 3px solid #ffffff;
+            z-index: 10;
+        }
+
+        .card-burn {
+            box-shadow: 0 0 8px 2px #f97316 !important;
+            border-color: #fb923c !important;
+            border-width: 4px !important;
+            z-index: 11 !important;
+        }
+
+        .card:hover:not(.selected) {
+            transform: translateY(-5px);
+        }
+
+        .card-debuffed {
+            border: 3px dashed #ef4444 !important;
+            opacity: 0.7;
+            filter: grayscale(0.8);
+        }
+
+        .card-debuffed::after {
+            content: "✕";
+            position: absolute;
+            font-size: 3rem;
+            color: rgba(239, 68, 68, 0.8);
+            font-weight: 900;
+            pointer-events: none;
+            z-index: 20;
+        }
+
+        .deck-card-mini {
+            transition: transform 0.2s, z-index 0.2s;
+            position: relative;
+        }
+
+        .deck-card-spent {
+            opacity: 0.2;
+            filter: grayscale(1);
+            border-style: dotted;
+            cursor: default;
+        }
+
+        .joker-slot {
+            transition: all 0.2s;
+        }
+        
+        .joker-slot.joker-selected {
+            background-color: #fbbf24 !important;
+            border-color: #ffffff !important;
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.8);
+            transform: scale(1.05) translateY(-12px);
+        }
+
+        @keyframes drawCard {
+            0% { transform: translateY(200px) rotate(15deg); opacity: 0; }
+            100% { transform: translateY(0) rotate(0); opacity: 1; }
+        }
+
+        .card-draw {
+            animation: drawCard 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            opacity: 0;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .modal-animate {
+            animation: slideUp 0.3s ease-out;
+        }
+
+        .rules-content::-webkit-scrollbar, .deck-content::-webkit-scrollbar {
+            width: 6px;
+        }
+        .rules-content::-webkit-scrollbar-track, .deck-content::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        .rules-content::-webkit-scrollbar-thumb, .deck-content::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 3px;
+        }
+
+        .token-item {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .token-item:hover {
+            transform: scale(1.05);
+            filter: brightness(1.2);
+            box-shadow: 0 0 10px rgba(249, 115, 22, 0.5);
+        }
+
+        .balatro-btn-blue {
+            background: linear-gradient(to bottom, #3b82f6, #1d4ed8);
+            border-bottom: 3px solid #1e3a8a;
+        }
+        .balatro-btn-red {
+            background: linear-gradient(to bottom, #ef4444, #b91c1c);
+            border-bottom: 3px solid #7f1d1d;
+        }
+
+        .boss-glow {
+            animation: pulse-red 2s infinite;
+        }
+
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(220, 38, 38, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center p-2 sm:p-4 select-none">
+
+    <div id="game-container" class="w-full max-w-6xl flex flex-col h-full relative z-10 select-none">
+        <!-- Header / Stats -->
+        <div id="header-container" class="flex flex-col sm:flex-row justify-between items-center bg-zinc-900/90 p-2 sm:p-4 rounded-xl shadow-2xl mb-2 sm:mb-4 border-b-4 border-zinc-800 backdrop-blur-md transition-colors gap-2">
+            <div class="flex flex-col items-center sm:items-start w-full sm:w-auto">
+                <div class="flex items-center gap-2">
+                    <h1 class="font-bungee text-lg sm:text-2xl text-white tracking-tighter italic leading-none">BALATRO <span class="text-orange-500">MINI</span></h1>
+                    <button id="rules-btn" class="bg-zinc-700 hover:bg-zinc-600 text-[8px] sm:text-[10px] font-bold px-2 py-0.5 rounded text-zinc-300 border border-zinc-500 transition uppercase tracking-tighter">Rules</button>
+                    <button id="mute-btn" class="bg-zinc-700 hover:bg-zinc-600 p-1 rounded border border-zinc-500 transition">
+                        <svg id="mute-icon" xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 sm:h-4 sm:w-4 text-zinc-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="flex flex-col items-center sm:items-start mt-0.5">
+                    <p id="next-boss-display" class="text-[9px] sm:text-xs uppercase font-black text-orange-400 tracking-widest leading-none">Next Boss: Loading...</p>
+                    <p id="boss-display" class="text-[8px] sm:text-[10px] uppercase font-bold text-red-500 tracking-widest hidden leading-none mt-0.5 italic">BOSS: THE WALL</p>
+                </div>
+            </div>
+            
+            <div class="flex gap-4 sm:gap-8 items-center justify-center">
+                <div class="text-center">
+                    <p class="text-[8px] sm:text-[10px] uppercase text-zinc-400 font-bold leading-none mb-0.5">Round</p>
+                    <p id="round-num" class="text-sm sm:text-xl font-bungee text-white">1</p>
+                </div>
+                <div class="text-center border-x border-zinc-700 px-4 sm:px-8">
+                    <p class="text-[8px] sm:text-[10px] uppercase text-zinc-400 font-bold leading-none mb-0.5">Goal</p>
+                    <p id="round-target" class="text-sm sm:text-xl font-bungee text-red-500">25</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-[8px] sm:text-[10px] uppercase text-zinc-400 font-bold leading-none mb-0.5">Score</p>
+                    <p id="round-score" class="text-lg sm:text-2xl font-bungee text-emerald-400">0</p>
+                </div>
+            </div>
+
+            <div class="flex gap-2 sm:gap-4">
+                <div class="bg-black/40 px-2 py-1 rounded text-center min-w-[50px] sm:min-w-[70px] border border-zinc-700">
+                    <p class="text-[8px] sm:text-[10px] text-zinc-400 leading-none mb-0.5 uppercase font-bold">Hands</p>
+                    <p id="plays-left" class="font-bungee text-blue-400 text-sm sm:text-lg">3</p>
+                </div>
+                <div class="bg-black/40 px-2 py-1 rounded text-center min-w-[50px] sm:min-w-[70px] border border-zinc-700">
+                    <p class="text-[8px] sm:text-[10px] text-zinc-400 leading-none mb-0.5 uppercase font-bold">Discard</p>
+                    <p id="discards-left" class="font-bungee text-red-400 text-sm sm:text-lg">3</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Play Area -->
+        <div class="flex-grow flex flex-col relative overflow-hidden py-1 sm:py-2">
+            
+            <div class="absolute inset-x-0 top-0 flex justify-between items-start pointer-events-none z-20 px-1 pt-4">
+                <div id="joker-bank" class="flex flex-col gap-1 sm:gap-2 pointer-events-auto items-center sm:items-start"></div>
+                <div id="powerups-bank" class="flex flex-row gap-1 sm:gap-2 pointer-events-auto items-center sm:items-end"></div>
+            </div>
+
+            <!-- Central Content Section -->
+            <div class="flex-grow flex flex-col items-center justify-center overflow-hidden">
+                <!-- Feedback & Controls -->
+                <div class="flex flex-col items-center mb-2 sm:mb-4">
+                    <div id="hand-feedback" class="text-center min-h-[40px] sm:min-h-[70px] flex flex-col items-center justify-center">
+                        <p id="status-message" class="text-lg sm:text-2xl font-bungee text-white hidden mb-1 drop-shadow-lg"></p>
+                        <div class="flex flex-col items-center">
+                            <p id="current-hand-type" class="text-xl sm:text-3xl font-bungee text-orange-400 hidden drop-shadow-[0_0_10px_rgba(251,146,60,0.5)] text-center leading-tight"></p>
+                            <p id="hand-level-display" class="text-[8px] sm:text-[10px] font-black text-blue-400 hidden uppercase tracking-widest mt-0.5">Level 1</p>
+                        </div>
+                        <p id="current-hand-score" class="text-sm sm:text-xl font-bold text-white hidden"></p>
+                    </div>
+
+                    <!-- Sort/View Controls -->
+                    <div class="flex justify-center gap-1 sm:gap-2 mt-2">
+                        <button id="sort-rank-btn" class="bg-zinc-800 hover:bg-zinc-700 text-[7px] sm:text-[10px] font-black uppercase tracking-widest px-2 sm:px-4 py-1 rounded border border-zinc-600 transition">Sort Rank</button>
+                        <button id="sort-suit-btn" class="bg-zinc-800 hover:bg-zinc-700 text-[7px] sm:text-[10px] font-black uppercase tracking-widest px-2 sm:px-4 py-1 rounded border border-zinc-600 transition">Sort Suit</button>
+                        <button id="view-scores-btn" class="bg-zinc-800 hover:bg-blue-700 text-[7px] sm:text-[10px] font-black uppercase tracking-widest px-2 sm:px-4 py-1 rounded border border-zinc-600 transition text-blue-400">Scoring</button>
+                        <button id="view-deck-btn" class="bg-zinc-800 hover:bg-zinc-700 text-[7px] sm:text-[10px] font-black uppercase tracking-widest px-2 sm:px-4 py-1 rounded border border-zinc-600 transition text-orange-400">View Deck</button>
+                    </div>
+                </div>
+
+                <!-- Hand Container -->
+                <div id="hand-container" class="flex justify-center items-end gap-1 sm:gap-3 flex-wrap px-1 w-full min-h-[160px] sm:min-h-[200px]"></div>
+            </div>
+
+            <!-- Bottom Actions Section -->
+            <div class="flex flex-col items-center mt-auto pb-8 sm:pb-8 pt-10 sm:pt-6">
+                <div id="selection-hint" class="text-zinc-500 text-[8px] sm:text-xs font-black uppercase tracking-widest h-3 mb-4 sm:mb-4">Select up to 5 cards</div>
+                <div class="flex justify-center gap-4 sm:gap-6">
+                    <button id="play-btn" class="balatro-btn-blue hover:brightness-110 disabled:grayscale disabled:opacity-40 text-white font-bungee px-8 sm:px-14 py-3 sm:py-4 rounded-lg shadow-xl transform transition active:translate-y-1 text-xs sm:text-base">
+                        PLAY HAND
+                    </button>
+                    <button id="discard-btn" class="balatro-btn-red hover:brightness-110 disabled:grayscale disabled:opacity-40 text-white font-bungee px-6 sm:px-10 py-3 sm:py-4 rounded-lg shadow-xl transform transition active:translate-y-1 text-xs sm:text-base">
+                        DISCARD
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inventory -->
+        <div class="mt-2 p-2 bg-zinc-900/80 rounded-xl flex items-center gap-2 border border-zinc-700 shadow-inner overflow-x-auto whitespace-nowrap">
+            <p class="text-[9px] font-bold text-zinc-500 uppercase italic">INVENTORY:</p>
+            <div id="token-list" class="flex gap-1"></div>
+        </div>
+    </div>
+
+    <!-- Deck Overlay -->
+    <div id="deck-overlay" class="fixed inset-0 bg-black/95 flex items-center justify-center hidden z-[150] p-4">
+        <div class="modal-animate bg-zinc-900 w-full max-w-5xl rounded-2xl overflow-hidden flex flex-col max-h-[90vh] border-4 border-orange-600 shadow-2xl">
+            <div class="p-3 sm:p-4 bg-orange-600 flex justify-between items-center">
+                <h2 class="font-bungee text-sm sm:text-xl text-white uppercase italic">Remaining Cards</h2>
+                <div class="flex gap-4 items-center">
+                    <button id="close-deck" class="text-white hover:text-black font-bold text-xl sm:text-2xl px-2">&times;</button>
+                </div>
+            </div>
+            <div id="deck-view-content" class="deck-content p-4 sm:p-8 overflow-y-auto space-y-6 flex flex-col justify-start"></div>
+        </div>
+    </div>
+
+    <!-- Scores Overlay -->
+    <div id="scores-overlay" class="fixed inset-0 bg-black/95 flex items-center justify-center hidden z-[150] p-4">
+        <div class="modal-animate bg-zinc-900 w-full max-w-2xl rounded-2xl overflow-hidden flex flex-col max-h-[90vh] border-4 border-blue-600 shadow-2xl">
+            <div class="p-3 sm:p-4 bg-blue-600 flex justify-between items-center">
+                <h2 class="font-bungee text-sm sm:text-xl text-white uppercase italic">Hand Scoring Table</h2>
+                <button id="close-scores" class="text-white hover:text-black font-bold text-xl sm:text-2xl px-2">&times;</button>
+            </div>
+            <div id="scores-view-content" class="rules-content p-4 sm:p-6 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="token-modal-overlay" class="fixed inset-0 bg-black/80 flex items-center justify-center hidden z-[300] p-4 backdrop-blur-sm">
+        <div class="modal-animate bg-zinc-900 w-full max-w-sm rounded-2xl p-6 sm:p-8 border-4 border-orange-500 shadow-2xl text-center">
+            <h2 id="token-modal-title" class="font-bungee text-xl sm:text-2xl text-orange-400 mb-2">Use Token?</h2>
+            <p id="token-modal-desc" class="text-zinc-300 text-xs sm:text-sm mb-6 sm:mb-8 italic"></p>
+            <div class="flex gap-4">
+                <button id="token-modal-cancel" class="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white font-bungee py-3 rounded-lg border-b-4 border-zinc-950 text-sm">Cancel</button>
+                <button id="token-modal-confirm" class="flex-1 bg-orange-500 hover:bg-orange-400 text-black font-bungee py-3 rounded-lg border-b-4 border-orange-700 text-sm">Use Now</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="load-prompt-overlay" class="fixed inset-0 bg-black/90 flex items-center justify-center hidden z-[400] p-4 backdrop-blur-md">
+        <div class="modal-animate bg-zinc-900 w-full max-w-sm rounded-2xl p-6 sm:p-8 border-4 border-blue-500 shadow-2xl text-center">
+            <h2 class="font-bungee text-xl sm:text-3xl text-white mb-2 italic">SAVE FOUND</h2>
+            <p class="text-zinc-300 text-xs sm:text-sm mb-8">You have an ongoing run. Would you like to continue or start a new run?</p>
+            <div class="flex flex-col gap-3">
+                <button id="resume-btn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bungee py-4 rounded-lg border-b-4 border-blue-900 text-sm tracking-widest">RESUME JOURNEY</button>
+                <button id="new-game-btn" class="w-full bg-zinc-800 hover:bg-red-600 text-zinc-400 hover:text-white font-bungee py-3 rounded-lg border-b-4 border-zinc-950 text-xs tracking-tighter transition-colors">START NEW RUN</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="rules-overlay" class="fixed inset-0 bg-black/90 flex items-center justify-center hidden z-[150] p-4">
+        <div class="modal-animate bg-zinc-900 w-full max-w-2xl rounded-2xl overflow-hidden flex flex-col max-h-[90vh] border-4 border-blue-600 shadow-2xl">
+            <div class="p-4 sm:p-6 bg-blue-600 flex justify-between items-center">
+                <h2 class="font-bungee text-lg sm:text-2xl text-white">How to play</h2>
+                <button id="close-rules" class="text-white hover:text-red-200 font-bold text-xl sm:text-2xl">&times;</button>
+            </div>
+            <div class="rules-content p-4 sm:p-8 overflow-y-auto space-y-6 sm:space-y-8">
+                <section>
+                    <h3 class="font-bungee text-orange-400 text-base sm:text-xl mb-3 italic underline decoration-blue-500 underline-offset-4">The Objective</h3>
+                    <p class="text-zinc-300 text-xs sm:text-sm">Reach the <strong>Goal Score</strong> in each round before running out of <strong>Hands</strong>. Accumulate cash to buy upgrades in the shop.</p>
+                </section>
+                <section>
+                    <h3 class="font-bungee text-orange-400 text-base sm:text-xl mb-3 italic underline decoration-blue-500 underline-offset-4">Gameplay Basics</h3>
+                    <ul class="text-zinc-300 text-xs sm:text-sm space-y-2 list-none">
+                        <li class="flex gap-3"><span class="text-blue-500 font-bold">Selection:</span><span>Click or swipe over cards to select up to 5.</span></li>
+                        <li class="flex gap-3"><span class="text-blue-500 font-bold">Hands:</span><span>Play combinations to score. Winning hands glow orange!</span></li>
+                        <li class="flex gap-3"><span class="text-blue-500 font-bold">Discards:</span><span>Discard cards to redraw. Use them wisely!</span></li>
+                        <li class="flex gap-3"><span class="text-blue-500 font-bold">Jokers:</span><span>Jokers are Wild cards. They complete any hand combination.</span></li>
+                    </ul>
+                </section>
+                <section>
+                    <h3 class="font-bungee text-orange-400 text-base sm:text-xl mb-3 italic underline decoration-blue-500 underline-offset-4">Inventory & Shop</h3>
+                    <p class="text-zinc-300 text-xs sm:text-sm mb-2">Buy items in the shop using cash earned from round efficiency.</p>
+                    <ul class="text-zinc-300 text-xs sm:text-sm space-y-2 list-none">
+                        <li class="flex gap-3"><span class="text-emerald-500 font-bold">Celestial:</span><span>Upgrade the base score of specific hand types permanently.</span></li>
+                        <li class="flex gap-3"><span class="text-orange-500 font-bold">Tokens:</span><span>One-time use powerups. Click them in the <strong>Inventory</strong> to use.</span></li>
+                        <li class="flex gap-3"><span class="text-cyan-500 font-bold">Permanent:</span><span>Boost your hand limit, plays, or discards for the whole run.</span></li>
+                    </ul>
+                </section>
+                <section>
+                    <h3 class="font-bungee text-orange-400 text-base sm:text-xl mb-3 italic underline decoration-blue-500 underline-offset-4">Bosses</h3>
+                    <p class="text-zinc-300 text-xs sm:text-sm">Every 4th round is a Boss. Bosses impose dangerous rules like debuffing specific suits, values, or hand types. Look for the red glow!</p>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <!-- SHOP OVERLAY -->
+    <div id="shop-overlay" class="fixed inset-0 bg-black/80 flex items-center justify-center hidden z-50 p-2 sm:p-4 backdrop-blur-md">
+        <div class="modal-animate bg-zinc-900 w-full max-w-4xl rounded-2xl p-4 sm:p-6 border-4 border-orange-500 shadow-2xl max-h-[95vh] flex flex-col">
+            <div class="flex flex-col sm:flex-row justify-between items-start mb-4 gap-2 shrink-0">
+                <div>
+                    <h2 class="font-bungee text-xl sm:text-3xl text-white italic leading-none">THE <span class="text-orange-500">SHOPPE</span></h2>
+                    <p class="text-zinc-400 text-[10px] sm:text-sm mt-1">Cash: <span id="excess-points-display" class="text-emerald-400 font-bold text-xs sm:text-lg">$0</span></p>
+                    <p id="hands-bonus-label" class="text-[7px] sm:text-[9px] text-zinc-500 italic"></p>
+                </div>
+                <button id="next-round-btn" class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-500 text-white font-bungee px-4 sm:px-6 py-2 rounded-lg border-b-4 border-emerald-800 text-xs sm:text-sm">NEXT ROUND</button>
+            </div>
+            <div id="shop-grid" class="grid grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 overflow-y-visible"></div>
+        </div>
+    </div>
+
+    <div id="game-over-overlay" class="fixed inset-0 bg-black/95 flex items-center justify-center hidden z-[200] p-4 text-center backdrop-blur-xl">
+        <div class="max-w-md w-full">
+            <h2 class="font-bungee text-4xl sm:text-7xl text-red-600 mb-2 drop-shadow-[0_0_30px_rgba(220,38,38,0.5)]">GAME OVER</h2>
+            <div class="bg-zinc-900 p-4 sm:p-8 rounded-2xl mb-8 border border-zinc-800 space-y-4 sm:space-y-6">
+                <div>
+                    <p class="text-zinc-400 uppercase font-bold text-[8px] sm:text-xs tracking-widest mb-1 italic">Rounds Survived</p>
+                    <p id="final-rounds" class="text-3xl sm:text-5xl font-bungee text-white">0</p>
+                </div>
+                <div class="flex justify-around border-t border-zinc-800 pt-4">
+                    <div class="px-1">
+                        <p class="text-zinc-400 uppercase font-bold text-[7px] sm:text-[10px] tracking-widest mb-1">Total Score</p>
+                        <p id="final-total-score-run" class="text-base sm:text-2xl font-bungee text-orange-400">0</p>
+                    </div>
+                    <div class="px-1">
+                        <p class="text-zinc-400 uppercase font-bold text-[7px] sm:text-[10px] tracking-widest mb-1">Highest Score</p>
+                        <p id="final-high-score-alltime" class="text-base sm:text-2xl font-bungee text-emerald-400">0</p>
+                    </div>
+                </div>
+            </div>
+            <button id="restart-game-btn" class="bg-white text-black font-bungee px-8 py-4 rounded-full text-xl sm:text-2xl hover:bg-orange-500 transition transform hover:scale-105 active:scale-95 shadow-2xl">RESTART</button>
+        </div>
+    </div>
+
+    <script>
+        // --- AUDIO ENGINE ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        let isMuted = false;
+
+        function playSound(type) {
+            if (isMuted) return;
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            const now = audioCtx.currentTime;
+
+            switch(now && type) {
+                case 'draw':
+                    osc.type = 'sine'; osc.frequency.setValueAtTime(400, now);
+                    osc.frequency.exponentialRampToValueAtTime(800, now + 0.1);
+                    gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                    osc.start(now); osc.stop(now + 0.1); break;
+                case 'select':
+                    osc.type = 'square'; osc.frequency.setValueAtTime(600, now);
+                    gain.gain.setValueAtTime(0.05, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+                    osc.start(now); osc.stop(now + 0.05); break;
+                case 'play':
+                    osc.type = 'triangle'; osc.frequency.setValueAtTime(300, now);
+                    osc.frequency.exponentialRampToValueAtTime(600, now + 0.2);
+                    gain.gain.setValueAtTime(0.2, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                    osc.start(now); osc.stop(now + 0.2); break;
+                case 'discard':
+                    osc.type = 'sawtooth'; osc.frequency.setValueAtTime(200, now);
+                    osc.frequency.exponentialRampToValueAtTime(50, now + 0.15);
+                    gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                    osc.start(now); osc.stop(now + 0.15); break;
+                case 'buy':
+                    osc.type = 'sine'; osc.frequency.setValueAtTime(880, now);
+                    osc.frequency.setValueAtTime(1320, now + 0.05);
+                    gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                    osc.start(now); osc.stop(now + 0.2); break;
+                case 'win':
+                    [523.25, 659.25, 783.99].forEach((freq, i) => {
+                        const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
+                        o.connect(g); g.connect(audioCtx.destination);
+                        o.frequency.setValueAtTime(freq, now + i * 0.1); g.gain.setValueAtTime(0.1, now + i * 0.1);
+                        g.gain.exponentialRampToValueAtTime(0.01, now + i * 0.1 + 0.2);
+                        o.start(now + i * 0.1); o.stop(now + i * 0.1 + 0.2);
+                    }); break;
+                case 'lose':
+                    [440, 349.23, 293.66].forEach((freq, i) => {
+                        const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
+                        o.connect(g); g.connect(audioCtx.destination);
+                        o.frequency.setValueAtTime(freq, now + i * 0.15); g.gain.setValueAtTime(0.1, now + i * 0.15);
+                        g.gain.exponentialRampToValueAtTime(0.01, now + i * 0.15 + 0.3);
+                        o.start(now + i * 0.15); o.stop(now + i * 0.15 + 0.3);
+                    }); break;
+            }
+        }
+
+        document.getElementById('mute-btn').onclick = () => {
+            isMuted = !isMuted;
+            const icon = document.getElementById('mute-icon');
+            icon.innerHTML = isMuted 
+                ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />'
+                : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />';
+        };
+
+        // --- GAME LOGIC ---
+        const SUITS = ['♠', '♥', '♣', '♦'];
+        const VALUES = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+        const HAND_SCORES = {
+            '5 of a Kind': 200, 'Royal Flush': 150, 'Straight Flush': 125, 'Four of a Kind': 100,
+            'Full House': 60, 'Flush': 50, 'Straight': 40, 'Three of a Kind': 30, 'Two Pair': 20, 'Pair': 10, 'High Card': 5
+        };
+        const JOKER_ICON = `<span class="text-5xl sm:text-7xl leading-none select-none drop-shadow-lg">♛</span>`;
+        const SHIELD_SVG = `<svg viewBox="0 0 24 24" class="w-6 h-6 sm:w-10 sm:h-10" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>`;
+        const PLUS_SVG = `<svg viewBox="0 0 24 24" class="w-6 h-6 sm:w-10 sm:h-10" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>`;
+
+        const SHOP_ITEMS = [
+            { id: 'extra_discard', name: 'Extra Discard', cost: 25, desc: 'Adds +1 Discard immediately' },
+            { id: 'extra_discard_perm', name: 'Waste Not', cost: 75, desc: 'Adds +1 Discard permanently' },
+            { id: 'extra_card_perm', name: 'Expanded Grip', cost: 125, desc: 'Adds +1 Hand Limit permanently' },
+            { id: 'pocket_points', name: 'Pocket Points', cost: 50, desc: 'Adds +25 to total round score' },
+            { id: 'extra_hand', name: 'Extra Hand', cost: 100, desc: 'Adds +1 Play permanently' },
+            { id: 'double_score', name: 'Double Score', cost: 100, desc: 'Next play gains double points' },
+            { id: 'disable_boss', name: 'The Blindfold', cost: 100, desc: 'Ignores boss effect for 1 hand' },
+            { id: 'shield', name: 'Shield', cost: 150, desc: 'Automatic protection from Game Over' }
+        ];
+
+        const BOSSES = [
+            { id: 'the_wall', name: 'THE WALL', desc: 'Titan of Granite: Target score is doubled.', effect: (state) => { state.target *= 2; } },
+            { id: 'the_needle', name: 'THE NEEDLE', desc: 'Precision Strike: You only have 1 single hand.', effect: (state) => { state.plays = 1; } },
+            { id: 'the_flint', name: 'THE FLINT', desc: 'Scorched Hearts: Hearts score 0.', effect: (state) => { state.debuffSuits = ['♥']; } },
+            { id: 'the_club', name: 'THE CLUB', desc: 'Blunted Clubs: Clubs score 0.', effect: (state) => { state.debuffSuits = ['♣']; } },
+            { id: 'the_spade', name: 'THE SPADE', desc: 'Pitched Spades: Spades score 0.', effect: (state) => { state.debuffSuits = ['♠']; } },
+            { id: 'the_diamond', name: 'THE DIAMOND', desc: 'Rigged Diamonds: Diamonds score 0.', effect: (state) => { state.debuffSuits = ['♦']; } },
+            { id: 'the_hook', name: 'THE HOOK', desc: 'Anchored: Discards are disabled.', effect: (state) => { state.discards = 0; } },
+            { id: 'the_pair', name: 'THE PAIR', desc: 'Even cards (2, 4, 6, 8, 10) are debuffed.', effect: (state) => { state.debuffValues = ['2', '4', '6', '8', '10']; } },
+            { id: 'the_solo', name: 'THE SOLO', desc: 'Odd cards (3, 5, 7, 9, A) are debuffed.', effect: (state) => { state.debuffValues = ['3', '5', '7', '9', 'A']; } },
+            { id: 'the_royal', name: 'THE ROYAL', desc: 'Face cards (J, Q, K) are debuffed.', effect: (state) => { state.debuffValues = ['J', 'Q', 'K']; } },
+            { id: 'the_ink', name: 'THE INK', desc: '25% of the deck is marked and debuffed.', effect: (state) => { 
+                const numToMark = Math.floor(state.deck.length / 4);
+                const shuffledIdx = shuffle([...Array(state.deck.length).keys()]);
+                for(let i=0; i<numToMark; i++) if (state.deck[shuffledIdx[i]]) state.deck[shuffledIdx[i]].isMarked = true;
+            }},
+            { id: 'the_peak', name: 'THE PEAK', desc: 'Your highest level combination is debuffed.', effect: (state) => { 
+                let maxLv = 0; let hand = '';
+                Object.entries(state.handLevels).forEach(([h, lv]) => { if(lv > maxLv) { maxLv = lv; hand = h; } });
+                state.debuffHandType = hand;
+            }}
+        ];
+
+        let state = {
+            round: 1, target: 25, score: 0, excessPoints: 0,
+            plays: 3, discards: 3, handLimit: 8, basePlays: 3, baseDiscards: 3, baseHandLimit: 8,
+            deck: [], hand: [], selectedIndices: [], bankedJokers: 0, jokerSelected: false,
+            inventory: [], isShopOpen: false, currentSortMethod: 'rank',
+            drawBatchId: 0, doubleNextPlay: false, bossIgnoredForHand: false, shieldActive: false,
+            permanentPowerupsBought: [],
+            handLevels: Object.fromEntries(Object.keys(HAND_SCORES).map(k => [k, 1])),
+            currentBoss: null,
+            nextBoss: null,
+            debuffSuits: [],
+            debuffValues: [],
+            debuffHandType: null,
+            bossesDefeated: 0,
+            isSwipeSelecting: false,
+            swipeMode: null,
+            swipeTouchedIndices: new Set(),
+            currentShopOffers: [],
+            maxSingleRoundScore: 0,
+            cumulativeScore: 0,
+            doubleScorePurchaseCount: 0
+        };
+
+        const STORAGE_KEY = 'solatro_save_data';
+        const HIGH_SCORE_KEY = 'solatro_high_score';
+
+        function saveGame() {
+            const isTechnicallyGameOver = state.plays <= 0 && state.score < state.target && !state.shieldActive;
+            if (isTechnicallyGameOver) return;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        }
+
+        function loadGame() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                try {
+                    const loadedState = JSON.parse(saved);
+                    Object.assign(state, loadedState);
+                    state.swipeTouchedIndices = new Set();
+                    state.isSwipeSelecting = false;
+                    state.selectedIndices = state.selectedIndices || [];
+                    if (state.currentBoss) {
+                        const bossDisplay = document.getElementById('boss-display');
+                        bossDisplay.textContent = `ACTIVE BOSS: ${state.currentBoss.name} - ${state.currentBoss.desc}`;
+                        bossDisplay.classList.remove('hidden');
+                        document.getElementById('header-container').classList.add('border-red-600', 'bg-red-950/20', 'boss-glow');
+                    }
+                    return true;
+                } catch (e) {
+                    console.error("Failed to load game", e);
+                }
+            }
+            return false;
+        }
+
+        function getHighScore() {
+            return parseInt(localStorage.getItem(HIGH_SCORE_KEY)) || 0;
+        }
+
+        function setHighScore(val) {
+            const current = getHighScore();
+            if (val > current) {
+                localStorage.setItem(HIGH_SCORE_KEY, val);
+            }
+        }
+
+        function initDeck() {
+            let deck = [];
+            SUITS.forEach(suit => VALUES.forEach(val => deck.push({ suit, val, isJoker: false, isMarked: false })));
+            deck.push({ suit: '?', val: 'Joker', isJoker: true, isMarked: false }); 
+            return shuffle(deck);
+        }
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1)); [array[i], array[j]] = [array[j], array[i]];
+            } return array;
+        }
+
+        function startRound() {
+            state.target = state.round * 25;
+            state.score = 0;
+            state.plays = state.basePlays;
+            state.discards = state.baseDiscards;
+            state.handLimit = state.baseHandLimit;
+            state.debuffSuits = [];
+            state.debuffValues = [];
+            state.debuffHandType = null;
+            state.currentBoss = null;
+            state.doubleNextPlay = false;
+            state.bossIgnoredForHand = false;
+            state.deck = initDeck();
+            state.hand = [];
+            state.jokerSelected = false;
+            state.selectedIndices = [];
+            state.drawBatchId++;
+
+            if (!state.nextBoss) {
+                state.nextBoss = BOSSES[Math.floor(Math.random() * BOSSES.length)];
+            }
+
+            const header = document.getElementById('header-container');
+            const bossDisplay = document.getElementById('boss-display');
+            header.className = "flex flex-col sm:flex-row justify-between items-center bg-zinc-900/90 p-2 sm:p-4 rounded-xl shadow-2xl mb-2 sm:mb-4 border-b-4 border-zinc-800 backdrop-blur-md transition-all gap-2";
+            bossDisplay.classList.add('hidden');
+
+            if (state.round % 4 === 0) {
+                state.currentBoss = state.nextBoss;
+                state.currentBoss.effect(state);
+                bossDisplay.textContent = `ACTIVE BOSS: ${state.currentBoss.name} - ${state.currentBoss.desc}`;
+                bossDisplay.classList.remove('hidden');
+                header.classList.add('border-red-600', 'bg-red-950/20', 'boss-glow');
+                showMessage("BOSS ROUND!", "text-red-500 font-black scale-125");
+                state.nextBoss = BOSSES[Math.floor(Math.random() * BOSSES.length)];
+            }
+
+            drawToFull();
+            saveGame();
+        }
+
+        function applyCurrentSort() {
+            if (state.currentSortMethod === 'rank') {
+                state.hand.sort((a, b) => VALUES.indexOf(b.val) - VALUES.indexOf(a.val));
+            } else if (state.currentSortMethod === 'suit') {
+                state.hand.sort((a, b) => {
+                    if (a.suit === b.suit) return VALUES.indexOf(b.val) - VALUES.indexOf(a.val);
+                    return SUITS.indexOf(a.suit) - SUITS.indexOf(b.suit);
+                });
+            }
+        }
+
+        function drawToFull() {
+            let currentBatch = state.drawBatchId; let cardsDrawn = 0;
+            while (state.hand.length < state.handLimit && state.deck.length > 0) {
+                let card = state.deck.pop();
+                if (card.isJoker) {
+                    if (state.bankedJokers > 0) {
+                        state.bankedJokers = 0; showMessage("DUPLICATE JOKER!", "text-red-500"); playSound('discard');
+                    } else {
+                        state.bankedJokers = 1; showMessage("JOKER FOUND!", "text-yellow-400 font-bold"); playSound('buy');
+                    } continue; 
+                }
+                card.batchId = currentBatch; state.hand.push(card); cardsDrawn++;
+            }
+            if (cardsDrawn > 0) playSound('draw');
+            if (state.currentSortMethod !== 'none') applyCurrentSort();
+            render();
+            saveGame();
+        }
+
+        function sortHand(type) {
+            playSound('select'); state.currentSortMethod = type; applyCurrentSort(); state.selectedIndices = []; render();
+            saveGame();
+        }
+
+        function evaluateHand(selectedCards, useWild) {
+            const totalCards = selectedCards.length + (useWild ? 1 : 0); if (totalCards === 0) return null;
+            const values = selectedCards.map(c => c.val); const suits = selectedCards.map(c => c.suit);
+            const valCounts = {}; values.forEach(v => valCounts[v] = (valCounts[v] || 0) + 1);
+            let counts = Object.values(valCounts).sort((a,b) => b-a);
+            if (useWild) { if (counts.length === 0) counts = [1]; else counts[0] += 1; }
+            if (counts[0] >= 5) return '5 of a Kind';
+            const isFlush = new Set(suits).size === 1 && totalCards === 5;
+            const valIndices = values.map(v => VALUES.indexOf(v)).sort((a,b) => a-b);
+            let isStraight = false;
+            const wheelIndices = [0, 1, 2, 3, 12]; 
+            if (totalCards === 5) {
+                let uv = new Set(valIndices);
+                if (!useWild) {
+                    if (uv.size === 5) {
+                        if (valIndices[4] - valIndices[0] === 4) isStraight = true;
+                        if (valIndices.every((v, i) => v === wheelIndices[i])) isStraight = true;
+                    }
+                } else {
+                    if (uv.size === 4) {
+                        if (valIndices[3] - valIndices[0] <= 4) isStraight = true;
+                        if ([...uv].every(v => wheelIndices.includes(v))) isStraight = true;
+                    }
+                }
+            }
+            if (isFlush && isStraight) {
+                if ((values.includes('A') && (values.includes('K') || useWild)) || (isStraight && values.includes('A') && values.includes('5'))) {
+                    if (values.includes('K') || (useWild && values.includes('Q'))) return 'Royal Flush';
+                }
+                return 'Straight Flush';
+            }
+            if (counts[0] >= 4) return 'Four of a Kind';
+            if (counts[0] === 3 && counts[1] === 2) return 'Full House';
+            if (isFlush) return 'Flush';
+            if (isStraight) return 'Straight';
+            if (counts[0] === 3) return 'Three of a Kind';
+            if (counts[0] === 2 && counts[1] === 2) return 'Two Pair';
+            if (counts[0] === 2) return 'Pair';
+            return 'High Card';
+        }
+
+        function playHand() {
+            const totalSelected = state.selectedIndices.length + (state.jokerSelected ? 1 : 0);
+            if (totalSelected === 0) return;
+            if (state.plays <= 0) return;
+            playSound('play'); 
+            let selected = state.selectedIndices.map(i => state.hand[i]);
+            let handType = evaluateHand(selected, state.jokerSelected);
+            
+            let isDebuffed = !state.bossIgnoredForHand && (selected.some(c => 
+                state.debuffSuits.includes(c.suit) || 
+                state.debuffValues.includes(c.val) ||
+                c.isMarked
+            ) || (state.debuffHandType && handType === state.debuffHandType));
+
+            let baseVal = (handType === 'Royal Flush' && state.jokerSelected) ? 250 : (HAND_SCORES[handType] || 5);
+            let level = state.handLevels[handType] || 1;
+            let handBaseScore = isDebuffed ? 0 : Math.round(baseVal * (1 + (level - 1) * 0.5));
+            if (state.doubleNextPlay) { handBaseScore *= 2; state.doubleNextPlay = false; }
+            state.score += handBaseScore; 
+            state.plays--;
+            
+            if (isDebuffed) showMessage("DEBUFFED!", "text-red-400 font-bold");
+            if (state.bossIgnoredForHand) { 
+                showMessage("BLINDFOLDED!", "text-blue-400 font-bold"); 
+                state.bossIgnoredForHand = false; 
+            }
+
+            if (state.jokerSelected) { state.bankedJokers = 0; state.jokerSelected = false; }
+            state.hand = state.hand.filter((_, i) => !state.selectedIndices.includes(i));
+            state.selectedIndices = []; 
+            state.drawBatchId++; 
+            drawToFull(); 
+            checkRoundStatus();
+            saveGame();
+        }
+
+        function discardCards() {
+            if (state.selectedIndices.length === 0 || state.discards <= 0) return;
+            playSound('discard'); state.hand = state.hand.filter((_, i) => !state.selectedIndices.includes(i));
+            state.selectedIndices = []; state.discards--; state.drawBatchId++; drawToFull();
+            saveGame();
+        }
+
+        function checkRoundStatus() {
+            if (state.score >= state.target) { 
+                playSound('win'); 
+                if (state.round % 4 === 0) state.bossesDefeated++;
+                endRound(); 
+            } 
+            else if (state.plays <= 0) {
+                if (state.shieldActive) {
+                    state.shieldActive = false; showMessage("SHIELD USED!", "text-blue-400"); playSound('buy'); endRound();
+                } else { 
+                    playSound('lose'); 
+                    gameOver(); 
+                }
+            }
+        }
+
+        function endRound() { 
+            state.cumulativeScore += state.score;
+            if (state.score > state.maxSingleRoundScore) { state.maxSingleRoundScore = state.score; }
+            const handsBonus = state.plays * 20;
+            state.excessPoints = Math.max(0, state.score - state.target) + handsBonus; 
+            state.isShopOpen = true; 
+            document.getElementById('shop-overlay').classList.remove('hidden');
+            document.getElementById('excess-points-display').textContent = "$" + state.excessPoints; 
+            document.getElementById('hands-bonus-label').textContent = `Efficiency Bonus: +$${handsBonus} (${state.plays} Hands Remaining)`;
+            openShop(true); 
+            saveGame();
+        }
+
+        function gameOver() {
+            setHighScore(state.cumulativeScore);
+            document.getElementById('final-rounds').textContent = state.round - 1;
+            document.getElementById('final-total-score-run').textContent = state.cumulativeScore;
+            document.getElementById('final-high-score-alltime').textContent = getHighScore();
+            document.getElementById('game-over-overlay').classList.remove('hidden');
+            localStorage.removeItem(STORAGE_KEY);
+        }
+
+        function resetGame() {
+            playSound('select');
+            Object.assign(state, { 
+                round: 1, score: 0, excessPoints: 0, basePlays: 3, baseDiscards: 3, baseHandLimit: 8, bankedJokers: 0, 
+                inventory: [], shieldActive: false, currentSortMethod: 'rank', 
+                drawBatchId: 0, permanentPowerupsBought: [],
+                handLevels: Object.fromEntries(Object.keys(HAND_SCORES).map(k => [k, 1])),
+                debuffSuits: [], debuffValues: [], debuffHandType: null,
+                currentBoss: null, nextBoss: null, bossesDefeated: 0,
+                maxSingleRoundScore: 0, cumulativeScore: 0, doubleScorePurchaseCount: 0,
+                deck: [], hand: [], doubleNextPlay: false, bossIgnoredForHand: false
+            });
+            document.getElementById('game-over-overlay').classList.add('hidden');
+            startRound();
+        }
+
+        function openShop(initPool = false) {
+            if (initPool) {
+                state.currentShopOffers = [];
+                const availableStandard = SHOP_ITEMS.filter(item => {
+                    const isPermanent = item.id === 'extra_hand' || item.id === 'extra_discard_perm' || item.id === 'extra_card_perm';
+                    const alreadyBoughtPermanent = isPermanent && state.permanentPowerupsBought.includes(item.id);
+                    const alreadyOwnedToken = !isPermanent && item.id !== 'shield' && state.inventory.some(i => i.id === item.id);
+                    const shieldActive = item.id === 'shield' && state.shieldActive;
+                    return !alreadyBoughtPermanent && !alreadyOwnedToken && !shieldActive;
+                });
+                const allHandTypes = shuffle([...Object.keys(HAND_SCORES)]);
+                const getDynamicCost = (item) => {
+                    if (item.id === 'double_score') return 100 * Math.pow(2, state.doubleScorePurchaseCount);
+                    return item.cost;
+                };
+                const affordableStandard = availableStandard.filter(i => state.excessPoints >= getDynamicCost(i));
+                const expensiveStandard = availableStandard.filter(i => state.excessPoints < getDynamicCost(i));
+                const affordablePlanets = allHandTypes.filter(h => state.excessPoints >= (10 + (state.handLevels[h] * 5)));
+                const expensivePlanets = allHandTypes.filter(h => state.excessPoints < (10 + (state.handLevels[h] * 5)));
+                
+                let finalOffers = [];
+                
+                if (Math.random() < 0.2 || state.round > 12) {
+                    finalOffers.push({ type: 'celestial', data: 'galaxy', name: 'The Galaxy', desc: 'ALL combinations Level UP!', cost: 250 });
+                }
+
+                let planetsForSeed = affordablePlanets.slice(0, 2);
+                if (planetsForSeed.length < 2) { planetsForSeed = planetsForSeed.concat(expensivePlanets.slice(0, 2 - planetsForSeed.length)); }
+                planetsForSeed.forEach(p => finalOffers.push({ type: 'celestial', data: p }));
+                
+                let moreAffPlanets = affordablePlanets.filter(p => !planetsForSeed.includes(p)).slice(0, 2);
+                moreAffPlanets.forEach(p => { if(finalOffers.length < 6) finalOffers.push({ type: 'celestial', data: p }); });
+                
+                let affStandardsToAdd = shuffle(affordableStandard).slice(0, 6 - finalOffers.length);
+                affStandardsToAdd.forEach(s => finalOffers.push({ type: 'token', data: s }));
+                
+                if (finalOffers.length < 6) {
+                    let expStandardsToAdd = shuffle(expensiveStandard).slice(0, 6 - finalOffers.length);
+                    expStandardsToAdd.forEach(s => finalOffers.push({ type: 'token', data: s }));
+                }
+                
+                state.currentShopOffers = shuffle(finalOffers).slice(0, 6);
+            }
+            renderShop();
+        }
+
+        function renderShop() {
+            const grid = document.getElementById('shop-grid'); grid.innerHTML = '';
+            state.currentShopOffers.forEach((offer, idx) => {
+                const btn = document.createElement('div');
+                const owned = offer.purchased;
+                if (offer.type === 'token') {
+                    const item = offer.data;
+                    const cost = (item.id === 'double_score') ? 100 * Math.pow(2, state.doubleScorePurchaseCount) : item.cost;
+                    const canAfford = state.excessPoints >= cost;
+                    btn.className = `p-1.5 sm:p-3 rounded-lg border transition flex flex-col justify-between h-20 sm:h-28 ${owned ? 'bg-zinc-800 border-zinc-700 opacity-50 cursor-not-allowed' : (canAfford ? 'bg-black border-zinc-700 hover:border-orange-500 cursor-pointer' : 'bg-black border-red-900/50 opacity-60 cursor-default grayscale')}`;
+                    btn.innerHTML = `<div class="flex justify-between items-start"><span class="font-bungee text-[9px] sm:text-[11px] text-white uppercase italic leading-tight">${item.name}</span><span class="font-bungee text-[9px] sm:text-[11px] ${canAfford ? 'text-emerald-400' : 'text-red-500'}">$${cost}</span></div><p class="text-[6.5px] sm:text-[9px] text-zinc-400 font-medium mt-0.5">${item.desc}</p>${owned ? '<p class="text-[6.5px] text-orange-500 font-black uppercase">Acquired</p>' : ''}`;
+                    if (!owned && canAfford) btn.onclick = () => buyItem(item, idx);
+                } else if (offer.data === 'galaxy') {
+                    const canAfford = state.excessPoints >= offer.cost && !owned;
+                    btn.className = `p-1.5 sm:p-3 rounded-lg border transition flex flex-col justify-between h-20 sm:h-28 ${owned ? 'bg-zinc-800 border-zinc-700 opacity-50 cursor-not-allowed' : (canAfford ? 'bg-black border-yellow-500 hover:border-white cursor-pointer' : 'bg-black border-red-900/20 opacity-60 cursor-default grayscale')}`;
+                    btn.innerHTML = `<div class="flex justify-between items-start"><span class="font-bungee text-[9px] sm:text-[11px] text-yellow-400 uppercase italic leading-tight">${offer.name}</span><span class="font-bungee text-[9px] sm:text-[11px] ${canAfford ? 'text-emerald-400' : 'text-red-500'}">$${offer.cost}</span></div><p class="text-[6.5px] sm:text-[9px] text-zinc-400 mt-0.5">${offer.desc}</p>${owned ? '<p class="text-[6.5px] text-yellow-500 font-black uppercase">ULTIMATE</p>' : ''}`;
+                    if (!owned && canAfford) btn.onclick = () => upgradeAllHands(offer.cost, idx);
+                } else {
+                    const handType = offer.data;
+                    const level = state.handLevels[handType];
+                    const cost = 10 + (level * 5);
+                    const canAfford = state.excessPoints >= cost && !owned;
+                    btn.className = `p-1.5 sm:p-3 rounded-lg border transition flex flex-col justify-between h-20 sm:h-28 ${owned ? 'bg-zinc-800 border-zinc-700 opacity-50 cursor-not-allowed' : (canAfford ? 'bg-black border-blue-900/50 hover:border-blue-400 cursor-pointer' : 'bg-black border-red-900/20 opacity-60 cursor-default grayscale')}`;
+                    btn.innerHTML = `<div class="flex justify-between items-start"><span class="font-bungee text-[9px] sm:text-[11px] text-blue-300 uppercase italic leading-tight">${handType}</span><span class="font-bungee text-[9px] sm:text-[11px] ${canAfford ? 'text-emerald-400' : 'text-red-500'}">$${cost}</span></div><p class="text-[6.5px] sm:text-[9px] text-zinc-400 mt-0.5">Lv. ${level} ➔ ${level+1}.</p>${owned ? '<p class="text-[6.5px] text-blue-400 font-black uppercase">Upgraded</p>' : ''}`;
+                    if (!owned && canAfford) btn.onclick = () => upgradeHand(handType, cost, idx);
+                }
+                grid.appendChild(btn);
+            });
+        }
+
+        function upgradeHand(handType, cost, offerIdx) {
+            if (state.excessPoints >= cost) {
+                playSound('buy'); state.excessPoints -= cost; state.handLevels[handType]++; state.currentShopOffers[offerIdx].purchased = true;
+                document.getElementById('excess-points-display').textContent = "$" + state.excessPoints; renderShop();
+                saveGame();
+            }
+        }
+
+        function upgradeAllHands(cost, offerIdx) {
+            if (state.excessPoints >= cost) {
+                playSound('buy'); state.excessPoints -= cost; 
+                Object.keys(state.handLevels).forEach(h => state.handLevels[h]++);
+                state.currentShopOffers[offerIdx].purchased = true;
+                document.getElementById('excess-points-display').textContent = "$" + state.excessPoints; renderShop();
+                saveGame();
+            }
+        }
+
+        function buyItem(item, offerIdx) {
+            const cost = (item.id === 'double_score') ? 100 * Math.pow(2, state.doubleScorePurchaseCount) : item.cost;
+            if (state.excessPoints >= cost) {
+                playSound('buy'); state.excessPoints -= cost; state.currentShopOffers[offerIdx].purchased = true;
+                if (item.id === 'double_score') state.doubleScorePurchaseCount++;
+                if (item.id === 'extra_hand') { state.basePlays++; state.plays++; state.permanentPowerupsBought.push(item.id); }
+                else if (item.id === 'extra_discard_perm') { state.baseDiscards++; state.discards++; state.permanentPowerupsBought.push(item.id); }
+                else if (item.id === 'extra_card_perm') { state.baseHandLimit++; state.handLimit++; state.permanentPowerupsBought.push(item.id); }
+                else if (item.id === 'shield') { state.shieldActive = true; }
+                else { state.inventory.push({...item}); }
+                document.getElementById('excess-points-display').textContent = "$" + state.excessPoints;
+                renderShop(); render();
+                saveGame();
+            }
+        }
+
+        function activateToken(index) {
+            playSound('play'); const item = state.inventory.splice(index, 1)[0];
+            switch(item.id) {
+                case 'extra_discard': state.discards++; break;
+                case 'pocket_points': state.score += 25; break;
+                case 'double_score': state.doubleNextPlay = true; break;
+                case 'disable_boss': state.bossIgnoredForHand = true; break;
+            }
+            render();
+            saveGame();
+        }
+
+        function showTokenModal(index) {
+            playSound('select'); state.currentTokenToUse = index; const item = state.inventory[index];
+            document.getElementById('token-modal-title').textContent = `USE ${item.name.toUpperCase()}?`;
+            document.getElementById('token-modal-desc').textContent = item.desc;
+            document.getElementById('token-modal-overlay').classList.remove('hidden');
+        }
+
+        document.getElementById('token-modal-confirm').onclick = () => {
+            if (state.currentTokenToUse !== null) activateToken(state.currentTokenToUse);
+            document.getElementById('token-modal-overlay').classList.add('hidden');
+        };
+        document.getElementById('token-modal-cancel').onclick = () => document.getElementById('token-modal-overlay').classList.add('hidden');
+
+        function showMessage(msg, colorClass) {
+            const el = document.getElementById('status-message'); el.innerHTML = msg;
+            el.className = `text-lg sm:text-2xl font-bungee ${colorClass} mb-1 drop-shadow-lg`; el.classList.remove('hidden');
+            setTimeout(() => el.classList.add('hidden'), 3000);
+        }
+
+        function showScores() {
+            playSound('select');
+            const content = document.getElementById('scores-view-content');
+            content.innerHTML = '';
+            Object.entries(HAND_SCORES).sort((a,b) => b[1]-a[1]).forEach(([name, baseVal]) => {
+                const level = state.handLevels[name];
+                const scaled = Math.round(baseVal * (1 + (level - 1) * 0.5));
+                const row = document.createElement('div');
+                row.className = 'bg-black/40 p-2 sm:p-3 flex justify-between border border-zinc-800 rounded-lg items-center';
+                row.innerHTML = `<span class="capitalize text-zinc-300 font-bold text-[10px] sm:text-xs">${name}</span><div class="flex gap-2 sm:gap-4 items-center"><span class="text-blue-400 font-black text-[8px] sm:text-[10px] uppercase tracking-tighter">LV. ${level}</span><span class="font-bungee text-white text-[10px] sm:text-sm">${scaled}</span></div>`;
+                content.appendChild(row);
+            });
+            document.getElementById('scores-overlay').classList.remove('hidden');
+        }
+
+        function showDeck() {
+            playSound('select'); const content = document.getElementById('deck-view-content'); content.innerHTML = '';
+            const displayValues = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+            SUITS.forEach(suit => {
+                const suitRow = document.createElement('div'); suitRow.className = "flex gap-2 sm:gap-8 items-center w-full justify-center";
+                const leftIndicator = document.createElement('div');
+                leftIndicator.className = `w-8 h-10 sm:w-14 sm:h-16 flex items-center justify-center font-bungee text-lg sm:text-3xl bg-zinc-800 rounded-lg shrink-0 ${suit === '♥' || suit === '♦' ? 'text-red-500' : 'text-zinc-400'}`;
+                leftIndicator.textContent = suit; suitRow.appendChild(leftIndicator);
+                const cardContainer = document.createElement('div'); 
+                cardContainer.className = "grid grid-cols-7 sm:flex gap-1 sm:gap-3 justify-center pb-1";
+                let suitCount = 0;
+                displayValues.forEach(val => {
+                    const inDeck = state.deck.some(c => c.suit === suit && c.val === val);
+                    if (inDeck) suitCount++;
+                    const isRed = suit === '♥' || suit === '♦';
+                    const el = document.createElement('div');
+                    el.className = `deck-card-mini w-8 h-12 sm:w-12 sm:h-16 bg-white rounded flex flex-col items-center justify-center shadow transition-all shrink-0 ${isRed ? 'text-red-600' : 'text-zinc-900'} ${inDeck ? 'border border-zinc-300' : 'deck-card-spent opacity-10'}`;
+                    el.innerHTML = `<span class="text-[8px] sm:text-sm font-black leading-none">${val}</span><span class="text-[10px] sm:text-lg leading-none mt-0.5">${suit}</span>`;
+                    cardContainer.appendChild(el);
+                });
+                suitRow.appendChild(cardContainer);
+                const rightIndicator = document.createElement('div');
+                rightIndicator.className = `w-8 h-10 sm:w-14 sm:h-16 flex items-center justify-center font-bungee text-base sm:text-2xl bg-zinc-800 rounded-lg shrink-0 ${suit === '♥' || suit === '♦' ? 'text-red-500' : 'text-zinc-400'}`;
+                rightIndicator.textContent = suitCount; suitRow.appendChild(rightIndicator);
+                content.appendChild(suitRow);
+            });
+            document.getElementById('deck-overlay').classList.remove('hidden');
+        }
+
+        function handleInteractionStart(e, index = null) {
+            if (e.cancelable) e.preventDefault(); state.isSwipeSelecting = true; 
+            if (!(state.swipeTouchedIndices instanceof Set)) state.swipeTouchedIndices = new Set();
+            state.swipeTouchedIndices.clear();
+            if (index !== null) {
+                const isAlreadySelected = state.selectedIndices.includes(index);
+                state.swipeMode = isAlreadySelected ? 'deselect' : 'select'; toggleCardSelection(index, state.swipeMode); state.swipeTouchedIndices.add(index);
+            } else { state.swipeMode = 'select'; }
+        }
+        function handleInteractionMove(e) {
+            if (!state.isSwipeSelecting) return;
+            let clientX, clientY;
+            if (e.type === 'touchmove') { 
+                clientX = e.touches[0].clientX; clientY = e.touches[0].clientY; 
+            } else { 
+                clientX = e.clientX; clientY = e.clientY; 
+            }
+            const target = document.elementFromPoint(clientX, clientY);
+            const cardEl = target?.closest('[data-card-index]');
+            if (cardEl) {
+                const index = parseInt(cardEl.getAttribute('data-card-index'));
+                if (state.swipeTouchedIndices instanceof Set && !state.swipeTouchedIndices.has(index)) { 
+                    toggleCardSelection(index, state.swipeMode); 
+                    state.swipeTouchedIndices.add(index); 
+                }
+            }
+        }
+        function stopInteraction() { state.isSwipeSelecting = false; if (state.swipeTouchedIndices instanceof Set) state.swipeTouchedIndices.clear(); }
+        function toggleCardSelection(index, mode) {
+            const pos = state.selectedIndices.indexOf(index); const totalSelected = state.selectedIndices.length + (state.jokerSelected ? 1 : 0);
+            if (mode === 'select') { if (pos === -1 && totalSelected < 5) { playSound('select'); state.selectedIndices.push(index); } }
+            else if (mode === 'deselect') { if (pos > -1) { playSound('select'); state.selectedIndices.splice(pos, 1); } }
+            render();
+        }
+
+        window.addEventListener('mouseup', stopInteraction); window.addEventListener('touchend', stopInteraction);
+        window.addEventListener('mousemove', handleInteractionMove); window.addEventListener('touchmove', handleInteractionMove, { passive: false });
+        window.addEventListener('selectstart', (e) => e.preventDefault());
+
+        function render() {
+            document.getElementById('round-num').textContent = state.round;
+            document.getElementById('round-target').textContent = state.target;
+            document.getElementById('round-score').textContent = state.score;
+            document.getElementById('plays-left').textContent = state.plays;
+            document.getElementById('discards-left').textContent = state.discards;
+            if (state.nextBoss) {
+                document.getElementById('next-boss-display').textContent = `Next Boss: ${state.nextBoss.name}`;
+            }
+            let sel = state.selectedIndices.map(idx => state.hand[idx]);
+            let prospective = evaluateHand(sel, state.jokerSelected);
+            const fh = document.getElementById('current-hand-type'); 
+            const fs = document.getElementById('current-hand-score');
+            const fl = document.getElementById('hand-level-display');
+            
+            let projectedWillWin = false;
+
+            if (prospective) {
+                const isLegendary = (prospective === 'Royal Flush' && state.jokerSelected) || prospective === '5 of a Kind';
+                const baseVal = (prospective === 'Royal Flush' && state.jokerSelected) ? 250 : (HAND_SCORES[prospective] || 5);
+                const level = state.handLevels[prospective] || 1;
+                
+                let isDebuffed = !state.bossIgnoredForHand && (sel.some(c => 
+                    state.debuffSuits.includes(c.suit) || 
+                    state.debuffValues.includes(c.val) ||
+                    (c.isMarked)
+                ) || (state.debuffHandType && prospective === state.debuffHandType));
+
+                let score = isDebuffed ? 0 : Math.round(baseVal * (1 + (level - 1) * 0.5));
+                if (state.doubleNextPlay) score *= 2;
+                
+                if (state.score + score >= state.target) projectedWillWin = true;
+
+                fh.textContent = (prospective === 'Royal Flush' && state.jokerSelected) ? 'WILD ROYAL FLUSH' : prospective.toUpperCase();
+                fh.className = `text-lg sm:text-3xl font-bungee ${isLegendary ? 'text-orange-400 drop-shadow-[0_0_15px_rgba(251,146,60,0.8)]' : 'text-white'} drop-shadow-lg text-center leading-tight`;
+                fh.classList.remove('hidden'); 
+                fl.textContent = `Level ${level}`; fl.classList.remove('hidden');
+                fs.textContent = isDebuffed ? "0 Points (BOSS DEBUFF)" : `+${score} Points`; 
+                fs.className = `text-sm sm:text-xl font-bold ${isDebuffed ? 'text-red-500' : 'text-white'}`;
+                fs.classList.remove('hidden');
+            } else { fh.classList.add('hidden'); fs.classList.add('hidden'); fl.classList.add('hidden'); }
+            
+            const hc = document.getElementById('hand-container'); hc.innerHTML = ''; let dc = 0;
+            const isMobile = window.innerWidth < 640;
+            const handLen = state.hand.length;
+            const splitPoint = (isMobile && handLen > 5 && handLen % 2 === 0) ? handLen / 2 : -1;
+
+            state.hand.forEach((card, i) => {
+                if (i === splitPoint) {
+                    const br = document.createElement('div');
+                    br.className = 'w-full h-0';
+                    hc.appendChild(br);
+                }
+                
+                const s = state.selectedIndices.includes(i); const isRed = card.suit === '♥' || card.suit === '♦';
+                const n = card.batchId === state.drawBatchId; 
+                
+                const isDebuffed = !state.bossIgnoredForHand && (state.debuffSuits.includes(card.suit) || 
+                                   state.debuffValues.includes(card.val) ||
+                                   card.isMarked);
+
+                const el = document.createElement('div'); 
+                const cardWidthClass = state.handLimit > 10 ? 'w-[14vw]' : 'w-[18vw]';
+                el.className = `card ${cardWidthClass} sm:w-28 bg-white rounded-lg sm:rounded-xl flex flex-col items-center justify-center shadow-xl border-2 sm:border-4 ${s ? 'selected' : 'border-zinc-300'} ${isRed ? 'text-red-600' : 'text-zinc-900'} ${n ? 'card-draw' : ''} ${isDebuffed ? 'card-debuffed' : ''} ${s && projectedWillWin ? 'card-burn' : ''}`;
+                el.setAttribute('data-card-index', i);
+                if (n) el.style.animationDelay = `${dc++ * 0.05}s`;
+                el.innerHTML = `<div class="absolute top-1 left-1 sm:top-2 sm:left-2 flex flex-col items-center pointer-events-none"><span class="text-xs sm:text-lg font-black leading-none">${card.val}</span><span class="text-[8px] sm:text-sm font-bold leading-none">${card.suit}</span></div><div class="text-2xl sm:text-5xl font-black pointer-events-none">${card.suit}</div>`;
+                el.addEventListener('mousedown', (e) => { e.stopPropagation(); handleInteractionStart(e, i); });
+                el.addEventListener('touchstart', (e) => { e.stopPropagation(); handleInteractionStart(e, i); });
+                hc.appendChild(el);
+            });
+            hc.onmousedown = (e) => handleInteractionStart(e); hc.ontouchstart = (e) => handleInteractionStart(e);
+            state.hand.forEach(c => c.batchId = -1);
+            const jb = document.getElementById('joker-bank'); jb.innerHTML = '';
+            if (state.bankedJokers > 0) {
+                const j = document.createElement('div'); j.className = `joker-slot w-14 h-20 sm:w-20 sm:h-28 rounded-xl flex flex-col items-center justify-center border-2 sm:border-4 ${state.jokerSelected ? 'joker-selected' : 'bg-white border-zinc-300'} text-zinc-900 shadow-xl cursor-pointer ${state.jokerSelected && projectedWillWin ? 'card-burn' : ''}`;
+                j.innerHTML = `<div class="flex items-center justify-center w-full pointer-events-none">${JOKER_ICON}</div><span class="text-[7px] sm:text-[10px] font-bold uppercase pointer-events-none">WILD</span>`;
+                j.onclick = (e) => { 
+                    e.stopPropagation(); const totalSelected = state.selectedIndices.length + (state.jokerSelected ? 1 : 0);
+                    if (!state.jokerSelected && totalSelected >= 5) return; 
+                    playSound('select'); state.jokerSelected = !state.jokerSelected; render(); 
+                    saveGame();
+                }; jb.appendChild(j);
+            }
+            const pb = document.getElementById('powerups-bank'); pb.innerHTML = '';
+            if (state.shieldActive) {
+                const s = document.createElement('div'); s.className = `w-14 h-20 sm:w-20 sm:h-28 bg-cyan-900/30 border-2 sm:border-4 border-cyan-500 rounded-xl flex flex-col items-center justify-center text-cyan-400 shadow-xl backdrop-blur-sm`;
+                s.innerHTML = `${SHIELD_SVG} <span class="text-[7px] sm:text-[10px] font-bold uppercase mt-1">SHIELD</span>`; pb.appendChild(s);
+            }
+            if (state.basePlays > 3) {
+                const h = document.createElement('div'); h.className = `w-14 h-20 sm:w-20 sm:h-28 bg-blue-900/30 border-2 sm:border-4 border-blue-500 rounded-xl flex flex-col items-center justify-center text-blue-400 shadow-xl backdrop-blur-sm`;
+                h.innerHTML = `${PLUS_SVG} <span class="text-[7px] sm:text-[10px] font-bold uppercase mt-1">+${state.basePlays-3} PLAYS</span>`; pb.appendChild(h);
+            }
+            const tl = document.getElementById('token-list'); tl.innerHTML = '';
+            state.inventory.forEach((it, idx) => {
+                const t = document.createElement('div'); t.className = 'token-item px-2 py-0.5 bg-zinc-800 text-[8px] rounded border border-orange-600 text-orange-500 font-black uppercase tracking-tight italic';
+                t.textContent = it.name; t.onclick = (e) => { e.stopPropagation(); showTokenModal(idx); }; tl.appendChild(t);
+            });
+            
+            const currentTotalSelected = state.selectedIndices.length + (state.jokerSelected ? 1 : 0);
+            document.getElementById('discard-btn').disabled = state.discards <= 0 || state.selectedIndices.length === 0;
+            document.getElementById('play-btn').disabled = state.plays <= 0 || currentTotalSelected === 0;
+            document.getElementById('selection-hint').textContent = currentTotalSelected > 0 ? `${currentTotalSelected} / 5 CARDS SELECTED` : "SELECT UP TO 5 CARDS";
+        }
+
+        document.getElementById('play-btn').onclick = playHand;
+        document.getElementById('discard-btn').onclick = discardCards;
+        document.getElementById('sort-rank-btn').onclick = () => sortHand('rank');
+        document.getElementById('sort-suit-btn').onclick = () => sortHand('suit');
+        document.getElementById('view-deck-btn').onclick = showDeck;
+        document.getElementById('view-scores-btn').onclick = showScores;
+        document.getElementById('close-deck').onclick = () => document.getElementById('deck-overlay').classList.add('hidden');
+        document.getElementById('close-scores').onclick = () => document.getElementById('scores-overlay').classList.add('hidden');
+        document.getElementById('rules-btn').onclick = () => { playSound('select'); document.getElementById('rules-overlay').classList.remove('hidden'); };
+        document.getElementById('close-rules').onclick = () => { playSound('select'); document.getElementById('rules-overlay').classList.add('hidden'); };
+        document.getElementById('restart-game-btn').onclick = resetGame;
+        document.getElementById('next-round-btn').onclick = () => { playSound('select'); state.isShopOpen = false; document.getElementById('shop-overlay').classList.add('hidden'); state.round++; startRound(); };
+        
+        document.getElementById('resume-btn').onclick = () => {
+            playSound('play');
+            loadGame();
+            document.getElementById('load-prompt-overlay').classList.add('hidden');
+            const isActuallyGameOver = state.plays <= 0 && state.score < state.target && !state.shieldActive;
+            if (isActuallyGameOver) gameOver();
+            else render();
+        };
+
+        document.getElementById('new-game-btn').onclick = () => {
+            playSound('discard');
+            localStorage.removeItem(STORAGE_KEY);
+            document.getElementById('load-prompt-overlay').classList.add('hidden');
+            resetGame();
+        };
+        
+        window.onload = () => {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                document.getElementById('load-prompt-overlay').classList.remove('hidden');
+            } else {
+                startRound();
+            }
+        };
+
+        window.onresize = () => render();
+    </script>
+</body>
+</html>

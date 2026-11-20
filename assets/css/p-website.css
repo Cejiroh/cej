@@ -75,3 +75,17 @@ body[data-page="website"]{background-image:radial-gradient(#CBD2E3 1px,transpare
 .pimg:hover::after,.pimg:focus-visible::after{background:rgba(20,22,26,.3)}
 .pgo{position:absolute;left:50%;top:50%;z-index:2;display:inline-flex;gap:8px;align-items:center;padding:12px 22px;border-radius:999px;background:var(--accent);color:#fff;font-weight:700;box-shadow:0 10px 30px rgba(0,0,0,.35);opacity:0;transform:translate(-50%,-35%);transition:opacity .25s,transform .25s;pointer-events:none}
 .pimg:hover .pgo,.pimg:focus-visible .pgo{opacity:1;transform:translate(-50%,-50%)}
+
+/* featured projects: text first (always), then the browser. Portrait projects get a narrower frame. */
+.feat{display:grid;gap:var(--s6);align-items:center;margin-bottom:var(--s9)}
+.feat .no{font:500 .85rem var(--mono);color:var(--accent)}
+.feat h3{font:800 clamp(2rem,4vw,3.2rem)/1 var(--display);margin:var(--s3) 0 var(--s4)}
+.feat p{margin:0 0 var(--s4);color:var(--muted);max-width:28em;font-size:1.1rem}
+.feat .more{display:inline-flex;align-items:center;gap:8px;font-weight:700;color:var(--accent);text-decoration:none}.feat .more:hover{text-decoration:underline}
+.feat.portrait .br{max-width:340px}
+@media(min-width:900px){
+  .feat{grid-template-columns:1.6fr 1fr;gap:var(--s8)}.feat .br{order:-1}
+  .feat.portrait{grid-template-columns:minmax(0,340px) 1fr}
+  .feat.alt{grid-template-columns:1fr 1.6fr}.feat.alt .br{order:0}
+  .feat.alt.portrait{grid-template-columns:1fr minmax(0,340px)}
+}

@@ -27,7 +27,7 @@ document.querySelectorAll('.yr').forEach(y => { y.textContent = new Date().getFu
 /* contact forms: ONE markup and ONE handler, used by both the bottom form and the popup */
 const SERVICES = ['3D Modeling', 'Product Videos', 'Website', 'Graphics', 'Product Showcase', 'Photography', '3D Art', 'Something else', 'Not sure yet'];
 const PAGE_SERVICE = { '3d': '3D Modeling', videos: 'Product Videos', website: 'Website', graphics: 'Graphics', products: 'Product Showcase', photography: 'Photography', '3d-art': '3D Art' };
-const PAGE_NAME = { hub: 'Home', '3d': '3D Modeling', videos: 'Product Videos', website: 'Websites', graphics: 'Graphics', products: 'Product Showcase', photography: 'Photography', '3d-art': '3D Art' };
+const PAGE_NAME = { hub: 'Home', '3d': '3D Modeling', videos: 'Product Videos', website: 'Websites', graphics: 'Graphics', products: 'Product Showcase', photography: 'Photography', '3d-art': '3D Art', links: 'Links', '404': '404 page' };
 const formHTML = `
   <label>Full name<input name="Full Name" autocomplete="name" required maxlength="80"></label>
   <label>Email<input name="Email" type="email" autocomplete="email" required maxlength="120"></label>
@@ -264,3 +264,26 @@ window.addEventListener('load', () => {
     }, n * 400));
   });
 });
+
+/* home page on narrow screens (phones, touch screens, or a desktop window made narrow): a service row that is fully on screen
+   gets the same look as a long tap (colour fill, content pulled in, picture zooms out) and draws its picture.
+   It follows the window as it is resized, so it also works when a desktop browser is switched to a mobile view. */
+if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  const narrow = matchMedia('(hover:none),(max-width:859px)'), rows = [...document.querySelectorAll('.idx a')], navH = 64;   // the sticky header covers the top of the screen
+  let heights = [], tick = 0;
+  const measure = () => { heights = rows.map(a => { const on = a.classList.contains('inview'); a.classList.remove('inview'); const h = a.offsetHeight; if (on) a.classList.add('inview'); return h; }); };
+  const update = () => {
+    if (!narrow.matches) { rows.forEach(a => a.classList.remove('inview')); return; }     // wide screens use hover instead
+    rows.forEach((a, i) => {
+      const top = a.parentElement.getBoundingClientRect().top, h = heights[i], bottom = top + h, on = a.classList.contains('inview');
+      const slack = on ? 24 : 0;                                         // a little give once awake, so the row never flickers while its padding changes its height
+      const tall = h > innerHeight - navH - 8, mid = (innerHeight + navH) / 2;
+      const whole = tall ? (top < mid && bottom > mid) : (top >= navH - slack && bottom <= innerHeight + slack);   // the WHOLE row must be visible
+      if (whole !== on) a.classList.toggle('inview', whole);
+    });
+  };
+  addEventListener('scroll', () => { if (!tick) tick = requestAnimationFrame(() => { tick = 0; update(); }); }, { passive: true });
+  addEventListener('resize', () => { measure(); update(); });
+  narrow.addEventListener('change', () => { measure(); update(); });
+  measure(); update();
+}

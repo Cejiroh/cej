@@ -82,7 +82,7 @@ body[data-page="hub"]::after{content:"";position:fixed;inset:-20%;z-index:25;poi
 .head{display:flex;justify-content:space-between;align-items:end;gap:var(--s5);margin-bottom:var(--s7);flex-wrap:wrap}
 .head p{margin:0;color:var(--muted);max-width:26em}
 .idx{list-style:none;margin:0;padding:0;border-bottom:1px solid var(--border)}
-.idx a{position:relative;display:grid;grid-template-columns:auto 1fr auto;gap:var(--s2) var(--s4);align-items:center;padding:var(--s5) 0;border-top:1px solid var(--border);text-decoration:none;color:var(--text);overflow:hidden;isolation:isolate;transition:color .35s,padding .35s}
+.idx a{position:relative;display:grid;grid-template-columns:auto 1fr auto;gap:var(--s2) var(--s4);align-items:center;padding:var(--s5) 0;border-top:1px solid var(--border);text-decoration:none;color:var(--text);overflow:hidden;isolation:isolate;transition:color .35s,padding .35s,transform .4s cubic-bezier(.2,.7,.2,1)}
 .idx a::before{content:"";position:absolute;inset:0;background:var(--p);transform:scaleY(0);transform-origin:bottom;transition:transform .4s cubic-bezier(.7,0,.2,1);z-index:-1}
 .idx a:hover::before,.idx a:focus-visible::before{transform:scaleY(1)}
 .idx a:hover,.idx a:focus-visible{color:var(--pt);padding-inline:var(--s5)}
@@ -192,13 +192,30 @@ select{-webkit-appearance:none;appearance:none;padding-right:42px;background-ima
 /* home page service previews: self-drawing vector illustrations (dark panel, the service's color for the lines) */
 .pic.ill{background:#111;color:var(--pl,var(--p))}   /* every service preview is a dark panel; --pl lets a service use a lighter line color on black */
 .ill svg{display:block;width:100%;height:100%}
-.ill .ln{fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1}
+.ill .ln{fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1 2;stroke-dashoffset:1.05}   /* 1.05 + a gap longer than the path: before drawing, not even a round line end is left over */
 .ill .f{fill:currentColor;stroke:none;opacity:0;transform-box:fill-box;transform-origin:center}
 @keyframes ill-draw{to{stroke-dashoffset:0}}
 @keyframes ill-fill{from{opacity:0;scale:.85}to{opacity:var(--o,.2);scale:1}}
-@media(hover:hover) and (min-width:860px){
+@media(hover:hover){   /* any screen width, as long as there is a mouse */
   .idx a:hover .ill .ln{animation:ill-draw .8s cubic-bezier(.6,.1,.2,1) forwards;animation-delay:calc(var(--i,0)*.06s)}
   .idx a:hover .ill .f{animation:ill-fill .5s ease-out forwards;animation-delay:calc(.35s + var(--i,0)*.05s)}
 }
 /* phones, and anyone who prefers less motion: the finished drawing is simply shown */
-@media(hover:none),(max-width:859px),(prefers-reduced-motion:reduce){.ill .ln{stroke-dashoffset:0}.ill .f{opacity:var(--o,.2)}}
+
+
+.ill .ln.ac{stroke:var(--pa,currentColor)}.ill .f.ac{fill:var(--pa,currentColor)}
+/* phones and touch screens: a row colours itself and draws its picture while it is in the middle of the screen */
+@media(hover:none),(max-width:859px){
+  html:not(.js) .ill .ln{stroke-dashoffset:0}html:not(.js) .ill .f{opacity:var(--o,.2)}
+  .idx a.inview::before{transform:scaleY(1)}
+  .idx a.inview{color:var(--pt);padding-inline:var(--s5);z-index:5}   /* exactly what a long tap does: colour fill, content pulled in from the sides, picture zooms out */
+  .idx a.inview .d{color:inherit}
+  .idx a.inview .ar{transform:rotate(45deg)}
+  .idx a.inview .ill .ln{animation:ill-draw .8s cubic-bezier(.6,.1,.2,1) forwards;animation-delay:calc(var(--i,0)*.06s)}
+  .idx a.inview .ill .f{animation:ill-fill .5s ease-out forwards;animation-delay:calc(.35s + var(--i,0)*.05s)}
+}
+@media(prefers-reduced-motion:reduce){.ill .ln{stroke-dashoffset:0}.ill .f{opacity:var(--o,.2)}}
+
+/* Websites drawing: white browser page, dark content, soft grey outlines */
+.ill .ln.ink{stroke:var(--pi,#14161A)}.ill .ln.soft{stroke:#CBD1E0;stroke-width:2.5}
+.ill .f.w{fill:#fff}.ill .f.g{fill:#E8EBF4}.ill .f.g2{fill:#B9C0D3}.ill .f.ink{fill:var(--pi,#14161A)}
